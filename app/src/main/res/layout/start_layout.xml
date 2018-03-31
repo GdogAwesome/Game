@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+
+    tools:context="com.example.bradmobile.testtexture.StartScreen"
+
+
+    >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize = "50dp"
+        android:paddingTop="25dp"
+
+        android:text="@string/title"
+        android:gravity="center_horizontal" />
+<TableLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center_horizontal|center_vertical"
+    android:layout_marginTop="25dp">
+
+    <TableRow
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal">
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/new_game"
+        android:id="@+id/btn_new"
+        android:textSize="24.5sp"/>
+        </TableRow>
+
+    <TableRow android:gravity="center_horizontal">
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/cont"
+        android:textSize="24.5sp"
+        android:id ="@+id/btn_cont"/>
+    </TableRow>
+    <TableRow android:gravity = "center_horizontal">
+        <Button android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="Exit"
+            android:textSize ="24.5sp"
+            android:id ="@+id/btn_exit"/>
+    </TableRow>
+
+</TableLayout>
+
+</LinearLayout>
