@@ -405,7 +405,7 @@ public class EnemyEntity {
 		this.x += xDelta;
 		this.y += yDelta;
 		//updateAnimCont();
-		animHandler.stop(false);
+		animHandler.stop();
 
 	}
 	public void updateAnimCont(){
@@ -432,7 +432,7 @@ public class EnemyEntity {
 	public void moveDirectWOAnim(float xDelta, float yDelta){
 		this.x += xDelta;
 		this.y += yDelta;
-		animHandler.stop(false);
+		//animHandler.stop(false);
 	}
 	public void dropImage(){
 		enemyImage = null;
@@ -481,10 +481,10 @@ public class EnemyEntity {
 	public boolean isFiringLinked(){
 		return firingLinked;
 	}
-	public void loadAnims(int[] animTypes, int[] numOfFrames, int[] frameStart){
+	public void loadAnims(int[] animTypes, int[] numOfFrames, int[] frameStart, int[] frameTime, boolean[] continuous, boolean[] reciprocating, boolean[] interruptible){
 
 		for(int i = 0; i < animTypes.length; i++){
-			animHandler.setupAnim(animTypes[i], numOfFrames[i], frameStart[i]);
+			animHandler.setupAnim(animTypes[i], numOfFrames[i], frameStart[i], frameTime[i], continuous[i], reciprocating[i], interruptible[i]);
 		}
 	}
 

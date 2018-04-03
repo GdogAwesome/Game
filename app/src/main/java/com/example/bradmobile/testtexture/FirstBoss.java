@@ -68,6 +68,7 @@ public class FirstBoss extends BossEntity {
             if (swinging) {
                 if (swingingDown) {
                     //if(enemyList[0].getHeight())
+                    enemyList[4].animHandler.Attack1();
                     enemyList[0].moveDirect(linkX(enemyList[4].getX(), enemyList[0].getWidth(), enemyList[0].getX()), -(swingSpeed * 6));
                     if ((enemyList[0].getY() + enemyList[0].getHeight()) <= -.8f) {
                         swingingDown = false;
@@ -86,11 +87,13 @@ public class FirstBoss extends BossEntity {
                 enemyList[0].moveDirect(linkX(enemyList[4].getX(), enemyList[0].getWidth(), enemyList[0].getX()), 0);
             }
 
-            if (movingLeft) {
-                enemyList[4].moveDirectWOAnim(-moveDistance, 0);
-            } else {
-                enemyList[4].moveDirectWOAnim(moveDistance, 0);
-            }
+
+                if (movingLeft) {
+                    enemyList[4].moveDirectWOAnim(-moveDistance, 0);
+                } else {
+                    //enemyList[4].moveDirectWOAnim(moveDistance, 0);
+                }
+
 
             enemyList[0].updateView(viewX);
             enemyList[4].updateView(viewX);
@@ -140,18 +143,18 @@ public class FirstBoss extends BossEntity {
 
         enemyList[4] = new EnemyEntity(xPos + 1.5f, -.4f, EnemyContainer.BOSS_ONE_BODY);
         enemyList[4].InitEnemy(1, 1);
-        enemyList[4].loadAnims(new int[]{Anim.STANDING}, new int[]{1}, new int[]{0});
+        enemyList[4].loadAnims(new int[]{Anim.ATTACK_1,Anim.STANDING}, new int[]{10,1}, new int[]{0,0}, new int[]{2, 10}, new boolean[]{true, false}, new boolean[]{false,false}, new boolean[]{false, true});
 
         enemyList[0] = new EnemyEntity(0f, 0f, EnemyContainer.BOSS_ONE_ARM);
         enemyList[0].InitEnemy(5,3);
-        enemyList[0].loadAnims(new int[]{Anim.STANDING}, new int[]{12}, new int[]{0});
+        enemyList[0].loadAnims(new int[]{Anim.STANDING}, new int[]{12}, new int[]{0}, new int[]{5}, new boolean[]{false}, new boolean[]{true},new boolean[]{true});
 
 
         for(int i = 1; i < 4; i ++){// enemyActive.length ; i++){
             //if(enemyActive[i]){
                 enemyList[i] = new EnemyEntity(0f, 0f, EnemyContainer.BOSS_ONE_ARM);
                 enemyList[i].InitEnemy(5,3);
-                enemyList[i].loadAnims(new int[]{Anim.STANDING}, new int[]{12}, new int[]{0});
+                enemyList[i].loadAnims(new int[]{Anim.STANDING}, new int[]{12}, new int[]{0}, new int[]{5}, new boolean[]{false}, new boolean[]{true},new boolean[]{true});
             //}
         }
         for(int i = 0; i< enemyList.length; i++){

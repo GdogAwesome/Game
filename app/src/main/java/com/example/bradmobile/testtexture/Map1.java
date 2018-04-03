@@ -376,7 +376,7 @@ public class Map1 {
 				} else {
 
 
-					if(bottomX[4] < mapLength -1 ) {
+					if(bottomX[4] <  6){//mapLength -1 ) {
 						bottomX[0] += 1;
 						bottomX[1] += 1;
 						bottomX[2] += 1;

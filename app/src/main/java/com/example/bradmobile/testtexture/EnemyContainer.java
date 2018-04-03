@@ -251,7 +251,7 @@ public class EnemyContainer extends Entity {
         this.initEntity(context, 0, 0, R.drawable.ship,200, 100, 4, 2, .25f, .25f, FLYING_SHIP,false );
         this.initEntity(context, 0, 200, R.drawable.ship, 192, 100, 6, 1, .25f, .25f, ELECTRIC_SHIP, false );
         this.initEntity(context,0, 0, R.drawable.boss_one, 114, 110, 5, 3, .25f, .25f, BOSS_ONE_ARM, false  );
-        this.initEntity(context, 800, 0, R.drawable.boss_one, 300, 400, 1, 1, .4f, .6f, BOSS_ONE_BODY, false );
+        this.initEntity(context, 575, 0, R.drawable.boss_one, 200, 372, 5, 2, Constants.CHARACTER_WIDTH, Constants.CHARACTER_HEIGHT, BOSS_ONE_BODY, false );
 
 
     }

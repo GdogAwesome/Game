@@ -27,10 +27,10 @@ public class FlyingEnemy extends EnemyEntity {
 		/**
 		 * setup anims
 		 */
-		animHandler.setupAnim(Anim.STANDING, 4, 0);
-		animHandler.setupAnim(Anim.DYING, 4, 4);
+		animHandler.setupAnim(Anim.STANDING, 4, 0, 6, false, true, true);
+		animHandler.setupAnim(Anim.DYING, 4, 4, 8, false, false, false);
 
-		animHandler.stop(true);
+		animHandler.stop();
 
 		this.x = x;
 		this.y = y;
@@ -64,7 +64,7 @@ public class FlyingEnemy extends EnemyEntity {
 
 				if(!dying) {
 
-					animHandler.stop(true);
+					animHandler.stop();
 					//updateAnim4();
 
 

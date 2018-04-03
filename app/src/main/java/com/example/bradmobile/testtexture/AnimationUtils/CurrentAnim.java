@@ -9,7 +9,9 @@ public class CurrentAnim {
     private int frameTime = 0;
     private int animLength = 0;
     private boolean reciprocating = false;
-    private boolean interuptable = true;
+    private boolean continuous = false;
+    private boolean interruptible = true;
+    private boolean animFinished = false;
     private int[] anim;
     private int animIndex = 0;
     private int animType = -1;
@@ -25,37 +27,56 @@ public class CurrentAnim {
      * @param animType
      * @param frameTime
      * @param reciprocating
-     * @param interuptable
+     * @param continuous
+     * @param interruptible
      */
-    public void runAnim(int[] animSequence,int animType, int frameTime, boolean reciprocating, boolean interuptable){
+    public void runAnim(int[] animSequence,int animType, int frameTime, boolean reciprocating,boolean continuous, boolean interruptible){
         if(this.animType != animType) {
-            if(this.interuptable) {
+            if(this.interruptible) {
 
                 anim = animSequence;
                 this.reciprocating = reciprocating;
-                this.interuptable = interuptable;
+                this.interruptible = interruptible;
+                this.continuous = continuous;
                 this.frameTime = frameTime;
                 this.reverseAnim = false;
                 timer = 0;
                 animIndex = 0;
                 animLength = animSequence.length;
+               // if(!continuous && !reciprocating){
+                    animFinished = false;
+               // }
                 this.animType = animType;
             }else{
 
+                /*
                 if(reciprocating){
                     runReciprocating();
-                }else{
+                }else if(continuous){
                     runContinuous();
+                }else{
+                    if(!animFinished) {
+                        runOnce();
+                    }
                 }
+                */
             }
         }else{
+            /*
             if(this.reciprocating){
-                runReciprocating();
-            }else{
-                runContinuous();
-            }
+
+                    runReciprocating();
+                }else if(this.continuous){
+                    runContinuous();
+                }else{
+                    if(!animFinished) {
+                        runOnce();
+                    }
+                }
+                */
 
         }
+
 
     }
     private void runReciprocating(){
@@ -96,10 +117,39 @@ public class CurrentAnim {
         }
 
     }
+    private void runOnce(){
+        if(timer >= frameTime){
+            if(animIndex < animLength -1){
+                animIndex ++;
+            }else{
+                animFinished = true;
+            }
+
+            timer = 0;
+        }else{
+            timer++;
+        }
+
+    }
 
 
     public int getAnimIndex(){
         //
         return (anim[animIndex] * 12 * 4);
+    }
+    public void update(){
+        if(this.reciprocating){
+
+            runReciprocating();
+        }else if(this.continuous){
+            runContinuous();
+        }else{
+            if(!animFinished) {
+                runOnce();
+            }
+        }
+
+
+
     }
 }

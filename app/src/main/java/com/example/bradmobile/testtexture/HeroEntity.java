@@ -658,8 +658,8 @@ public class HeroEntity extends Entity {
 	private void initHero(Context context){
 		this.initEntity(context,0, 0, R.drawable.pos4,300, 250, 4, 5, CHARACTER_WIDTH, CHARACTER_LEG_HEIGHT,0, false);
 		this.initEntity(context, 0, 1250, R.drawable.pos4, 300, 200, 4, 2, CHARACTER_WIDTH, CHARACTER_TORSO_HEIGHT, 1, false );
-		animHandler.setupAnim(Anim.CONTINUOUS_RUN, 16, 0);
-		animHandler.setupAnim(Anim.STANDING, 1, 17);
+		animHandler.setupAnim(Anim.CONTINUOUS_RUN, 16, 0, 2, true, false, true);
+		animHandler.setupAnim(Anim.STANDING, 1, 17, 5, false, true, true);
 		animHandler.run();
 		mBox.initMBox(context);
 
