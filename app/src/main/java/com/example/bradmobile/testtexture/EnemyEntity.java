@@ -23,6 +23,8 @@ public class EnemyEntity {
 	private int itemType = -1;
 	private int health = 100;
 	public int dSound = 0;
+	private float[] bounds = new float[4];
+	private float[] relativeBounds = new float[4];
 
     int counter = 0;
 	float shotSpeed = Constants.TEST_SHOT_SPEED;
@@ -125,11 +127,14 @@ public class EnemyEntity {
 
 	 * @param horizontalAnimFrames
 	 * @param verticleAnimFrames
+	 * @param _bounds
 	 */
-	public void InitEnemy( int horizontalAnimFrames, int verticleAnimFrames ) {
+	public void InitEnemy( int horizontalAnimFrames, int verticleAnimFrames, float[] _bounds ) {
 
 		horizontalFrames = horizontalAnimFrames;
 		verticleFrames = verticleAnimFrames;
+
+		this.bounds = _bounds;
 
 
     }
@@ -340,9 +345,11 @@ public class EnemyEntity {
 		
 	}
 	public void move(float heroX, float heroY){
+		animHandler.update();
 
 	}
 	public void updateView(float x){
+	    animHandler.update();
 		
 		xView = this.x - x;
 
@@ -406,29 +413,10 @@ public class EnemyEntity {
 		this.y += yDelta;
 		//updateAnimCont();
 		animHandler.stop();
+		animHandler.update();
 
 	}
-	public void updateAnimCont(){
 
-		animCounterX++;
-		if (animCounterX >= 5) {
-			if (animFrameX < 4 && animFrameY < 2) {
-				animFrameX += 1;
-			} else if(animFrameX < 1 && animFrameY == 2) {
-				animFrameX += 1;
-			} else if(animFrameX >= 1 && animFrameY == 2) {
-				animFrameX = 0;
-				animFrameY = 0;
-			}else if(animFrameX >= 4 && animFrameY < 2){
-				animFrameX = 0;
-				animFrameY ++;
-			}
-
-			animCounterX = 0;
-
-		}
-
-	}
 	public void moveDirectWOAnim(float xDelta, float yDelta){
 		this.x += xDelta;
 		this.y += yDelta;
@@ -444,6 +432,9 @@ public class EnemyEntity {
 	public boolean getContinuousFire(){
 		return continuousFire;
 	}
+	public void update(){
+	    animHandler.update();
+    }
 
 
 	public int getAnimFrameOffsetBytes(){
@@ -477,6 +468,17 @@ public class EnemyEntity {
 	}
 	public float getRotation(){
 		return (float)angleDegrees;
+	}
+	public float[] getBounds(){
+		return bounds;
+	}
+	public float[] getRelativeBounds(){
+		relativeBounds[0] = xView + bounds[0];
+		relativeBounds[1] = y + bounds[1];
+		relativeBounds[2] = xView + bounds[2];
+		relativeBounds[3] = y + bounds[3];
+		return relativeBounds;
+
 	}
 	public boolean isFiringLinked(){
 		return firingLinked;

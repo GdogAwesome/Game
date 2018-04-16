@@ -30,6 +30,7 @@ public class EnemyContainer extends Entity {
     public final static int ELECTRIC_SHIP = 1;
     public final static int BOSS_ONE_BODY = 2;
     public final static int BOSS_ONE_ARM = 3;
+    float remainder = 0.0f;
 
     private float screenWidth = 1.25f;
 
@@ -42,38 +43,26 @@ public class EnemyContainer extends Entity {
 
         //enemyImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.ship, options);
         //enemyImage = Bitmap.createScaledBitmap(enemyImage, 800, 800, false);
-        float remainder = 0.0f;
+
         float flyingEnemyHeight =  .8f;
+        initEnemyTypes(context);
+
         for(int i = 0; i < 30; i++) {
 
 
             if(i > 2 ){
-                enemy = new FlyingEnemy( ((i * 1f + 1f)), flyingEnemyHeight, FLYING_SHIP);
-                enemy.InitEnemy(4,2);
+                initEnemy(FLYING_SHIP, i, ((i * 1f + 1f)), flyingEnemyHeight);
+
 
             }else {
-                enemy = new FlyingEnemy((int)( (i * 2.0f + 1f) ), flyingEnemyHeight, FLYING_SHIP);
-                enemy.InitEnemy(4,2);
-            }
-            remainder = i % 3;
-            if (remainder <= 0.0){
-                enemy.setHasItem(true,Item.WEAPON_UPGRADE_FLAME);
-            }
-            remainder = i % 5;
-            if (remainder <= 0.0){
-                enemy.setHasItem(true,Item.HEALTH_UPGRADE);
-            }
-            remainder = i % 4;
-            if(remainder <= 0.0){
-                enemy.setHasItem(true, Item.WEAPON_UPGRADE_SPRAY);
+                initEnemy(FLYING_SHIP,i, (i * 2.0f + 1f), flyingEnemyHeight);
+
             }
 
-            enemyList[i] = enemy;
-            enemyActive[i] = false;
 
         }
 
-        initEnemyTypes(context);
+
 
 
 
@@ -214,13 +203,14 @@ public class EnemyContainer extends Entity {
             case BossEntity.FIRST_BOSS:
                 //initBossEntities(context,BossEntity.FIRST_BOSS);
                  boss = new FirstBoss();
+                boss.initBoss(context, enemyList, enemyActive, posX, 1f, 2, new float[][]{this.getObjectBounds(BOSS_ONE_BODY) , this.getObjectBounds(BOSS_ONE_ARM)});
 
                 break;
         }
         this.bossActive = bossActive;
 
 
-          boss.initBoss(context, enemyList, enemyActive, posX);
+
           hero.displayMessage(boss.getBossText());
           hero.returnTo(-.8f);
 
@@ -250,18 +240,45 @@ public class EnemyContainer extends Entity {
     private void initEnemyTypes(Context context){
         this.initEntity(context, 0, 0, R.drawable.ship,200, 100, 4, 2, .25f, .25f, FLYING_SHIP,false );
         this.initEntity(context, 0, 200, R.drawable.ship, 192, 100, 6, 1, .25f, .25f, ELECTRIC_SHIP, false );
-        this.initEntity(context,0, 0, R.drawable.boss_one, 114, 110, 5, 3, .25f, .25f, BOSS_ONE_ARM, false  );
-        this.initEntity(context, 575, 0, R.drawable.boss_one, 200, 372, 5, 2, Constants.CHARACTER_WIDTH, Constants.CHARACTER_HEIGHT, BOSS_ONE_BODY, false );
+        this.initEntity(context,0, 0, R.drawable.boss_one, 114, 111, 5, 3, .25f, .25f, BOSS_ONE_ARM, false  );
+        this.initEntity(context, 0, 340, R.drawable.boss_one, 208, 355, 9, 2, (Constants.CHARACTER_WIDTH * .65f), (Constants.CHARACTER_HEIGHT * .8f), BOSS_ONE_BODY, false );
 
 
     }
-    private void initBossEntities(Context context, int bossType){
 
-        if(bossType == BossEntity.FIRST_BOSS) {
-
-
-            //this.loadVBOs();
-           // this.setTextureHandle();
+    /**
+     *
+     * @param enemyType
+     * @param index
+     * @param enemyX
+     * @param enemyY
+     */
+    private void initEnemy(int enemyType, int index, float enemyX, float enemyY){
+        switch(enemyType){
+            case FLYING_SHIP:
+                enemy = new FlyingEnemy( enemyX, enemyY, enemyType);
+                break;
+            case ELECTRIC_SHIP:
+                enemy = new FlyingEnemy( enemyX,enemyY, enemyType);
+                break;
         }
+        enemy.InitEnemy(4,2, this.getObjectBounds(enemyType));
+
+        remainder =index% 3;
+        if (remainder <= 0.0){
+            enemy.setHasItem(true,Item.WEAPON_UPGRADE_FLAME);
+        }
+        remainder =index% 5;
+        if (remainder <= 0.0){
+            enemy.setHasItem(true,Item.HEALTH_UPGRADE);
+        }
+        remainder =index% 4;
+        if(remainder <= 0.0){
+            enemy.setHasItem(true, Item.WEAPON_UPGRADE_SPRAY);
+        }
+
+        enemyList[index] = enemy;
+        enemyActive[index] = false;
+
     }
 }

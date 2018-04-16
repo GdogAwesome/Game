@@ -40,26 +40,13 @@ public class FlyingEnemy extends EnemyEntity {
 		this.firingLinked = true;
 
 
-		
-	}
-
-
-	/**
-	 *
-	 * @param horizontalAnimFrames
-	 * @param verticleAnimFrames
-	 */
-	@Override
-	public void InitEnemy( int horizontalAnimFrames, int verticleAnimFrames){
-
-		horizontalFrames = horizontalAnimFrames;
-		verticleFrames = verticleAnimFrames;
-
 
 	}
+
     @Override
 	public void move(float heroX, float heroY){
 		//super.move(heroX, heroY);
+
 
 
 				if(!dying) {

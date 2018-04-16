@@ -39,7 +39,17 @@ public class BossEntity {
     public void BossEntity(){
 
     }
-    public void initBoss(Context context, EnemyEntity[] e, boolean[] ea, float xPos){
+    /**
+     *
+     * @param context
+     * @param e
+     * @param ea
+     * @param xPos
+     * @param yPos
+     * @param bodyBounds
+     */
+
+    public void initBoss(Context context, EnemyEntity[] e, boolean[] ea, float xPos, float yPos, int objectCount, float[][] bodyBounds){
         this.enemyList = e;
         this.enemyActive = ea;
 

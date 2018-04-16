@@ -153,6 +153,26 @@ public class Anim {
         currentAnim.runAnim(attack1,ATTACK_1, frameTime[ATTACK_1], reciprocating[ATTACK_1], continuous[ATTACK_1], interruptible[ATTACK_1]);
 
     }
+    public void Attack2(){
+        currentAnim.runAnim(attack2,ATTACK_2, frameTime[ATTACK_2], reciprocating[ATTACK_2], continuous[ATTACK_2], interruptible[ATTACK_2]);
+
+    }
+    public void Attack3(){
+        currentAnim.runAnim(attack3,ATTACK_3, frameTime[ATTACK_3], reciprocating[ATTACK_3], continuous[ATTACK_3], interruptible[ATTACK_3]);
+
+    }
+    public void Attack4(){
+        currentAnim.runAnim(attack4,ATTACK_4, frameTime[ATTACK_4], reciprocating[ATTACK_4], continuous[ATTACK_4], interruptible[ATTACK_4]);
+
+    }
+    public void Attack5(){
+        currentAnim.runAnim(attack5,ATTACK_5, frameTime[ATTACK_5], reciprocating[ATTACK_5], continuous[ATTACK_5], interruptible[ATTACK_5]);
+
+    }
+    public void Attack6(){
+        currentAnim.runAnim(attack6,ATTACK_6, frameTime[ATTACK_6], reciprocating[ATTACK_6], continuous[ATTACK_6], interruptible[ATTACK_6]);
+
+    }
     public int getAnimIndex(){
         return currentAnim.getAnimIndex();
     }

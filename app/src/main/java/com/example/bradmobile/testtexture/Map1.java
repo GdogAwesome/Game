@@ -260,8 +260,8 @@ public class Map1 {
 					is = context.getResources().openRawResource(R.raw.test9);
                     options.inSampleSize = 1;
 					//this.mapImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.cyber_map, options);
-					hasBoss = true; //true;
-					bossType = BossEntity.FIRST_BOSS;
+					hasBoss = false; //true;
+					bossType = BossEntity.NO_BOSS;
 					texture = R.drawable.cyber_map;
 					BgTexture = R.drawable.city_background;
 					//mTextureDataHandle = TextureUtil.LoadTexture(context,R.drawable.cyber_map);
@@ -292,6 +292,21 @@ public class Map1 {
 					//mapBackground = BitmapFactory.decodeResource(context.getResources(), R.drawable.overgrown_city, options);
 					//mapBackground = Bitmap.createScaledBitmap(mapBackground, 2168, 1080, false);
 
+					break;
+				case 3:
+					is = context.getResources().openRawResource(R.raw.test_boss);
+					options.inSampleSize = 1;
+					//this.mapImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.cyber_map, options);
+					hasBoss = true; //true;
+					bossType = BossEntity.FIRST_BOSS;
+					texture = R.drawable.cyber_map;
+					BgTexture = R.drawable.city_background;
+					//mTextureDataHandle = TextureUtil.LoadTexture(context,R.drawable.cyber_map);
+					// mapImage = BitmapFactory.decodeResource(this.getResources(), R.drawable.test_map3);
+					//mapImage = Bitmap.createScaledBitmap(mapImage, 2400, 2400, false);
+					hasScene = false;
+
+					options.inSampleSize = 1;
 					break;
 
 
@@ -376,7 +391,7 @@ public class Map1 {
 				} else {
 
 
-					if(bottomX[4] <  6){//mapLength -1 ) {
+					if(bottomX[4] < mapLength -1 ) {
 						bottomX[0] += 1;
 						bottomX[1] += 1;
 						bottomX[2] += 1;

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
+import android.view.KeyEvent;
 
 /**
  * Created by b_hul on 1/29/2018.
@@ -23,6 +24,7 @@ public class Controller extends Entity {
     private float[] mArrowsMatrix = new float[16];
     private float[] mFireMatrix = new float[16];
     private float[] mJumpMatrix = new float[16];
+    private boolean fromButtonA = false;
 
     private float screenSpaceArrowX;
     private float screenSpaceArrowY;
@@ -240,6 +242,23 @@ public class Controller extends Entity {
 
         }
 
+        public void handleControllerInput(int keyCode, KeyEvent keyEvent){
+        switch(keyCode){
+
+            case KeyEvent.KEYCODE_BUTTON_X:
+                Log.e("keycode", " x");
+                shoot = true;
+                fireState = 1;
+                break;
+            case KeyEvent.KEYCODE_BUTTON_A:
+                jump = true;
+                fromButtonA = true;
+                break;
+
+        }
+
+        }
+
 @Override
 public void draw(int mTextureUniformHandle,int mTextureCoordinateHandle, int mPositionHandle,int mMVMatrixHandle, int mMVPMatrixHandle,float[] mProjectionMatrix,  float[] mMVPMatrix, float[] mViewMatrix){
 
@@ -376,5 +395,13 @@ public boolean getJump(){
 }
 public int getPlayerCommand(){
     return playerCommand;
+}
+public boolean isFromButtonA(){
+        if(fromButtonA){
+            fromButtonA = false;
+            return true;
+        }else{
+            return false;
+        }
 }
 }

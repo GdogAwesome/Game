@@ -19,6 +19,7 @@ public class FirstBoss extends BossEntity {
     private boolean swingingDown = true;
     private boolean swinging = true;
     private boolean movingLeft = true;
+    private boolean cueAttack = true;
     private int scaledBossHeight = 0;
 
     private long lastMoveChange = 0;
@@ -48,14 +49,14 @@ public class FirstBoss extends BossEntity {
 
             //swing counter
             counter++;
-            if (counter  >= 200) {
+            if (counter  >= 400) {
                 lastSwing = counter;
                 swinging = true;
                 counter = 0;
 
             }
             //move left and right based on position
-            if (enemyList[4].getAbsoluteX() <= .5f) {
+            if (enemyList[4].getAbsoluteX() <= .25f) {
                 lastMoveChange = counter;
                 movingLeft = false;
                 if(playingIntro){
@@ -68,7 +69,12 @@ public class FirstBoss extends BossEntity {
             if (swinging) {
                 if (swingingDown) {
                     //if(enemyList[0].getHeight())
-                    enemyList[4].animHandler.Attack1();
+                    if(cueAttack){
+                        enemyList[4].animHandler.Attack1();
+                        cueAttack = false;
+                    }
+
+
                     enemyList[0].moveDirect(linkX(enemyList[4].getX(), enemyList[0].getWidth(), enemyList[0].getX()), -(swingSpeed * 6));
                     if ((enemyList[0].getY() + enemyList[0].getHeight()) <= -.8f) {
                         swingingDown = false;
@@ -77,13 +83,20 @@ public class FirstBoss extends BossEntity {
 
                 } else if (!swingingDown) {
                     enemyList[0].moveDirect(linkX(enemyList[4].getX(), enemyList[0].getWidth(), enemyList[0].getX()), swingSpeed * 2);
+                    if(!cueAttack){
+                        cueAttack = true;
+
+                    }
+
                     if ((enemyList[0].getY()) >= enemyList[4].getY() + .8f) {
                         swingingDown = true;
                         swinging = false;
+                        enemyList[4].animHandler.stop();
 
                     }
                 }
             } else {
+
                 enemyList[0].moveDirect(linkX(enemyList[4].getX(), enemyList[0].getWidth(), enemyList[0].getX()), 0);
             }
 
@@ -111,6 +124,7 @@ public class FirstBoss extends BossEntity {
 
                 if (enemyActive[i]) {
 
+
                     //if((enemyList[i].getX() + ))
                 }
             }
@@ -127,13 +141,26 @@ public class FirstBoss extends BossEntity {
     }
 
 
+    /**
+     *
+     * @param context
+     * @param e
+     * @param ea
+     * @param xPos
+     * @param yPos
+     * @param bodyBounds
+     */
+
     @Override
-    public void initBoss(Context context, EnemyEntity[] e, boolean[] ea, float xPos){
+    public void initBoss(Context context, EnemyEntity[] e, boolean[] ea, float xPos, float yPos, int objectCount, float[][] bodyBounds){
         bossSize = 5;
         //Log.e("Scale", Float.toString(Constants.scale));
         this.viewX = xPos;
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;
+        bodyBounds[0][1] *= .8f;
+        bodyBounds[0][0] *= .3f;
+        bodyBounds[0][2] *= .3f;
 
         //bossImage = BitmapFactory.decodeResource(context.getResources(),R.drawable.test_electricity, options);
 
@@ -141,20 +168,20 @@ public class FirstBoss extends BossEntity {
         this.enemyActive = ea;
 
 
-        enemyList[4] = new EnemyEntity(xPos + 1.5f, -.4f, EnemyContainer.BOSS_ONE_BODY);
-        enemyList[4].InitEnemy(1, 1);
-        enemyList[4].loadAnims(new int[]{Anim.ATTACK_1,Anim.STANDING}, new int[]{10,1}, new int[]{0,0}, new int[]{2, 10}, new boolean[]{true, false}, new boolean[]{false,false}, new boolean[]{false, true});
+        enemyList[4] = new EnemyEntity(xPos + 1.5f, -.45f, EnemyContainer.BOSS_ONE_BODY);
+        enemyList[4].InitEnemy(1, 1, bodyBounds[0]);
+        enemyList[4].loadAnims(new int[]{Anim.ATTACK_1,Anim.STANDING}, new int[]{8,4}, new int[]{0,8}, new int[]{4, 7}, new boolean[]{false, false}, new boolean[]{false,true}, new boolean[]{false, true});
 
         enemyList[0] = new EnemyEntity(0f, 0f, EnemyContainer.BOSS_ONE_ARM);
-        enemyList[0].InitEnemy(5,3);
-        enemyList[0].loadAnims(new int[]{Anim.STANDING}, new int[]{12}, new int[]{0}, new int[]{5}, new boolean[]{false}, new boolean[]{true},new boolean[]{true});
+        enemyList[0].InitEnemy(5,3, bodyBounds[1]);
+        enemyList[0].loadAnims(new int[]{Anim.STANDING}, new int[]{12}, new int[]{0}, new int[]{5}, new boolean[]{true}, new boolean[]{false},new boolean[]{true});
 
 
         for(int i = 1; i < 4; i ++){// enemyActive.length ; i++){
             //if(enemyActive[i]){
                 enemyList[i] = new EnemyEntity(0f, 0f, EnemyContainer.BOSS_ONE_ARM);
-                enemyList[i].InitEnemy(5,3);
-                enemyList[i].loadAnims(new int[]{Anim.STANDING}, new int[]{12}, new int[]{0}, new int[]{5}, new boolean[]{false}, new boolean[]{true},new boolean[]{true});
+                enemyList[i].InitEnemy(5,3,  bodyBounds[1]);
+                enemyList[i].loadAnims(new int[]{Anim.STANDING}, new int[]{12}, new int[]{0}, new int[]{5}, new boolean[]{true}, new boolean[]{false},new boolean[]{true});
             //}
         }
         for(int i = 0; i< enemyList.length; i++){

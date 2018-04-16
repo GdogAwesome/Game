@@ -427,7 +427,7 @@ public class HeroEntity extends Entity {
 		counter = 0;
 		lastCount = FRAME_VARIANCE;
 		doneStart = false;
-		animHandler.stop(false);
+		animHandler.stop();
 	}
 	public void move(float mapPosX, boolean mR,boolean mL){
 
@@ -731,6 +731,7 @@ public class HeroEntity extends Entity {
 		switch(item.getUType()){
 			case Item.WEAPON_UPGRADE_SPRAY:
 				tempWeapon = true;
+				firingLinked = false;
 				upgradeTime = item.getUTime();
 				shotType = item.getUType();
 
@@ -952,6 +953,9 @@ public class HeroEntity extends Entity {
 	}
 	public void setPaused(boolean p){
 		this.paused = p;
+	}
+	public void update(){
+		animHandler.update();
 	}
 
 

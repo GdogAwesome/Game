@@ -11,7 +11,7 @@ public class CurrentAnim {
     private boolean reciprocating = false;
     private boolean continuous = false;
     private boolean interruptible = true;
-    private boolean animFinished = false;
+    private boolean animFinished = true;
     private int[] anim;
     private int animIndex = 0;
     private int animType = -1;
@@ -47,19 +47,24 @@ public class CurrentAnim {
                     animFinished = false;
                // }
                 this.animType = animType;
-            }else{
-
-                /*
-                if(reciprocating){
-                    runReciprocating();
-                }else if(continuous){
-                    runContinuous();
-                }else{
-                    if(!animFinished) {
-                        runOnce();
-                    }
+            }else {
+                if(animFinished) {
+                    anim = animSequence;
+                    this.reciprocating = reciprocating;
+                    this.interruptible = interruptible;
+                    this.continuous = continuous;
+                    this.frameTime = frameTime;
+                    this.reverseAnim = false;
+                    timer = 0;
+                    animIndex = 0;
+                    animLength = animSequence.length;
+                    // if(!continuous && !reciprocating){
+                    animFinished = false;
+                    // }
+                    this.animType = animType;
                 }
-                */
+
+
             }
         }else{
             /*
@@ -122,6 +127,7 @@ public class CurrentAnim {
             if(animIndex < animLength -1){
                 animIndex ++;
             }else{
+                //interruptible = true;
                 animFinished = true;
             }
 

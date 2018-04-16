@@ -23,8 +23,7 @@ public class Entity {
 
     Bitmap temp;
 
-    protected FloatBuffer[] polyCoordsFB = new FloatBuffer[12];
-    protected FloatBuffer[] textCoordsFB = new FloatBuffer[12];
+
 
     protected int horizontalAnimFrames;
     protected int verticleAnimFrames;
@@ -36,7 +35,7 @@ public class Entity {
     protected int totalObjects = 0;
     protected  int tuOffset = 0;
 
-    private int maxObjects = 16;
+    private int maxObjects = 18;
     
     protected int[] polyVBOHandle = new int[maxObjects];
     protected int[] textVBOHandle = new int [maxObjects];
@@ -46,6 +45,8 @@ public class Entity {
     protected int[] textureHandles = new int[maxObjects];
     protected int[] textures = new int[maxObjects];
     protected int[] objectTexture = new int[maxObjects];
+    protected FloatBuffer[] polyCoordsFB = new FloatBuffer[maxObjects];
+    protected FloatBuffer[] textCoordsFB = new FloatBuffer[maxObjects];
     protected int totalTextures = 0;
     protected int lastVBO = 0;
 
@@ -447,5 +448,6 @@ public class Entity {
         GLES20.glDeleteTextures(totalTextures,textureHandles,0);
 
     }
+
 
 }

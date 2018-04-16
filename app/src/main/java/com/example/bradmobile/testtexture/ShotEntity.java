@@ -239,7 +239,7 @@ public class ShotEntity extends Entity{
 						
 						for(int k =0; k < 30; k++){
 							if(enemyActive[k]) {
-								if (shotArray[i].drawShot()[0] <= (enemyList[k].getAbsoluteX() + (enemyList[k].getWidth() * .5f)) && shotArray[i].drawShot()[0] >= (enemyList[k].getAbsoluteX() - (enemyList[k].getWidth() * .5f)) && shotArray[i].drawShot()[1] <= (enemyList[k].getY() + (enemyList[k].getHeight() * .5f)) && shotArray[i].drawShot()[1] >= (enemyList[k].getY() - (enemyList[k].getHeight() *.5f))) {
+								if (shotArray[i].drawShot()[0] <= enemyList[k].getRelativeBounds()[2] && shotArray[i].drawShot()[0] >= enemyList[k].getRelativeBounds()[0] && shotArray[i].drawShot()[1] <= enemyList[k].getRelativeBounds()[1] && shotArray[i].drawShot()[1] >= enemyList[k].getRelativeBounds()[3]) {
 									//bulletState[i] = false;
 
 									if (!shotArray[i].dying()) {
@@ -419,7 +419,7 @@ public class ShotEntity extends Entity{
 		GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
 
-		int currentItemType = 200;
+		int currentItemType = -1;
 		/**
 		 *
 		 * draw items

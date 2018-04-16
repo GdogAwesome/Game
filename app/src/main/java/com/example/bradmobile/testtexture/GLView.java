@@ -57,6 +57,7 @@ public class GLView extends GLSurfaceView implements Runnable {
     private Controller controller;
     private int finish = 99;
     private boolean hasGameController = false;
+    private boolean fromButtonA = false;
 
 
     public Map1 Map;
@@ -384,6 +385,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         if(gameControllerIds.size() != 0) {
             currentControllerHandle = (int) gameControllerIds.get(0);
         }
+        renderer.setHasGameController(hasGameController);
 
         renderer.setShots(shots);
         renderer.setEnemies(enemies);
@@ -422,6 +424,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         mapOffset = Map.getMapOffset();
         checkHState();
 
+        hero.update();
         shots.updateShots(mapOffset, mapPosX);
 
         if (hero.canShoot) {
@@ -764,7 +767,7 @@ public class GLView extends GLSurfaceView implements Runnable {
             }});
 
 
-        //System.gc();
+        System.gc();
 
 
     }
@@ -856,6 +859,7 @@ public class GLView extends GLSurfaceView implements Runnable {
                 // This device is a game controller. Store its device ID.
                 if (!gameControllerDeviceIds.contains(deviceId)) {
                     hasGameController = true;
+                    Log.e("has game controller", "true");
                     gameControllerDeviceIds.add(deviceId);
                 }
             }
@@ -867,6 +871,9 @@ public class GLView extends GLSurfaceView implements Runnable {
 
         Log.e("controller input", "true");
         boolean handled = false;
+        controller.handleControllerInput(keyCode, event);
+
+/*
         switch(keyCode){
 
             case KeyEvent.KEYCODE_DPAD_CENTER:
@@ -881,8 +888,16 @@ public class GLView extends GLSurfaceView implements Runnable {
                 break;
 
         }
+        */
+        playerCommand = controller.getPlayerCommand();
 
-        return handled || super.onKeyDown(keyCode, event);
+        shoot = controller.getShoot();
+        startJumping = controller.getJump();
+        hero.setFiring(controller.getShoot());
+        shotHeight = controller.getFireState();
+
+
+        return /*handled ||*/ super.onKeyDown(keyCode, event);
     }
 
     /*
