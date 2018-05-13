@@ -5,14 +5,6 @@ import com.example.bradmobile.testtexture.AnimationUtils.Anim;
 
 public class FlyingEnemy extends EnemyEntity {
 
-	//protected float x;
-	//protected float y;
-	//Image image;
-	private int enemyWidth = Constants.SEGMENT_WIDTH /2;
-	private int enemyHeight = Constants.SEGMENT_HEIGHT /2;
-
-
-
 	
 	/**Creates a hero entity to hold main characters
 	 * 
@@ -73,7 +65,7 @@ public class FlyingEnemy extends EnemyEntity {
 
 
 
-					if((this.y - .5f) < (heroY ) && (this.y )> heroY){
+					if((this.y - .5f) <= (heroY ) && (this.y )>= heroY){
 
 						firing = true;
 						tryToShoot();
@@ -111,97 +103,10 @@ public class FlyingEnemy extends EnemyEntity {
 
 		
 	}
-	public void updateAnim4(){
 
-		animCounterX++;
-		if (animCounterX >= 10) {
-			if (!reverseAnim) {
-				if (animFrameX < horizontalFrames -1) {
-					animFrameX += 1;
-				} else {
-					reverseAnim = true;
-				}
-			} else if (reverseAnim) {
-				if (animFrameX > 0) {
-					animFrameX -= 1;
-				} else {
-					reverseAnim = false;
-				}
-			}
-			animCounterX = 0;
-
-
-		}
-	}
-	public void updateAnim5(){
-
-		animCounterX++;
-		if (animCounterX >= 10) {
-			if (!reverseAnim) {
-				if (animFrameX < 4) {//used to be 3
-					animFrameX += 1;
-				} else {
-					reverseAnim = true;
-				}
-			} else if (reverseAnim) {
-				if (animFrameX > 0) {
-					animFrameX -= 1;
-				} else {
-					reverseAnim = false;
-				}
-			}
-			animCounterX = 0;
-
-
-		}
-	}
-	public void updateAnim6(){
-
-		animCounterX++;
-		if (animCounterX >= 10) {
-			if (!reverseAnim) {
-				if (animFrameX < 5) {
-					animFrameX += 1;
-				} else {
-					reverseAnim = true;
-				}
-			} else if (reverseAnim) {
-				if (animFrameX > 0) {
-					animFrameX -= 1;
-				} else {
-					reverseAnim = false;
-				}
-			}
-			animCounterX = 0;
-
-
-		}
-	}
-	public void updateAnimCont(){
-
-		animCounterX++;
-		if (animCounterX >= 5) {
-				if (animFrameX < 4 && animFrameY < 2) {
-					animFrameX += 1;
-				} else if(animFrameX < 1 && animFrameY == 2) {
-					animFrameX += 1;
-				} else if(animFrameX >= 1 && animFrameY == 2) {
-					animFrameX = 0;
-					animFrameY = 0;
-				}else if(animFrameX >= 4 && animFrameY < 2){
-					animFrameX = 0;
-					animFrameY ++;
-				}
-
-			animCounterX = 0;
-
-		}
-
-	}
 
 	@Override
 	public void moveDirect(float xDelta, float yDelta){
-		updateAnim6();
 		//updateAnimCont();
 		this.x += xDelta;
 		this.y += yDelta;

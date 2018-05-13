@@ -192,6 +192,8 @@ public class TestR implements GLSurfaceView.Renderer {
         Matrix.setIdentityM(mIdentityMatrix,0);
         Matrix.translateM(mIdentityMatrix, 0, 0.0f, 0.0f, -2.51f);
 
+        //TODO setup proper shader class to handle all this
+
         setupRegularShaders();
         setupNormalsShader();
 
