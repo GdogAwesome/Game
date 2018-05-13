@@ -82,10 +82,10 @@ public class BlockSegment {
 
 
 
-		drawInfo[0] = (float)(this.spritePosX / totalWidth) + .0001f;// offset rounding error ?
-		drawInfo[3] = (float)(this.spritePosY / totalHeight) ;
-		drawInfo[2] = (float)((this.spritePosX + 200)/ totalWidth);
-		drawInfo[1] = (float)((this.spritePosY + 150) / totalHeight);
+		drawInfo[0] = (float)(this.spritePosX / totalWidth) + .0005f;// offset rounding error ?
+		drawInfo[3] = (float)(this.spritePosY / totalHeight)+ .0008f;
+		drawInfo[2] = (float)((this.spritePosX + 200)/ totalWidth) - .0005f;
+		drawInfo[1] = (float)((this.spritePosY + 150) / totalHeight) - .0005f ;
 		/*
 		drawInfo[2] = drawInfo[0] + tileWidth;
 		drawInfo[1] = drawInfo[3] + tileHeight;

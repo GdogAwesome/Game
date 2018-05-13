@@ -50,7 +50,7 @@ public class Item {
     }
     public void initItem(float x, float y, int upgradeType, float ground){
 
-        //TODO set upgrade time here
+        //TODO set upgrade time and if item is linked here
         this.uType = upgradeType;
         this.g = ground;
         this.posX = x;
@@ -67,7 +67,6 @@ public class Item {
         if(droping){
             if((posY ) >= g){
                 posY -= .044444f;
-                //Log.d("posx", Integer.toString(drawX));
             }else{
                 droping = false;
             }

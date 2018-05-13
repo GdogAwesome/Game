@@ -23,18 +23,18 @@ public class EnemyContainer extends Entity {
     private float mapPosX = 0f;
     HeroEntity hero;
 
-    private Paint paint;
-    private EnemyEntity[] enemyList = new EnemyEntity[30];
-    private boolean[] enemyActive = new boolean[30];
+    public static final int MAX_ENEMIES = 100;
+    private EnemyEntity[] enemyList = new EnemyEntity[MAX_ENEMIES];
+    private boolean[] enemyActive = new boolean[MAX_ENEMIES];
     public final static int FLYING_SHIP = 0;
     public final static int ELECTRIC_SHIP = 1;
     public final static int BOSS_ONE_BODY = 2;
     public final static int BOSS_ONE_ARM = 3;
     float remainder = 0.0f;
 
-    private float screenWidth = 1.25f;
+    private float screenWidth = 1.2f;
 
-    public EnemyContainer(Context context, HeroEntity hero){
+    public EnemyContainer(Context context, HeroEntity hero, int bossType){
 
         super();
 
@@ -45,9 +45,10 @@ public class EnemyContainer extends Entity {
         //enemyImage = Bitmap.createScaledBitmap(enemyImage, 800, 800, false);
 
         float flyingEnemyHeight =  .8f;
-        initEnemyTypes(context);
 
-        for(int i = 0; i < 30; i++) {
+        initEnemyTypes(context, bossType);
+
+        for(int i = 0; i < MAX_ENEMIES; i++) {
 
 
             if(i > 2 ){
@@ -59,13 +60,7 @@ public class EnemyContainer extends Entity {
 
             }
 
-
         }
-
-
-
-
-
 
     }
 
@@ -78,11 +73,11 @@ public class EnemyContainer extends Entity {
 
                     this.mapPosX = mapPosX;
         if(!bossActive) {
-            for (int e = 0; e < 30; e++) {
+            for (int e = 0; e < MAX_ENEMIES; e++) {
 
                 if (enemyList[e] != null) {
                     //Log.d("Active Enemy ", Integer.toString(e));
-                    if ((enemyList[e].x - mapPosX) > -screenWidth && (enemyList[e].x - mapPosX) < screenWidth && !enemyList[e].isDead()) {
+                    if ((enemyList[e].x - mapPosX) > - screenWidth && (enemyList[e].x - mapPosX) < screenWidth && !enemyList[e].isDead()) {
                         enemyActive[e] = true;
                         //enemyList[e].setContinuousFire(false);
                     } else {
@@ -94,7 +89,7 @@ public class EnemyContainer extends Entity {
             }
 
 
-        for(int i = 0; i< 30; i ++){
+        for(int i = 0; i< MAX_ENEMIES; i ++){
             if(enemyActive[i] ) {
                 enemyList[i].move(heroX, heroY);
                 enemyList[i].updateView(mapPosX);
@@ -132,12 +127,8 @@ public class EnemyContainer extends Entity {
         //Log.e("VBO", Integer.toString(frameVBO));
         // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
         GLES20.glUniform1i(mTextureUniformHandle, 0);
-
-
-
-
         //textCoordsFB.position(12);
-        for(int i = 0; i< 30; i++) {
+        for(int i = 0; i< MAX_ENEMIES; i++) {
             if(enemyActive[i]) {
                 if(currentTextureHandle != getObjectTextureHandle(enemyList[i].getEnemyType()) ){
 
@@ -190,9 +181,6 @@ public class EnemyContainer extends Entity {
          * drawScore
          */
         //scoreString = Integer.toString(totalScore);
-
-        // canvas.drawText(scoreString,SCREEN_WIDTH - 200, 0,paint);
-
     }
 
     public void initBoss(Context context, int b, boolean bossActive, float posX){
@@ -237,12 +225,25 @@ public class EnemyContainer extends Entity {
         this.bossActive = active;
     }
 
-    private void initEnemyTypes(Context context){
-        this.initEntity(context, 0, 0, R.drawable.ship,200, 100, 4, 2, .25f, .25f, FLYING_SHIP,false );
+    private void initEnemyTypes(Context context, int bossType){
+        this.initEntity(context, 800, 0, R.drawable.ship,168, 127, 6, 2, .25f, .25f, FLYING_SHIP,false );
         this.initEntity(context, 0, 200, R.drawable.ship, 192, 100, 6, 1, .25f, .25f, ELECTRIC_SHIP, false );
-        this.initEntity(context,0, 0, R.drawable.boss_one, 114, 111, 5, 3, .25f, .25f, BOSS_ONE_ARM, false  );
-        this.initEntity(context, 0, 340, R.drawable.boss_one, 208, 355, 9, 2, (Constants.CHARACTER_WIDTH * .65f), (Constants.CHARACTER_HEIGHT * .8f), BOSS_ONE_BODY, false );
 
+        setupBossEntity(bossType);
+    }
+    private void setupBossEntity(int bossType){
+        switch(bossType){
+            case BossEntity.FIRST_BOSS:
+                this.initEntity(context,0, 0, R.drawable.boss_one, 114, 111, 5, 3, .25f, .25f, BOSS_ONE_ARM, false  );
+                this.initEntity(context, 0, 340, R.drawable.boss_one, 208, 355, 9, 2, (Constants.CHARACTER_WIDTH * .65f), (Constants.CHARACTER_HEIGHT * .8f), BOSS_ONE_BODY, false );
+                break;
+            case BossEntity.NO_BOSS:
+                break;
+            default:
+                break;
+
+
+        }
 
     }
 

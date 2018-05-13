@@ -15,7 +15,7 @@ import com.example.bradmobile.testtexture.TextLib.TextManager;
  * Created by BradMobile on 9/9/2016.
  */
 public class MessageBox extends Entity {
-    Paint paint = new Paint();
+
     private String Message = null;
     private float textSize;
 
@@ -85,13 +85,12 @@ public class MessageBox extends Entity {
 
          setupMatrix();
          textSize = (28 * scale);
-         paint.setTextSize(textSize);//12
          messages = new String[]{"HELLO! /n Welcome To The Game! /n The Controls are simple, try some things.",
                  "Still Playing? /n This is kind of boring don't you think?",
          "TEST I am first boss lololololol"};
          textManager = new TextManager();
          textManager.LoadText(messages);
-         int paintC ;
+        // int paintC ;
 
          version = Build.VERSION.SDK_INT;
 
@@ -102,9 +101,6 @@ public class MessageBox extends Entity {
 
          }
 
-         //setUpBitmap();
-         //paint.setColor(paintC);
-         paint.setTextAlign(Paint.Align.CENTER);
 
      }
     public void showMessage(int currentMessage, int time, boolean mutable){
@@ -403,8 +399,5 @@ public class MessageBox extends Entity {
     public void loadVBOs(){
         super.loadVBOs();
         textManager.loadVBOs();
-    }
-    public Paint getPaint(){
-        return paint;
     }
 }

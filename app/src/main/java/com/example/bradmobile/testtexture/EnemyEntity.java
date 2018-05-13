@@ -90,8 +90,6 @@ public class EnemyEntity {
 	public boolean reverseAnim = false;
 	public int[] soundIds = new int[10];
 	public SoundPool sp;
-	Canvas canvas;
-    Paint paint;
 
 
 	protected int enemyType = 0;
@@ -115,10 +113,6 @@ public class EnemyEntity {
 
 		this.x = x;
 		this.y = y;
-
-		//groundLevel = y + CHARACTER_HEIGHT;
-		//this.footLevel = this.yPosCounter - 350;
-		//System.out.println("foot level: "+footLevel);
 		
 	}
 
@@ -179,9 +173,7 @@ public class EnemyEntity {
 							heightCheck = heightDifference;
 						
 							heightDifference = ((-1* (currentJumpPos * currentJumpPos)) + CHARACTER_HEIGHT);			
-							
-	
-							//y = beginningPos - heightDifference;
+
 							currentJumpPos ++;
 							
 	
@@ -305,10 +297,7 @@ public class EnemyEntity {
 	 * @return
 	 */
 	public void setGround(int ground){
-		this.groundLevel = ground; 
-		
-		//this.y = groundLevel - 250;
-		//System.out.println("hero ground level: " + groundLevel);
+		this.groundLevel = ground;
 	}
 	public void calcFooting(){
 		if((this.y + CHARACTER_HEIGHT) < groundLevel && !contJump){

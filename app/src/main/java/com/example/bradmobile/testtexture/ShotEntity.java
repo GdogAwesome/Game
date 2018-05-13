@@ -39,7 +39,7 @@ public class ShotEntity extends Entity{
     private float barBorderHDiff = (hBorderHeight - hBarHeight) * .5f;
     private float hDrawFrame = originalHFrame;
     private float fullHealth = 100f;
-	private int maxShots = 200;
+	private int maxShots = 400;
 
 	/**
 	 *
@@ -69,9 +69,6 @@ public class ShotEntity extends Entity{
     private boolean drawHmarker = false;
 	private int hitTalley = 0;
     private int lastHit = 0;
-    private int shotState = 0;
-    private int texCoordPerShot = 12;
-
 
 	Canvas canvas;
 	private float[][][] obstacleList;
@@ -208,7 +205,6 @@ public class ShotEntity extends Entity{
 			for(int i =0; i < maxShots; i++){
 
 				if(bulletState[i]){
-					//System.out.println("Bullet number "  + i);
 					moveShots(i);
 
 					
@@ -227,17 +223,13 @@ public class ShotEntity extends Entity{
 									updateHealthBar(shotArray[i].getShotStrength());
 									shotArray[i].impact(true);
 								}
-
-
-                               // Log.d("hBar", Float.toString(hDrawFrame));
-
 							}
 						}
 
 					}else if(shotArray[i].isFriendly()){
 
 						
-						for(int k =0; k < 30; k++){
+						for(int k =0; k < EnemyContainer.MAX_ENEMIES; k++){
 							if(enemyActive[k]) {
 								if (shotArray[i].drawShot()[0] <= enemyList[k].getRelativeBounds()[2] && shotArray[i].drawShot()[0] >= enemyList[k].getRelativeBounds()[0] && shotArray[i].drawShot()[1] <= enemyList[k].getRelativeBounds()[1] && shotArray[i].drawShot()[1] >= enemyList[k].getRelativeBounds()[3]) {
 									//bulletState[i] = false;
@@ -271,11 +263,11 @@ public class ShotEntity extends Entity{
                                                         for (int p = 0; p < 4; p++) {
 															if(hasOList[o][p]) {
 																if (enemyList[k].getAbsoluteX() - mapOffsetX >= (obstacleList[o][p][0]) && enemyList[k].getAbsoluteX() - mapOffsetX <= (obstacleList[o][p][2])  && enemyList[k].getY() >= obstacleList[o][p][1]) {
-																	//if (obstacleList[o][p][1] < lowestLevel) {
+																	if (obstacleList[o][p][1] < lowestLevel) {
 																		lowestLevel = obstacleList[o][p][1];
 																		o = 8;
 																		p =4;
-																	//}
+																	}
 
 																}
 															}
@@ -307,8 +299,6 @@ public class ShotEntity extends Entity{
 							for(int j = 0; j < 4; j++){
 								if (hasOList[o][j]) {
 
-
-									//Log.e("xView", Float.toString(xView));
 									if ((shotArray[i].drawShot()[0] ) >= (obstacleList[o][j][0] + xView) && shotArray[i].drawShot()[0] <= (obstacleList[o][j][2] + xView)) {
 
 
@@ -364,7 +354,6 @@ public class ShotEntity extends Entity{
 
 		int currentShotType = 200;
 		int currentTextureHandle = -1;
-		//Log.e("VBO", Integer.toString(frameVBO));
 		// Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
 		GLES20.glUniform1i(mTextureUniformHandle, 0);
 
@@ -379,8 +368,6 @@ public class ShotEntity extends Entity{
 					currentTextureHandle = getObjectTextureHandle(shotArray[i].getShotObject());
 
 					GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, currentTextureHandle);
-					//GLES20.glUniform1i(mTextureUniformHandle, 0);
-
 				}
 
 				if(currentShotType != shotArray[i].getShotObject()){
@@ -388,11 +375,10 @@ public class ShotEntity extends Entity{
 					GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, polyVBOHandle[currentShotType]);
 					GLES20.glEnableVertexAttribArray(mPositionHandle);
 					GLES20.glVertexAttribPointer(mPositionHandle, mPositionSize, GLES20.GL_FLOAT, false, 0, 0);
-					// GLES20.glDrawElements(GLES20.GL_LINES, 360,GLES20.GL_FLOAT, mapVertexCoordVBO[0] );
 
 					GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
-					// Pass in the texture coordinate information -- currently not using vbo
+					// Pass in the texture coordinate information
 
 					GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
 					GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, textVBOHandle[currentShotType]);
@@ -404,7 +390,6 @@ public class ShotEntity extends Entity{
 				Matrix.translateM(mModelMatrix,0, shotArray[i].drawShot()[0], shotArray[i].drawShot()[1], -2.509f);
 				Matrix.rotateM(mModelMatrix, 0 , shotArray[i].getRotation(), 0, 0, 1f);
 
-				//Log.e("advance", Float.toString(mModelmatrix[12]));
 				Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
 				GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
 
@@ -433,11 +418,8 @@ public class ShotEntity extends Entity{
 					GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, polyVBOHandle[currentItemType]);
 					GLES20.glEnableVertexAttribArray(mPositionHandle);
 					GLES20.glVertexAttribPointer(mPositionHandle, mPositionSize, GLES20.GL_FLOAT, false, 0, 0);
-					// GLES20.glDrawElements(GLES20.GL_LINES, 360,GLES20.GL_FLOAT, mapVertexCoordVBO[0] );
 
 					GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-
-					// Pass in the texture coordinate information -- currently not using vbo
 
 					GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
 					GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, textVBOHandle[currentItemType]);
@@ -448,7 +430,6 @@ public class ShotEntity extends Entity{
 				Matrix.setIdentityM(mModelMatrix,0);
 				Matrix.translateM(mModelMatrix,0, items[i].getDrawStats()[0] , items[i].getDrawStats()[1], -2.5002f);
 
-				//Log.e("advance", Float.toString(mModelmatrix[12]));
 				Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
 				GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
 
@@ -469,8 +450,6 @@ public class ShotEntity extends Entity{
          */
         //scoreString = Integer.toString(totalScore);
 		drawHealth( mTextureUniformHandle, mTextureCoordinateHandle, mPositionHandle, mMVMatrixHandle, mMVPMatrixHandle, mProjectionMatrix, mMVPMatrix, mViewMatrix);
-
-       // canvas.drawText(scoreString,SCREEN_WIDTH - 200, 0,paint);
 
     }
 	private void updateItems(){
@@ -505,10 +484,6 @@ public class ShotEntity extends Entity{
 
 		healthPercent = (float)heroHealth / 100f;
 		mHealthBarMatrix[0] = healthPercent;
-		//Matrix.setIdentityM(mHealthBarMatrix, 0);
-		//Matrix.translateM(mHealthBarMatrix,0, (-1 - getObjectBounds(Item.HEALTH_BAR)[0]),(1 - (getObjectBounds(Item.HEALTH_BAR)[1] * 2f)), -2.51f);
-		//Matrix.scaleM(mHealthBarMatrix,0, healthPercent, 1f, 1f);
-
 	}
 	private void updateEnemyInteraction(){
 
@@ -523,7 +498,6 @@ public class ShotEntity extends Entity{
 
 					if((enemyList[i].getY() < hitBox[1] && enemyList[i].getY() > hitBox[3])
 							|| (enemyList[i].getY()+ enemyList[i].getHeight() < hitBox[1] && enemyList[i].getY() > hitBox[3])) {
-						//Log.d("contact", "true");
 						if(!enemyList[i].dying ) {
 							updateHealthBar(5);
 						}
@@ -587,7 +561,7 @@ public class ShotEntity extends Entity{
 						}else{
 							shotArray[i].fireLinkShot(shotArray[lastShotIndex].getX(), shotArray[lastShotIndex].getY(), ShotSize, 0, (int) shotStats[3], lastShotIndex, srcOfShot, false,false, friendly, upgradeType);
 						}
-						//shotArray[i].updatePosition();
+
 						lastShotIndex = i;
 					}
 
@@ -611,8 +585,7 @@ public class ShotEntity extends Entity{
 
 			}
 		}else{
-			//shotArray[flameIndecies[0]].updateAngle((int)shotStats[4]);
-			//shotArray[flameIndecies[0]].updatePosition(shotStats[0], shotStats[1]);
+
 		}
 	}
 	private void moveShots(int i){
@@ -655,7 +628,6 @@ public class ShotEntity extends Entity{
 
 					} else {
 						bulletState[i] = false;
-						//Log.e("is updating", "true");
 					}
 				}else{
 					bulletState[i] = false;

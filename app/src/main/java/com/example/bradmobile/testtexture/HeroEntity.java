@@ -2,20 +2,10 @@ package com.example.bradmobile.testtexture;
 
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.util.Log;
 import com.example.bradmobile.testtexture.AnimationUtils.*;
-
-
-import java.nio.FloatBuffer;
-
 
 public class HeroEntity extends Entity {
     private Anim animHandler;
@@ -29,7 +19,6 @@ public class HeroEntity extends Entity {
     protected int yTorsoCounter = 0;
 	private long lastHit = 0;
 	int shootTime = 175;
-	int fireSectionSize = Constants.SCREEN_HEIGHT / 8;
 
 	
 	int counter = 0;
@@ -45,7 +34,6 @@ public class HeroEntity extends Entity {
 	public boolean canShoot = false;
 	protected boolean continuousFire = false;
 	private long timer = 0;
-	private int runningTorsoPos = 0;
 	private float currentJumpPos = -12.2F * Constants.scale;
 	static float FRAME_VARIANCE = Constants.FRAME_VARIANCE ;
 	private static int FALL_SPEED = Constants.FALL_SPEED;
@@ -53,8 +41,6 @@ public class HeroEntity extends Entity {
 	private float lastCount = FRAME_VARIANCE;
 	private float lastJumpCount = FRAME_VARIANCE;
 	protected boolean doneStart = false;
-	protected boolean startJumping = true;
-	protected int jumpAnimCount = 0;
 	protected boolean firing = false;
 	private boolean tempWeapon = false;
 	private int upgradeTime = 0;
@@ -86,9 +72,6 @@ public class HeroEntity extends Entity {
 	private float fallMomentum = 0;
 	private float momentum =0;
 	private float heightCheck = 0;
-	public int groundLevel;
-	public int footLevel;
-	String heroDialogue = null;
 	public boolean facingForward = true;
 	private boolean canMoveRight =false;
 	private boolean canMoveLeft =false;
@@ -103,64 +86,26 @@ public class HeroEntity extends Entity {
 	 * openGl objects
 	 */
 	private int heroImage;
-	private float[] frameF ;// = new float[36];
-	private FloatBuffer frameFB;
 
 	private int[] currentFrame = new int[2];
-
-	private float[] heroTextureF = new float[24];
-	private FloatBuffer heroTextureFB;
-
-
 	private float[][] mModelMatrix = new float[2][16];
 
-	private int textureWidth = 1200;
-	private int textureHeight = 2400;
-
 	private float ground = -0.8f;
-
-	private float tileWidth = 300f / (float)textureWidth;
-	private float legTileHeight = 250f / (float)textureHeight;
-	private float torsoTextureStart = legTileHeight * 5f;
-	private float torsoTileHeight = 200f/ (float)textureHeight;
-
 	static float RUN_SPEED = Constants.TEST_RUN_SPEED;
     private int lives = 3;
 
-	private float screenX;
-
-
 	private float[] hitBox = new float[4];
-
-	//private Canvas canvas;
-	private Canvas rotateCanvas;
-
-    private Bitmap torso;
-	private int torsoAnglePos = 0;
 	private float matrixToFootingOffset = (.18F * CHARACTER_HEIGHT);
 	private float torsoMatrixOffset = (.3666f * CHARACTER_TORSO_HEIGHT);
 
+	//TODO fix sound
 	//private SoundPool sp;
-	private int[] soundIds = new int[10];
-    Paint paint;
-    private Rect frameToDraw ;
-    private Rect locationFrame;
-    private RectF whereToDraw ;
+	//private int[] soundIds = new int[10];
 	private long flickerTimer = 0;
 
 	private boolean invincible = false;
 	private boolean drawCharacter = true;
 	private int height = 0;
-
-
-											
-
-	
-	long delta = 0;
-
-
-
-
 	/**
 	 * initialize character at starting pos x,  Image urly
 	 *
@@ -168,7 +113,7 @@ public class HeroEntity extends Entity {
 	 * @param x
 	 * @param y
 	 */
-	public HeroEntity(Context context, int x, int y, Paint p){
+	public HeroEntity(Context context, int x, int y){
 		super();
 
 		this.x = 0;
@@ -179,15 +124,7 @@ public class HeroEntity extends Entity {
 		heroImage =  R.drawable.pos4;
 
 		initHero(context);
-		//setupPolyCoords();
 		setupModelMatrix();
-		//createFloatBuffers();
-		//updateTextureCoords();
-
-        this.paint = p;
-
-		paint.setTextSize(50);
-
 	}
 
 	
@@ -197,17 +134,10 @@ public class HeroEntity extends Entity {
 	 */
 	public void InitHero(String source, int width, int height){
 
-
-		//CHARACTER_HEIGHT = height;
-		//CHARACTER_WIDTH = width;
-		//System.out.println("character height " +CHARACTER_HEIGHT);
-	
-		//this.groundLevel = (int)(this.y -250);
-
 	
 	}
 	
-	public void draw(Canvas canvas) {
+	public void draw() {
 
 
 		/**
@@ -217,15 +147,10 @@ public class HeroEntity extends Entity {
 
 		if(mBox.activeMessage){
 
-
-			for(int i=0; i < 9; i++){
-
-				//canvas.drawBitmap(heroImage,frameToDrawM[i],whereToDrawM[i],paint);
-			}
 			if(mBox.drawText) {
 				for (int i = 0; i < mBox.getText().length; i++) {
-					canvas.drawText(mBox.getText()[i], mBox.getSX(), mBox.getSY(), mBox.getPaint());
-					mBox.drawTY += mBox.getPaint().descent() - mBox.getPaint().ascent();
+					//canvas.drawText(mBox.getText()[i], mBox.getSX(), mBox.getSY(), mBox.getPaint());
+					//mBox.drawTY += mBox.getPaint().descent() - mBox.getPaint().ascent();
 				}
 			}
 		}else{
@@ -366,13 +291,7 @@ public class HeroEntity extends Entity {
 			if(counter >= 5){
 			
 				xPosCounter++;
-				//lastCount += FRAME_VARIANCE;
-				//if( xPosCounter >= (FRAME_VARIANCE * 2) && yPosCounter >= (FRAME_VARIANCE * 2)){
-					
 					counter = 0;
-					//lastCount = FRAME_VARIANCE;
-					
-				//}
 			
 				if(xPosCounter >= 4){
 					yPosCounter ++;
@@ -440,14 +359,9 @@ public class HeroEntity extends Entity {
 			if (facingForward && getRight() <= Constants.RIGHT_BORDER && canMoveRight) {
 				mModelMatrix[0][12] += RUN_SPEED;
 
-				//x -= mapPosX;
-				//screenX = mapPosX;
-
 			} else if (!facingForward && getLeft() >= Constants.LEFT_BORDER && canMoveLeft) {
 
 				mModelMatrix[0][12] -= RUN_SPEED;
-				//screenX = mapPosX;
-				//x -= mapPosX;
 
 			}
 		}
@@ -496,9 +410,6 @@ public class HeroEntity extends Entity {
 	 */
 	public void setGround(float ground){
 		this.ground = ground;
-		
-		//this.y = groundLevel - 250;
-		//System.out.println("hero ground level: " + groundLevel);
 	}
 
 	public void updateMessage(float mapPosX){
@@ -581,9 +492,6 @@ public class HeroEntity extends Entity {
 				}
 
 			}
-			//fireStats[0] = 0f;
-			//fireStats[1] = 0f;
-
 			yTorsoCounter = 0;
 			if (lastRotation != torsoAngle) {
 				//rotateTorso(torsoAngle);
@@ -939,6 +847,7 @@ public class HeroEntity extends Entity {
 		Constants.LEFT_BORDER = -1f;
 
 	}
+
 	public boolean messageActive(){
 		return mBox.activeMessage;
 	}

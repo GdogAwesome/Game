@@ -18,6 +18,7 @@ public class Game extends AppCompatActivity {
     String selection = null;
     boolean fromAd = false;
     public boolean returned = false;
+    private boolean backAlreadyPressed = false;
     int mapNo = 1;
     View decorView;
 
@@ -28,8 +29,6 @@ public class Game extends AppCompatActivity {
         selection = getIntent().getExtras().getString("selection");
         rd = new GLView(this);
 
-
-       // removeSystemBars();
 
         setContentView(rd);
 
@@ -76,11 +75,7 @@ public class Game extends AppCompatActivity {
 
 
         alertDialog.show();
-        /*
-        Intent i = new Intent(this, MainActivity.class);
-        i.putExtra("selection", "first");
-        startActivity(i);
-        */
+
 
     }
     @Override
@@ -131,6 +126,8 @@ public class Game extends AppCompatActivity {
         rd.pause();
         selection = "paused";
 
+
+
         AlertDialog alertDialog = new AlertDialog.Builder(this).create();
         alertDialog.setTitle("Quit?");
         //alertDialog.setIcon(R.drawable.lock);
@@ -155,29 +152,24 @@ public class Game extends AppCompatActivity {
 
 
         alertDialog.show();
+        backAlreadyPressed = true;
 
-        //view.setZOrderOnTop(false);
-        //view.setZ(2);
-        /*
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle("Alert");
-        alertDialog.setMessage("Alert message to be shown");
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
 
-        alertDialog.show();
-        */
 
 
     }
     private void removeSystemBars(){
-        int uiOptions = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+
+        int uiOptions;
+        if(android.os.Build.VERSION.SDK_INT >= 16) {
+             uiOptions = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        }else{
+            //TODO this doesn't quite work right but it doesn't mess up the screen touch coordinates
+             uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+
+        }
 
         rd.setSystemUiVisibility(uiOptions);
     }

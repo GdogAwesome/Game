@@ -162,7 +162,6 @@ public class Entity {
         createTextureCoords(startX, startY,options.outWidth, options.outHeight, tilePixelWidth, tilePixelHeight, horizontalAnimFrames,verticleAnimFrames);
         createPolyCoords(polyWidth, polyHeight ,horizontalAnimFrames,verticleAnimFrames, false);
         createFloatBuffers();
-        //loadVBOs();
 
         setUpModelMatrix();
 
@@ -338,7 +337,7 @@ public class Entity {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, polyVBOHandle[objectCount]);
         GLES20.glEnableVertexAttribArray(mPositionHandle);
         GLES20.glVertexAttribPointer(mPositionHandle, mPositionSize,GLES20.GL_FLOAT,false,0,0);
-        // GLES20.glDrawElements(GLES20.GL_LINES, 360,GLES20.GL_FLOAT, mapVertexCoordVBO[0] );
+
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,0);
 
@@ -369,7 +368,6 @@ public class Entity {
          */
         //scoreString = Integer.toString(totalScore);
 
-        // canvas.drawText(scoreString,SCREEN_WIDTH - 200, 0,paint);
 
     }
     
@@ -415,6 +413,9 @@ public class Entity {
                 }
             }
         }
+
+        totalObjects = 0;
+
     }
     public float[] getObjectBounds(int object){
         return objectBounds[object];
@@ -441,10 +442,6 @@ public class Entity {
     }
     public void nullImage(){
 
-
-        for(int i = 0; i < totalTextures; i ++){
-            Log.e("Textur id for index" + i +"", Integer.toString(textureHandles[i]));
-        }
         GLES20.glDeleteTextures(totalTextures,textureHandles,0);
 
     }

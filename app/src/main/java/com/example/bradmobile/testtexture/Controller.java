@@ -59,6 +59,7 @@ public class Controller extends Entity {
         this.initEntity(context, 300, 0, R.drawable.button_layout, 100, 200, 1, 1, .225f, 1.0f, CONTROL_SHOT, false);
         this.initEntity(context, 200, 0, R.drawable.button_layout, 100, 100, 1, 1, .25f, .444444f, CONTROL_JUMP, false);
 
+
         screenWidth = Constants.SCREEN_WIDTH;
         screenHeight = Constants.SCREEN_HEIGHT;
         halfScreenWidth = screenWidth * .5f;

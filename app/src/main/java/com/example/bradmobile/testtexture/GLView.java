@@ -39,11 +39,6 @@ public class GLView extends GLSurfaceView implements Runnable {
 
     Thread gameThread;
 
-
-
-    Canvas canvas = new Canvas();
-
-
     private boolean playing = false;
 
 
@@ -88,7 +83,6 @@ public class GLView extends GLSurfaceView implements Runnable {
     private int halfScreen = screenWidth / 2;
 
     public String map = null;
-    private Paint paint = new Paint();
 
     private float heroCenter = 0;
     private TestR renderer;
@@ -175,7 +169,6 @@ public class GLView extends GLSurfaceView implements Runnable {
 
 
             render();
-            //draw(canvas);
             frames ++;
 
             timeDiff = System.currentTimeMillis() - beginTime;
@@ -200,7 +193,7 @@ public class GLView extends GLSurfaceView implements Runnable {
                 sleepTime += FRAME_PERIOD;
                 //Log.d("sleep time","" +sleepTime+"");
                 framesSkipped++;
-                //Log.d("frames skipped", ""+framesSkipped +"");
+                Log.d("frames skipped", ""+framesSkipped +"");
             }
 
 
@@ -342,12 +335,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         options.inSampleSize = 1;
         options.inPreferredConfig = Bitmap.Config.RGB_565;//ARGB_8888;
 
-
-        //overlay = BitmapFactory.decodeResource(context.getResources(), R.drawable.button_layout_test, options);
-
-        paint = new Paint();
-
-        hero = new Hero(context,canvas, (halfScreen - (CHARACTER_WIDTH /2)), 250, paint);
+        hero = new Hero(context, (halfScreen - (CHARACTER_WIDTH /2)), 250 );
         hero.InitHero("source/pos1.png", CHARACTER_WIDTH,CHARACTER_HEIGHT);
         heroCenter = (CHARACTER_WIDTH / 2) + (int)hero.x;
         hero.setGround(groundLevel);
@@ -362,12 +350,8 @@ public class GLView extends GLSurfaceView implements Runnable {
         Map.resetPosX();
         finish = (int)((Map.getMapLength() * Constants.BLOCK_WIDTH) - (.5 * Constants.SCREEN_WIDTH));
 
-
-
         shots = new ShotEntity(context);
-        // shots.initShots( 800, 600);
-        //enemy = new enemy(this,)
-        enemies = new EnemyContainer(context, hero);
+        enemies = new EnemyContainer(context, hero, Map.getBossType());
         enemies.addShots(shots);
 
 
@@ -398,6 +382,7 @@ public class GLView extends GLSurfaceView implements Runnable {
             queueEvent(new Runnable() {
                 @Override public void run() {
                     //renderer.sceneChange();
+                    Log.e("setup Objects","now");
                     renderer.setupObjects();
                 }});
 
@@ -457,11 +442,6 @@ public class GLView extends GLSurfaceView implements Runnable {
 
         obstacleList[3] = Map.getFarRightTopObstacle();
         obstacleList[7] = Map.getFarRightBottomObstacle();
-        //shots.updateObstacles(obstacleList , hasOList);
-        //System.out.println("O List " +obstacleList[0][0][0]);
-        //System.out.println("original " + bottomCenterObstacle[0][0]);
-
-
 
 
 		/*
@@ -480,27 +460,17 @@ public class GLView extends GLSurfaceView implements Runnable {
 
 
                     if (heroCenter >= (obstacleList[i][j][0] + mapOffset) && heroCenter <= (obstacleList[i][j][2] + mapOffset)) {
-                        //Log.e("left obstacle diff", Float.toString((hLeft + (obstacleList[i][j][2] + mapOffset))));
-
-                       // Log.d("obstacle y1", Double.toString(obstacleList[i][j][1]));
-                        //Log.d("obstacle y2", Double.toString(obstacleList[i][j][3]));
-                        //Log.d("map offset", Double.toString(mapOffset));
 
                         canMoveRight = !(hRight >= (obstacleList[i][j][0] + mapOffset)  && (hRight > (obstacleList[i][j][0] + mapOffset))  && (hFooting + .05f) < (obstacleList[i][j][1]) && hRight < (obstacleList[i][j][2] + mapOffset - .02f) );
-
 
                         canMoveLeft = !(hLeft <= (obstacleList[i][j][2] + mapOffset)&& (hLeft < (obstacleList[i][j][2] + mapOffset))  && (hFooting + .05f) < obstacleList[i][j][1] && hLeft >(obstacleList[i][j][0] + mapOffset + .02f) );
 
                         if (canMoveRight && canMoveLeft) {
 
                             hero.setGround(obstacleList[i][j][1]);
-
-
                         }
                             i = 8;
                             j = 4;
-
-
 
                     } else {
 
@@ -514,15 +484,6 @@ public class GLView extends GLSurfaceView implements Runnable {
 
         hero.updateMessage(mapPosX);
 
-/*
-        if (mapPosX <= 0) {
-            canMoveLeft = false;
-        }
-        */
-
-
-
-
         if (hero.isRunning()) {
             hero.move(mapPosX, canMoveRight,canMoveLeft);
             if(hero.dying) {
@@ -531,8 +492,6 @@ public class GLView extends GLSurfaceView implements Runnable {
             }
 
             mapPosX = Map.moveMap(hero.getLeft(), hero.getRight(), hero.y,canMoveLeft, canMoveRight, playerCommand);
-
-            //Log.e("mapPosX ", Float.toString(mapPosX));
 
         }
         if (startJumping) {
@@ -734,7 +693,7 @@ public class GLView extends GLSurfaceView implements Runnable {
     }*/
     public void newMap(Context context,int mapNo){
         //mp.setLooping(true);
-        mp = MediaPlayer.create(context, R.raw.scifi);
+        mp = MediaPlayer.create(context, R.raw.new_beginning);
         currentStats.currentMap = mapNo;
 
 
@@ -753,6 +712,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         renderer.setMapTexture(Map.getTexture());
         renderer.setMapVertexCoord(Map.getPositionFloatBuffer());
         renderer.setmMapModelMatrix(Map.getmModelMatrix());
+        renderer.setMapDrawIndices(Map.getDrawListBuffer());
     }
 
 
@@ -774,7 +734,6 @@ public class GLView extends GLSurfaceView implements Runnable {
 
 
     public void pause() {
-        //Log.d("is Paused", Boolean.toString(playing));
         playing = false;
         mp.pause();
 
@@ -873,7 +832,6 @@ public class GLView extends GLSurfaceView implements Runnable {
         boolean handled = false;
         controller.handleControllerInput(keyCode, event);
 
-/*
         switch(keyCode){
 
             case KeyEvent.KEYCODE_DPAD_CENTER:
@@ -888,7 +846,7 @@ public class GLView extends GLSurfaceView implements Runnable {
                 break;
 
         }
-        */
+
         playerCommand = controller.getPlayerCommand();
 
         shoot = controller.getShoot();

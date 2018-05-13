@@ -27,8 +27,6 @@ public class FirstBoss extends BossEntity {
     private long lastSwing = 0;
     private float swingSpeed = .01f;
 
-
-    private int linkWidth = (int)(192 * Constants.scale);// used to be 200
     FirstBoss(){
         super();
 
@@ -154,7 +152,6 @@ public class FirstBoss extends BossEntity {
     @Override
     public void initBoss(Context context, EnemyEntity[] e, boolean[] ea, float xPos, float yPos, int objectCount, float[][] bodyBounds){
         bossSize = 5;
-        //Log.e("Scale", Float.toString(Constants.scale));
         this.viewX = xPos;
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;

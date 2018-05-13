@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 
 import com.example.bradmobile.testtexture.Utils.*;
 
@@ -37,6 +38,7 @@ public class Map1 {
 	private boolean bossActivated = false;
 	private boolean bossActive = false;
 	private boolean lockScreen = false;
+	private boolean justUpdated = false;
 	private int bossType = 0;
 	private boolean displayFM = true;
 	private boolean displaySM = true;
@@ -48,25 +50,26 @@ public class Map1 {
 	private boolean hasScene = true;
 	private boolean startPoints = false;// true;
 	private boolean showingPoints = false;
-	private int backgroundWidth = Constants.SCREEN_WIDTH;
-
 
 	/*
 
 	map opengl handles
 	 */
+	private int normalTexture = 0;
 	private int texture = 0;
 	private int BgTexture = 0;
 	private int layerIndexOffset = 0;
 	private float[] mModelMatrix = new float[16];
 	private float[] mBackgroundMatrix = new float[16];
-	private float[] mTextureCoordinateData = new float[720];
+	private float[] mTextureCoordinateData = new float[480];
+	private short[] mIndices = new short[6 * 60];
 	private float[] mBgTextureCoordinateData; // = new float[24];
 	private FloatBuffer TextureCoordinateBuffer;
 	private FloatBuffer BgTextureCoordinateBuffer;
 	private FloatBuffer PositionFloatBuffer;
 	private FloatBuffer BgPositionFloatBuffer;
-	private float[] mPositionData = new float[1080];
+	private ShortBuffer drawListBuffer;
+	private float[] mPositionData = new float[720];
 	private float[] mBgPositionData; // = new float[36];
 	private float totalMoveSpace = 0f;
 	private float BgMoveSpeed = Constants.TEST_RUN_SPEED * .5f;
@@ -161,23 +164,12 @@ public class Map1 {
 	public float[][] topObstacleArray = new float[4][4];
 	public float[][] bottomObstacleArray = new float[4][4];
 	public float[][] skyObstacleArray = new float[4][4];
-	BitmapFactory.Options options = new BitmapFactory.Options();
+
 	public InputStream is;
-    //private Context context;
-    private Paint paint;
+
 
 	int totalPos = 0;
 	int counter = 0;
-
-
-
-	public float[] drawBottom = new float[2];
-	public float[] drawTop = new float[2];
-	public float[] drawSky = new float[2];
-
-	public float[] frameBottom = new float[4];
-	public float[] frameTop = new float[4];
-	public float[] frameSky = new float[4];
 
 	
 	private mapBlock bottomBlock;
@@ -195,10 +187,6 @@ public class Map1 {
 	 */
 	
 	public Map1( float x, float y){
-
-
-
-		options.inSampleSize = 2;
 
 		this.MapFinalPosX = x;
 		this.MapFinalPosY = y;
@@ -244,69 +232,43 @@ public class Map1 {
 		 * 
 		 * 
 		 */
-	
-		
 
 			/**
 			 * decide what map to load
 			 */
 
-           options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-			options.inDither = true;
-
+			// TODO fix this hardcoded mess before adding new levels!!! meh, maybe not..
 			switch(mapNo){
 
                 case 1:
 					is = context.getResources().openRawResource(R.raw.test9);
-                    options.inSampleSize = 1;
-					//this.mapImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.cyber_map, options);
-					hasBoss = false; //true;
-					bossType = BossEntity.NO_BOSS;
+					hasBoss = true;
+					bossType = BossEntity.FIRST_BOSS;
 					texture = R.drawable.cyber_map;
+					normalTexture = R.drawable.cyber_map_norm;
 					BgTexture = R.drawable.city_background;
-					//mTextureDataHandle = TextureUtil.LoadTexture(context,R.drawable.cyber_map);
-					// mapImage = BitmapFactory.decodeResource(this.getResources(), R.drawable.test_map3);
-					//mapImage = Bitmap.createScaledBitmap(mapImage, 2400, 2400, false);
 					hasScene = false;
-
-					options.inSampleSize = 1;
-
-					//mapBackground = BitmapFactory.decodeResource(context.getResources(), R.drawable.city_background, options);
-
-					//mapBackground = Bitmap.createScaledBitmap(mapBackground, 2168, 1080, false);
 
 					break;
 				case 2:
-                    options.inSampleSize = 1;
+
                     is = context.getResources().openRawResource(R.raw.test6_1);
-					//this.mapImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.test_map, options);
-					// mapImage = BitmapFactory.decodeResource(this.getResources(), R.drawable.test_map3);
-					//mapImage = Bitmap.createScaledBitmap(mapImage, 2400, 2400, false);
 					texture = R.drawable.test_map;
 					BgTexture = R.drawable.overgrown_city;
+					normalTexture = R.drawable.test_map_norm;
 					hasBoss = false;
 					bossType = BossEntity.NO_BOSS;
 
 					hasScene = false;
-					options.inSampleSize = 1;
-					//mapBackground = BitmapFactory.decodeResource(context.getResources(), R.drawable.overgrown_city, options);
-					//mapBackground = Bitmap.createScaledBitmap(mapBackground, 2168, 1080, false);
-
 					break;
 				case 3:
 					is = context.getResources().openRawResource(R.raw.test_boss);
-					options.inSampleSize = 1;
-					//this.mapImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.cyber_map, options);
 					hasBoss = true; //true;
 					bossType = BossEntity.FIRST_BOSS;
 					texture = R.drawable.cyber_map;
+					normalTexture = R.drawable.cyber_map_norm;
 					BgTexture = R.drawable.city_background;
-					//mTextureDataHandle = TextureUtil.LoadTexture(context,R.drawable.cyber_map);
-					// mapImage = BitmapFactory.decodeResource(this.getResources(), R.drawable.test_map3);
-					//mapImage = Bitmap.createScaledBitmap(mapImage, 2400, 2400, false);
 					hasScene = false;
-
-					options.inSampleSize = 1;
 					break;
 
 
@@ -323,11 +285,8 @@ public class Map1 {
 			setupBgTextureCoords();
 			createFloatBuffers();
 			setupTextureCoords();
+		//updateTextureCoords();
 			updateSegments();
-			//positionBuffer = setUpPrimitiveBuffer();
-
-
-
 
 		/**
 		 * 
@@ -344,9 +303,6 @@ public class Map1 {
 			currentBottom[i] = i * BLOCK_WIDTH;
 			
 		}
-
-
-       // updateSegments();
 
 		
 		
@@ -382,13 +338,12 @@ public class Map1 {
 
 					}
 
-					totalMoveSpace -= Constants.TEST_RUN_SPEED;
 					Matrix.translateM(mModelMatrix, 0, (-1f * (Constants.TEST_RUN_SPEED)), 0.0f, 0.0f);
-
-
+					totalMoveSpace -= Constants.TEST_RUN_SPEED;
 					absoluteMoveSpace += Constants.TEST_RUN_SPEED;
 
 				} else {
+
 
 
 					if(bottomX[4] < mapLength -1 ) {
@@ -397,6 +352,7 @@ public class Map1 {
 						bottomX[2] += 1;
 						bottomX[3] += 1;
 						bottomX[4] += 1;
+						updateSegments();
 						rightMapEdge = false;
 					}else{
 						setEndMap(true);
@@ -414,16 +370,11 @@ public class Map1 {
 					}
 
 
-
-
-					updateSegments();
-
                     mapNeedsRenderUpdate = true;
 					updateTextureCoords();
 
 				}
 
-				//Log.e("total move space", Double.toString((absoluteMoveSpace + (mModelMatrix[12]))));
 			} else if (canMoveLeft && heroLeft <= LEFT_BORDER &&  playerCommand == 2) {
 
 
@@ -437,8 +388,6 @@ public class Map1 {
 
 					}
 					prevX = viewX;
-					//viewX = (heroX - LEFT_BORDER);
-
 					deltaX = prevX - viewX;
 
 					Matrix.translateM(mModelMatrix, 0, (Constants.TEST_RUN_SPEED), 0.0f, 0.0f);
@@ -482,7 +431,6 @@ public class Map1 {
 
 				}
 			}
-			//Log.e("total move space", Double.toString((absoluteMoveSpace + (mModelMatrix[12]))));
 		}
 		timeDiff = (System.currentTimeMillis() - beginTime);
 			updateTime = (int)timeDiff;
@@ -516,8 +464,6 @@ public class Map1 {
 
 		}else if(hasScene && !bossActive){
 
-
-			//nullImage();
 			hasScene = false;
 			currentScene.nullImage();
 			initScene(1);
@@ -526,9 +472,6 @@ public class Map1 {
 
 		}
 		else{
-			Log.e("end", "level");
-
-
 			endLevel = true;
 		}
 	}
@@ -556,42 +499,45 @@ public class Map1 {
 		int indexAdd = 0;
 
 
-
-		for(int i = 0; i < 5; i++) {
-			currentPos =  frameCount * 24;
-				for(int b = 0; b < 2; b++){
-					if(skyAnim[i][b]){
-						switch(b){
-							case 0: indexAdd = 0;
-							break;
-							case 1: indexAdd = 12;
-							break;
+		if(!justUpdated) {
+			for (int i = 0; i < 5; i++) {
+				currentPos = frameCount * 16;
+				for (int b = 0; b < 2; b++) {
+					if (skyAnim[i][b]) {
+						switch (b) {
+							case 0:
+								indexAdd = 0;
+								break;
+							case 1:
+								indexAdd = 8;
+								break;
 						}
-						updateTextureBox(currentPos,indexAdd,i,b, 0);
+						updateTextureBox(currentPos, indexAdd, i, b, 0);
 
 					}
 				}
-			//Log.d("bottom X", Integer.toString(bottomX[i]));
-			frameCount++;
-		}
-		for(int i = 0; i < 5; i++) {
-			currentPos =  frameCount * 24;
-			for(int b = 2; b < 4; b++){
-				if(skyAnim[i][b]){
-					switch(b){
-						case 2: indexAdd = 0;
-							break;
-						case 3: indexAdd = 12;
-							break;
-					}
-					updateTextureBox(currentPos,indexAdd,i,b, 0);
-
-				}
+				frameCount++;
 			}
+			for (int i = 0; i < 5; i++) {
+				currentPos = frameCount * 16;
+				for (int b = 2; b < 4; b++) {
+					if (skyAnim[i][b]) {
+						switch (b) {
+							case 2:
+								indexAdd = 0;
+								break;
+							case 3:
+								indexAdd = 8;
+								break;
+						}
+						updateTextureBox(currentPos, indexAdd, i, b, 0);
 
-
-			//Log.d("bottom X", Integer.toString(bottomX[i]));
-			frameCount++;
+					}
+				}
+				frameCount++;
+			}
+		}else{
+			justUpdated = false;
 		}
  		//mapNeedsRenderUpdate = true;
 
@@ -611,11 +557,6 @@ public class Map1 {
 
         return temp;
     }
-    public void updateTextures(){
-		TextureCoordinateBuffer.rewind();
-		TextureCoordinateBuffer.put(mTextureCoordinateData);
-
-	}
 
     private void createFloatBuffers(){
 		
@@ -623,6 +564,7 @@ public class Map1 {
 		PositionFloatBuffer = BufferUtils.getFloatBuffer(mPositionData, 4);
 		BgTextureCoordinateBuffer = BufferUtils.getFloatBuffer(mBgTextureCoordinateData, 4);
 		BgPositionFloatBuffer = BufferUtils.getFloatBuffer(mBgPositionData, 4 );
+		drawListBuffer = BufferUtils.getShortBuffer(mIndices, 2);
 
 	}
 	public FloatBuffer[] getPositionFloatBuffer(){
@@ -634,9 +576,10 @@ public class Map1 {
 
 	}
 	public int[] getTexture(){
-		int[] temp = new int[2];
+		int[] temp = new int[3];
 		temp[0] = texture;
 		temp[1] = BgTexture;
+		temp[2] = normalTexture;
 		return temp;
 	}
 	public float getMapOffset(){
@@ -715,21 +658,19 @@ public class Map1 {
 			Log.e("added anim", Float.toString(pos0 + (tileWidth * (float) (framePos))));
 		}
 		*/
-		
 		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd), pos0);
 		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 1), pos3);
 		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 2), pos0);
 		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 3), pos1);
+		//TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 4), pos2);
+		//TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 5), pos3);
+
 		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 4), pos2);
-		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 5), pos3);
-
-		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 6), pos0);
-		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 7), pos1);
-		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 8), pos2);
-		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 9), pos1);
-		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 10), pos2);
-		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 11), pos3);
-
+		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 5), pos1);
+		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 6), pos2);
+		TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 7), pos3);
+		//TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 4), pos2);
+		//TextureCoordinateBuffer.put((layerIndexOffset + currentPos + indexAdd + 5), pos1);
 
 	}
 	public void updateTextureCoords(){
@@ -743,44 +684,41 @@ public class Map1 {
 			//frameCount = 0;
 
 			for (int i = 0; i < 5; i++) {
-				currentPos = frameCount * 24;
+				currentPos = frameCount * 16;
 				for (int b = 0; b < 2; b++) {
 						switch (b) {
 							case 0:
 								indexAdd = 0;
 								break;
 							case 1:
-								indexAdd = 12;
+								indexAdd = 8;
 								break;
 						}
 						updateTextureBox(currentPos, indexAdd, i, b, l);
 
 
 				}
-				//Log.d("bottom X", Integer.toString(bottomX[i]));
 				frameCount++;
 			}
 			for (int i = 0; i < 5; i++) {
-				currentPos = frameCount * 24;
+				currentPos = frameCount * 16;
 				for (int b = 2; b < 4; b++) {
 						switch (b) {
 							case 2:
 								indexAdd = 0;
 								break;
 							case 3:
-								indexAdd = 12;
+								indexAdd = 8;
 								break;
 						}
 						updateTextureBox(currentPos, indexAdd, i, b, l);
 
-
 				}
-
-
-				//Log.d("bottom X", Integer.toString(bottomX[i]));
 				frameCount++;
 			}
 		}
+
+		justUpdated = true;
 
 	}
     public void setupTextureCoords(){
@@ -800,7 +738,7 @@ public class Map1 {
 
 
 		for(int i = 0; i < 5; i++) {
-			currentPos =  frameCount * 24;
+			currentPos =  frameCount * 16;
 
 
 			/**
@@ -828,17 +766,17 @@ public class Map1 {
 			mTextureCoordinateData[currentPos + 1] = pos3 ;
 			mTextureCoordinateData[currentPos + 2] = pos0;
 			mTextureCoordinateData[currentPos + 3] = pos1;
+			//mTextureCoordinateData[currentPos + 4] = pos2;
+			//mTextureCoordinateData[currentPos + 5] = pos3 ;
+
+
+
+			//mTextureCoordinateData[currentPos + 6] = pos0;
+			//mTextureCoordinateData[currentPos + 7] = pos1;
 			mTextureCoordinateData[currentPos + 4] = pos2;
-			mTextureCoordinateData[currentPos + 5] = pos3 ;
-
-
-
-			mTextureCoordinateData[currentPos + 6] = pos0;
-			mTextureCoordinateData[currentPos + 7] = pos1;
-			mTextureCoordinateData[currentPos + 8] = pos2;
-			mTextureCoordinateData[currentPos + 9] = pos1;
-			mTextureCoordinateData[currentPos + 10] = pos2;
-			mTextureCoordinateData[currentPos + 11] = pos3 ;
+			mTextureCoordinateData[currentPos + 5] = pos1;
+			mTextureCoordinateData[currentPos + 6] = pos2;
+			mTextureCoordinateData[currentPos + 7] = pos3 ;
 
 			/**
 			 *
@@ -855,19 +793,19 @@ public class Map1 {
 
 			}
 
-			mTextureCoordinateData[currentPos + 12] = pos0;
-			mTextureCoordinateData[currentPos + 13] = pos3;
-			mTextureCoordinateData[currentPos + 14] = pos0;
-			mTextureCoordinateData[currentPos + 15] = pos1;
-			mTextureCoordinateData[currentPos + 16] = pos2;
-			mTextureCoordinateData[currentPos + 17] = pos3;
+			mTextureCoordinateData[currentPos + 8] = pos0;
+			mTextureCoordinateData[currentPos + 9] = pos3;
+			mTextureCoordinateData[currentPos + 10] = pos0;
+			mTextureCoordinateData[currentPos + 11] = pos1;
+			//mTextureCoordinateData[currentPos + 16] = pos2;
+			//mTextureCoordinateData[currentPos + 17] = pos3;
 
-			mTextureCoordinateData[currentPos + 18] = pos0;
-			mTextureCoordinateData[currentPos + 19] = pos1;
-			mTextureCoordinateData[currentPos + 20] = pos2;
-			mTextureCoordinateData[currentPos + 21] = pos1;
-			mTextureCoordinateData[currentPos + 22] = pos2;
-			mTextureCoordinateData[currentPos + 23] = pos3;
+			//mTextureCoordinateData[currentPos + 18] = pos0;
+			//mTextureCoordinateData[currentPos + 19] = pos1;
+			mTextureCoordinateData[currentPos + 12] = pos2;
+			mTextureCoordinateData[currentPos + 13] = pos1;
+			mTextureCoordinateData[currentPos + 14] = pos2;
+			mTextureCoordinateData[currentPos + 15] = pos3;
 
 
 			//Log.d("bottom X", Integer.toString(bottomX[i]));
@@ -879,7 +817,7 @@ public class Map1 {
 			 *
 			 * set up third sky
 			 */
-			currentPos =  frameCount * 24;
+			currentPos =  frameCount * 16;
 			pos0 = skyBlocks[bottomX[i]].renderMapBlock()[2][0];
 			pos1 = skyBlocks[bottomX[i]].renderMapBlock()[2][1];
 			pos2 = skyBlocks[bottomX[i]].renderMapBlock()[2][2];
@@ -892,20 +830,20 @@ public class Map1 {
 			}
 
 			mTextureCoordinateData[currentPos] = pos0;
-			mTextureCoordinateData[currentPos + 1] = pos3;
+			mTextureCoordinateData[currentPos + 1] = pos3 ;
 			mTextureCoordinateData[currentPos + 2] = pos0;
 			mTextureCoordinateData[currentPos + 3] = pos1;
+			//mTextureCoordinateData[currentPos + 4] = pos2;
+			//mTextureCoordinateData[currentPos + 5] = pos3 ;
+
+
+
+			//mTextureCoordinateData[currentPos + 6] = pos0;
+			//mTextureCoordinateData[currentPos + 7] = pos1;
 			mTextureCoordinateData[currentPos + 4] = pos2;
-			mTextureCoordinateData[currentPos + 5] = pos3;
-
-
-
-			mTextureCoordinateData[currentPos + 6] = pos0;
-			mTextureCoordinateData[currentPos + 7] = pos1;
-			mTextureCoordinateData[currentPos + 8] = pos2;
-			mTextureCoordinateData[currentPos + 9] = pos1;
-			mTextureCoordinateData[currentPos + 10] = pos2;
-			mTextureCoordinateData[currentPos + 11] = pos3;
+			mTextureCoordinateData[currentPos + 5] = pos1;
+			mTextureCoordinateData[currentPos + 6] = pos2;
+			mTextureCoordinateData[currentPos + 7] = pos3 ;
 
 			/**
 			 *
@@ -921,19 +859,19 @@ public class Map1 {
 
 			}
 
-			mTextureCoordinateData[currentPos + 12] = pos0;
-			mTextureCoordinateData[currentPos + 13] = pos3;
-			mTextureCoordinateData[currentPos + 14] = pos0;
-			mTextureCoordinateData[currentPos + 15] = pos1;
-			mTextureCoordinateData[currentPos + 16] = pos2;
-			mTextureCoordinateData[currentPos + 17] = pos3;
+			mTextureCoordinateData[currentPos + 8] = pos0;
+			mTextureCoordinateData[currentPos + 9] = pos3;
+			mTextureCoordinateData[currentPos + 10] = pos0;
+			mTextureCoordinateData[currentPos + 11] = pos1;
+			//mTextureCoordinateData[currentPos + 16] = pos2;
+			//mTextureCoordinateData[currentPos + 17] = pos3;
 
-			mTextureCoordinateData[currentPos + 18] = pos0;
-			mTextureCoordinateData[currentPos + 19] = pos1;
-			mTextureCoordinateData[currentPos + 20] = pos2;
-			mTextureCoordinateData[currentPos + 21] = pos1;
-			mTextureCoordinateData[currentPos + 22] = pos2;
-			mTextureCoordinateData[currentPos + 23] = pos3;
+			//mTextureCoordinateData[currentPos + 18] = pos0;
+			//mTextureCoordinateData[currentPos + 19] = pos1;
+			mTextureCoordinateData[currentPos + 12] = pos2;
+			mTextureCoordinateData[currentPos + 13] = pos1;
+			mTextureCoordinateData[currentPos + 14] = pos2;
+			mTextureCoordinateData[currentPos + 15] = pos3;
 
 			frameCount++;
 		}
@@ -950,7 +888,7 @@ public class Map1 {
 			 *
 			 * set up first sky
 			 */
-			currentPos =  frameCount * 24;
+			currentPos =  frameCount * 16;
 
 			pos0 = topBlocks[bottomX[i]].renderMapBlock()[0][0];
 			pos1 = topBlocks[bottomX[i]].renderMapBlock()[0][1];
@@ -962,22 +900,22 @@ public class Map1 {
 				pos2 += (tileWidth * (float)(framePos));
 
 			}
-			
+
 			mTextureCoordinateData[currentPos] = pos0;
-			mTextureCoordinateData[currentPos + 1] = pos3;
+			mTextureCoordinateData[currentPos + 1] = pos3 ;
 			mTextureCoordinateData[currentPos + 2] = pos0;
 			mTextureCoordinateData[currentPos + 3] = pos1;
+			//mTextureCoordinateData[currentPos + 4] = pos2;
+			//mTextureCoordinateData[currentPos + 5] = pos3 ;
+
+
+
+			//mTextureCoordinateData[currentPos + 6] = pos0;
+			//mTextureCoordinateData[currentPos + 7] = pos1;
 			mTextureCoordinateData[currentPos + 4] = pos2;
-			mTextureCoordinateData[currentPos + 5] = pos3;
-
-
-
-			mTextureCoordinateData[currentPos + 6] = pos0;
-			mTextureCoordinateData[currentPos + 7] = pos1;
-			mTextureCoordinateData[currentPos + 8] = pos2;
-			mTextureCoordinateData[currentPos + 9] = pos1;
-			mTextureCoordinateData[currentPos + 10] = pos2;
-			mTextureCoordinateData[currentPos + 11] = pos3;
+			mTextureCoordinateData[currentPos + 5] = pos1;
+			mTextureCoordinateData[currentPos + 6] = pos2;
+			mTextureCoordinateData[currentPos + 7] = pos3 ;
 
 			/**
 			 *
@@ -994,19 +932,19 @@ public class Map1 {
 
 			}
 
-			mTextureCoordinateData[currentPos + 12] = pos0;
-			mTextureCoordinateData[currentPos + 13] = pos3;
-			mTextureCoordinateData[currentPos + 14] = pos0;
-			mTextureCoordinateData[currentPos + 15] = pos1;
-			mTextureCoordinateData[currentPos + 16] = pos2;
-			mTextureCoordinateData[currentPos + 17] = pos3;
+			mTextureCoordinateData[currentPos + 8] = pos0;
+			mTextureCoordinateData[currentPos + 9] = pos3;
+			mTextureCoordinateData[currentPos + 10] = pos0;
+			mTextureCoordinateData[currentPos + 11] = pos1;
+			//mTextureCoordinateData[currentPos + 16] = pos2;
+			//mTextureCoordinateData[currentPos + 17] = pos3;
 
-			mTextureCoordinateData[currentPos + 18] = pos0;
-			mTextureCoordinateData[currentPos + 19] = pos1;
-			mTextureCoordinateData[currentPos + 20] = pos2;
-			mTextureCoordinateData[currentPos + 21] = pos1;
-			mTextureCoordinateData[currentPos + 22] = pos2;
-			mTextureCoordinateData[currentPos + 23] = pos3;
+			//mTextureCoordinateData[currentPos + 18] = pos0;
+			//mTextureCoordinateData[currentPos + 19] = pos1;
+			mTextureCoordinateData[currentPos + 12] = pos2;
+			mTextureCoordinateData[currentPos + 13] = pos1;
+			mTextureCoordinateData[currentPos + 14] = pos2;
+			mTextureCoordinateData[currentPos + 15] = pos3;
 
 
 			//Log.d("bottom X", Integer.toString(bottomX[i]));
@@ -1018,7 +956,7 @@ public class Map1 {
 			 *
 			 * set up third sky
 			 */
-			currentPos =  frameCount * 24;
+			currentPos =  frameCount * 16;
 			pos0 = topBlocks[bottomX[i]].renderMapBlock()[2][0];
 			pos1 = topBlocks[bottomX[i]].renderMapBlock()[2][1];
 			pos2 = topBlocks[bottomX[i]].renderMapBlock()[2][2];
@@ -1030,20 +968,20 @@ public class Map1 {
 			}
 
 			mTextureCoordinateData[currentPos] = pos0;
-			mTextureCoordinateData[currentPos + 1] = pos3;
+			mTextureCoordinateData[currentPos + 1] = pos3 ;
 			mTextureCoordinateData[currentPos + 2] = pos0;
 			mTextureCoordinateData[currentPos + 3] = pos1;
+			//mTextureCoordinateData[currentPos + 4] = pos2;
+			//mTextureCoordinateData[currentPos + 5] = pos3 ;
+
+
+
+			//mTextureCoordinateData[currentPos + 6] = pos0;
+			//mTextureCoordinateData[currentPos + 7] = pos1;
 			mTextureCoordinateData[currentPos + 4] = pos2;
-			mTextureCoordinateData[currentPos + 5] = pos3;
-
-
-
-			mTextureCoordinateData[currentPos + 6] = pos0;
-			mTextureCoordinateData[currentPos + 7] = pos1;
-			mTextureCoordinateData[currentPos + 8] = pos2;
-			mTextureCoordinateData[currentPos + 9] = pos1;
-			mTextureCoordinateData[currentPos + 10] = pos2;
-			mTextureCoordinateData[currentPos + 11] = pos3;
+			mTextureCoordinateData[currentPos + 5] = pos1;
+			mTextureCoordinateData[currentPos + 6] = pos2;
+			mTextureCoordinateData[currentPos + 7] = pos3 ;
 
 			/**
 			 *
@@ -1059,19 +997,19 @@ public class Map1 {
 
 			}
 
-			mTextureCoordinateData[currentPos + 12] = pos0;
-			mTextureCoordinateData[currentPos + 13] = pos3;
-			mTextureCoordinateData[currentPos + 14] = pos0;
-			mTextureCoordinateData[currentPos + 15] = pos1;
-			mTextureCoordinateData[currentPos + 16] = pos2;
-			mTextureCoordinateData[currentPos + 17] = pos3;
+			mTextureCoordinateData[currentPos + 8] = pos0;
+			mTextureCoordinateData[currentPos + 9] = pos3;
+			mTextureCoordinateData[currentPos + 10] = pos0;
+			mTextureCoordinateData[currentPos + 11] = pos1;
+			//mTextureCoordinateData[currentPos + 16] = pos2;
+			//mTextureCoordinateData[currentPos + 17] = pos3;
 
-			mTextureCoordinateData[currentPos + 18] = pos0;
-			mTextureCoordinateData[currentPos + 19] = pos1;
-			mTextureCoordinateData[currentPos + 20] = pos2;
-			mTextureCoordinateData[currentPos + 21] = pos1;
-			mTextureCoordinateData[currentPos + 22] = pos2;
-			mTextureCoordinateData[currentPos + 23] = pos3;
+			//mTextureCoordinateData[currentPos + 18] = pos0;
+			//mTextureCoordinateData[currentPos + 19] = pos1;
+			mTextureCoordinateData[currentPos + 12] = pos2;
+			mTextureCoordinateData[currentPos + 13] = pos1;
+			mTextureCoordinateData[currentPos + 14] = pos2;
+			mTextureCoordinateData[currentPos + 15] = pos3;
 			frameCount++;
 		}
 
@@ -1087,7 +1025,7 @@ public class Map1 {
 			 *
 			 * set up first sky
 			 */
-			currentPos =  frameCount * 24;
+			currentPos =  frameCount * 16;
 			pos0 = bottomBlocks[bottomX[i]].renderMapBlock()[0][0];
 			pos1 = bottomBlocks[bottomX[i]].renderMapBlock()[0][1];
 			pos2 = bottomBlocks[bottomX[i]].renderMapBlock()[0][2];
@@ -1102,17 +1040,17 @@ public class Map1 {
 			mTextureCoordinateData[currentPos + 1] = pos3 ;
 			mTextureCoordinateData[currentPos + 2] = pos0;
 			mTextureCoordinateData[currentPos + 3] = pos1;
+			//mTextureCoordinateData[currentPos + 4] = pos2;
+			//mTextureCoordinateData[currentPos + 5] = pos3 ;
+
+
+
+			//mTextureCoordinateData[currentPos + 6] = pos0;
+			//mTextureCoordinateData[currentPos + 7] = pos1;
 			mTextureCoordinateData[currentPos + 4] = pos2;
-			mTextureCoordinateData[currentPos + 5] = pos3 ;
-
-
-
-			mTextureCoordinateData[currentPos + 6] = pos0;
-			mTextureCoordinateData[currentPos + 7] = pos1;
-			mTextureCoordinateData[currentPos + 8] = pos2;
-			mTextureCoordinateData[currentPos + 9] = pos1;
-			mTextureCoordinateData[currentPos + 10] = pos2;
-			mTextureCoordinateData[currentPos + 11] = pos3 ;
+			mTextureCoordinateData[currentPos + 5] = pos1;
+			mTextureCoordinateData[currentPos + 6] = pos2;
+			mTextureCoordinateData[currentPos + 7] = pos3 ;
 
 			/**
 			 *
@@ -1129,20 +1067,20 @@ public class Map1 {
 
 			}
 
-			mTextureCoordinateData[currentPos + 12] = pos0;
-			mTextureCoordinateData[currentPos + 13] = pos3;
-			mTextureCoordinateData[currentPos + 14] = pos0;
-			mTextureCoordinateData[currentPos + 15] = pos1;
-			mTextureCoordinateData[currentPos + 16] = pos2;
-			mTextureCoordinateData[currentPos + 17] = pos3;
+			mTextureCoordinateData[currentPos + 8] = pos0;
+			mTextureCoordinateData[currentPos + 9] = pos3;
+			mTextureCoordinateData[currentPos + 10] = pos0;
+			mTextureCoordinateData[currentPos + 11] = pos1;
+			//mTextureCoordinateData[currentPos + 16] = pos2;
+			//mTextureCoordinateData[currentPos + 17] = pos3;
 
-			mTextureCoordinateData[currentPos + 18] = pos0;
-			mTextureCoordinateData[currentPos + 19] = pos1;
-			mTextureCoordinateData[currentPos + 20] = pos2;
-			mTextureCoordinateData[currentPos + 21] = pos1;
-			mTextureCoordinateData[currentPos + 22] = pos2;
-			mTextureCoordinateData[currentPos + 23] = pos3;
-			
+			//mTextureCoordinateData[currentPos + 18] = pos0;
+			//mTextureCoordinateData[currentPos + 19] = pos1;
+			mTextureCoordinateData[currentPos + 12] = pos2;
+			mTextureCoordinateData[currentPos + 13] = pos1;
+			mTextureCoordinateData[currentPos + 14] = pos2;
+			mTextureCoordinateData[currentPos + 15] = pos3;
+
 
 
 			//Log.d("bottom X", Integer.toString(bottomX[i]));
@@ -1154,7 +1092,7 @@ public class Map1 {
 			 *
 			 * set up third sky
 			 */
-			currentPos =  frameCount * 24;
+			currentPos =  frameCount * 16;
 			pos0 = bottomBlocks[bottomX[i]].renderMapBlock()[2][0];
 			pos1 = bottomBlocks[bottomX[i]].renderMapBlock()[2][1];
 			pos2 = bottomBlocks[bottomX[i]].renderMapBlock()[2][2];
@@ -1167,20 +1105,20 @@ public class Map1 {
 			}
 
 			mTextureCoordinateData[currentPos] = pos0;
-			mTextureCoordinateData[currentPos + 1] = pos3;
+			mTextureCoordinateData[currentPos + 1] = pos3 ;
 			mTextureCoordinateData[currentPos + 2] = pos0;
 			mTextureCoordinateData[currentPos + 3] = pos1;
+			//mTextureCoordinateData[currentPos + 4] = pos2;
+			//mTextureCoordinateData[currentPos + 5] = pos3 ;
+
+
+
+			//mTextureCoordinateData[currentPos + 6] = pos0;
+			//mTextureCoordinateData[currentPos + 7] = pos1;
 			mTextureCoordinateData[currentPos + 4] = pos2;
-			mTextureCoordinateData[currentPos + 5] = pos3;
-
-
-
-			mTextureCoordinateData[currentPos + 6] = pos0;
-			mTextureCoordinateData[currentPos + 7] = pos1;
-			mTextureCoordinateData[currentPos + 8] = pos2;
-			mTextureCoordinateData[currentPos + 9] = pos1;
-			mTextureCoordinateData[currentPos + 10] = pos2;
-			mTextureCoordinateData[currentPos + 11] = pos3;
+			mTextureCoordinateData[currentPos + 5] = pos1;
+			mTextureCoordinateData[currentPos + 6] = pos2;
+			mTextureCoordinateData[currentPos + 7] = pos3 ;
 
 			/**
 			 *
@@ -1197,19 +1135,19 @@ public class Map1 {
 
 			}
 
-			mTextureCoordinateData[currentPos + 12] = pos0;
-			mTextureCoordinateData[currentPos + 13] = pos3;
-			mTextureCoordinateData[currentPos + 14] = pos0;
-			mTextureCoordinateData[currentPos + 15] = pos1;
-			mTextureCoordinateData[currentPos + 16] = pos2;
-			mTextureCoordinateData[currentPos + 17] = pos3;
+			mTextureCoordinateData[currentPos + 8] = pos0;
+			mTextureCoordinateData[currentPos + 9] = pos3;
+			mTextureCoordinateData[currentPos + 10] = pos0;
+			mTextureCoordinateData[currentPos + 11] = pos1;
+			//mTextureCoordinateData[currentPos + 16] = pos2;
+			//mTextureCoordinateData[currentPos + 17] = pos3;
 
-			mTextureCoordinateData[currentPos + 18] = pos0;
-			mTextureCoordinateData[currentPos + 19] = pos1;
-			mTextureCoordinateData[currentPos + 20] = pos2;
-			mTextureCoordinateData[currentPos + 21] = pos1;
-			mTextureCoordinateData[currentPos + 22] = pos2;
-			mTextureCoordinateData[currentPos + 23] = pos3;
+			//mTextureCoordinateData[currentPos + 18] = pos0;
+			//mTextureCoordinateData[currentPos + 19] = pos1;
+			mTextureCoordinateData[currentPos + 12] = pos2;
+			mTextureCoordinateData[currentPos + 13] = pos1;
+			mTextureCoordinateData[currentPos + 14] = pos2;
+			mTextureCoordinateData[currentPos + 15] = pos3;
 
 			frameCount++;
 		}
@@ -1234,6 +1172,22 @@ public class Map1 {
 		};
 	}
 	public void setupPolyCoords(){
+		/**
+		 *
+		 * setup indices
+		 */
+		int vertexCount = 0;
+		for(int currentIndex = 0; currentIndex < (mIndices.length ); currentIndex += 6){
+			mIndices[currentIndex] = (short)(vertexCount);
+			mIndices[currentIndex + 1] = (short)(vertexCount + 1);
+			mIndices[currentIndex + 2] = (short)(vertexCount + 3);
+			mIndices[currentIndex + 3] = (short)(vertexCount + 3);
+			mIndices[currentIndex + 4] = (short)(vertexCount + 1);
+			mIndices[currentIndex + 5] = (short)(vertexCount + 2);
+			vertexCount += 4;
+
+		}
+
 		float segW =  2f / 8f; //(2f / 4f)/ 2f;
 		float segH = 2f / 6f;
 		float hSegW = segW /2f ;
@@ -1247,25 +1201,28 @@ public class Map1 {
 
 
 				//first triangle
-				mPositionData[(squareCount * 18) ] = w - hSegW;
-				mPositionData[(squareCount * 18) + 1] = h + hSegH;
-				mPositionData[(squareCount * 18) + 2] = 1.0f;
-				mPositionData[(squareCount * 18) + 3] = w - hSegW;
-				mPositionData[(squareCount * 18) + 4] = h - hSegH;
-				mPositionData[(squareCount * 18) + 5] = 1.0f;
-				mPositionData[(squareCount * 18) + 6 ] = w + hSegW;
-				mPositionData[(squareCount * 18) + 7] = h + hSegH;
-				mPositionData[(squareCount * 18) + 8] = 1.0f;
+
+				mPositionData[(squareCount * 12) ] = w - hSegW;
+				mPositionData[(squareCount * 12) + 1] = h + hSegH;
+				mPositionData[(squareCount * 12) + 2] = 1.0f;
+				mPositionData[(squareCount * 12) + 3] = w - hSegW;
+				mPositionData[(squareCount * 12) + 4] = h - hSegH;
+				mPositionData[(squareCount * 12) + 5] = 1.0f;
+				//mPositionData[(squareCount * 12) + 6 ] = w + hSegW;
+				//mPositionData[(squareCount * 12) + 7] = h + hSegH;
+				//mPositionData[(squareCount * 12) + 8] = 1.0f;
+
 				//second triangle
-				mPositionData[(squareCount * 18) + 9] = w - hSegW;
-				mPositionData[(squareCount * 18) + 10] = h - hSegH;
-				mPositionData[(squareCount * 18) + 11] = 1.0f;
-				mPositionData[(squareCount * 18) + 12] = w + hSegW;
-				mPositionData[(squareCount * 18) + 13] = h - hSegH;
-				mPositionData[(squareCount * 18) + 14] = 1.0f;
-				mPositionData[(squareCount * 18) + 15] = w + hSegW;
-				mPositionData[(squareCount * 18) + 16] = h + hSegH;
-				mPositionData[(squareCount * 18) + 17] = 1.0f;
+
+				//mPositionData[(squareCount * 12) + 9] = w - hSegW;
+				//mPositionData[(squareCount * 12) + 10] = h - hSegH;
+				//mPositionData[(squareCount * 12) + 11] = 1.0f;
+				mPositionData[(squareCount * 12) + 6] = w + hSegW;
+				mPositionData[(squareCount * 12) + 7] = h - hSegH;
+				mPositionData[(squareCount * 12) + 8] = 1.0f;
+				mPositionData[(squareCount * 12) + 9] = w + hSegW;
+				mPositionData[(squareCount * 12) + 10] = h + hSegH;
+				mPositionData[(squareCount * 12) + 11] = 1.0f;
 
 				squareCount++;
 			}
@@ -1308,6 +1265,7 @@ public class Map1 {
 	 */
 	public void drawScene(Canvas canvas){
 
+		//TODO fix old draw scene code from old rendering method
 		if(currentScene.playing) {
 			//currentScene.draw(canvas);
 
@@ -1353,7 +1311,7 @@ public class Map1 {
 		topBlocks =  new mapBlock[mapLength];
 		skyBlocks = new mapBlock[mapLength];
 
-
+		//TODO Combine all this duplicate code into One function.
 		//System.out.println(mapLength);
 		int[] xPosSegments = new int[4];
 		int[] yPosSegments = new int[4];
@@ -1368,25 +1326,16 @@ public class Map1 {
 			int sectionOffset = 0;
 			int blockCount = 0;
 
-
-
-
 		for(int i = 0; i< mapLength; i++){
 			reader.readLine();
 			reader.readLine();
 
 			if(sectionCounter > blockCount){
 				sectionMultiplyer++;
-				sectionSubtraction = (i * BLOCK_WIDTH);
 				sectionCounter = 0;
 
 			}
-
-
 			skyBlock = new mapBlock(BLOCK_WIDTH * i, 0, 0 );
-
-
-
 
 			for(int y = 0; y < 2 ; y++){
 				for(int x = 0; x < 2; x++){
@@ -1394,11 +1343,6 @@ public class Map1 {
 					reader.readLine();
 					reader.readLine();
 
-					sectionOffset = (i* BLOCK_WIDTH) - sectionSubtraction;
-					/*
-					xPosSegments[k] = Integer.parseInt(reader.readLine());
-					yPosSegments[k] = Integer.parseInt(reader.readLine());
-					*/
 					xPosSegments[counter] = ((x * SEGMENT_WIDTH) );
 
 					yPosSegments[counter] = ((y * SEGMENT_HEIGHT) );
@@ -1408,8 +1352,6 @@ public class Map1 {
 					hasO[counter] = Boolean.parseBoolean(reader.readLine());
 					hasAnim[counter] = Boolean.parseBoolean(reader.readLine());
 					for(int j = 0; j < 4; j++){
-
-						//System.out.println("Obstacle: "+ k + " Obstacle #"+ j+ " Obstacle: "+readObstacle[j]);
 						topObstacleArray[counter][j]= Float.parseFloat(reader.readLine());
 
 					}
@@ -1428,9 +1370,6 @@ public class Map1 {
 
 			 sectionCounter = 0;
 			 sectionMultiplyer = 0;
-			 sectionSubtraction = 0;
-			 sectionOffset = 0;
-
 
 			for(int i = 0; i< mapLength; i++){
 			reader.readLine();
@@ -1439,20 +1378,12 @@ public class Map1 {
 			topBlock = new mapBlock(BLOCK_WIDTH * i, BLOCK_HEIGHT, 0 );
 
 
-
-
-
 			for(int y = 0; y < 2 ; y++){
 				for(int x = 0; x < 2; x++){
 					totalPos = x + y;
 					reader.readLine();
 					reader.readLine();
 
-					sectionOffset = (i* BLOCK_WIDTH) - sectionSubtraction;
-					/*
-					xPosSegments[k] = Integer.parseInt(reader.readLine());
-					yPosSegments[k] = Integer.parseInt(reader.readLine());
-					*/
 					xPosSegments[counter] = ((x * SEGMENT_WIDTH) );
 
 					yPosSegments[counter] = ((y * SEGMENT_HEIGHT)+ BLOCK_HEIGHT );
@@ -1462,8 +1393,6 @@ public class Map1 {
 					hasO[counter] = Boolean.parseBoolean(reader.readLine());
 					hasAnim[counter] = Boolean.parseBoolean(reader.readLine());
 					for(int j = 0; j < 4; j++){
-
-						//System.out.println("Obstacle: "+ k + " Obstacle #"+ j+ " Obstacle: "+readObstacle[j]);
 						topObstacleArray[counter][j]= Float.parseFloat(reader.readLine());
 
 					}
@@ -1482,13 +1411,7 @@ public class Map1 {
 
 			counter = 0;
 				sectionCounter++;
-				/*
-				for(int j = 0; j < 4; j++){
-					for(int q = 0; q < 4; q++){
 
-					System.out.println("Obstacle: "+ j + " Obstacle #"+ q+ " Obstacle: "+ bottomObstacleArray[j][q] );
-					}
-				}*/
 			topBlock.initSegments(xPosSegments, yPosSegments, DrawSegmentsX, DrawSegmentsY, topObstacleArray,hasO, hasAnim);
 			topBlocks[i] = topBlock;
 		}
@@ -1496,7 +1419,6 @@ public class Map1 {
 			sectionCounter = 0;
 			sectionMultiplyer = 0;
 			sectionSubtraction = 0;
-			sectionOffset = 0;
 		for(int i = 0; i< mapLength; i++){
 			reader.readLine();
 			reader.readLine();
@@ -1519,14 +1441,7 @@ public class Map1 {
 					reader.readLine();
 					reader.readLine();
 
-					sectionOffset = (i* BLOCK_WIDTH) - sectionSubtraction;
-					/*
-					xPosSegments[k] = Integer.parseInt(reader.readLine());
-					yPosSegments[k] = Integer.parseInt(reader.readLine());
-					*/
 					xPosSegments[counter] = ( (x * SEGMENT_WIDTH) );
-
-					//System.out.println("xPos: "+ xPosSegments[counter]);
 					yPosSegments[counter] = ((y * SEGMENT_HEIGHT)+ (BLOCK_HEIGHT * 2));
 
 					DrawSegmentsX[counter] = Integer.parseInt(reader.readLine());
@@ -1534,10 +1449,7 @@ public class Map1 {
 					hasO[counter] = Boolean.parseBoolean(reader.readLine());
 					hasAnim[counter] = Boolean.parseBoolean(reader.readLine());
 					for(int j = 0; j < 4; j++){
-
-						//System.out.println("Obstacle: "+ k + " Obstacle #"+ j+ " Obstacle: "+readObstacle[j]);
 						bottomObstacleArray[counter][j]= Float.parseFloat(reader.readLine());
-
 					}
 					counter ++;
 				}
@@ -1585,6 +1497,9 @@ public class Map1 {
 	public void resetPosX(){
 
 		viewX = 0;
+	}
+	public ShortBuffer getDrawListBuffer(){
+		return drawListBuffer;
 	}
 
 	public int getMapLength(){

@@ -30,14 +30,15 @@ public class LevelSelect extends AppCompatActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setUpBackground();
         int v = Build.VERSION.SDK_INT;
-
+/*
         layout = findViewById(R.id.level_select);
-        // if (v >= 16) {
-        // layout.setBackground(img);
-        //  } else {
-        //layout.setBackgroundResource(R.drawable.futurecity);
+         if (v >= 16) {
+         layout.setBackground(img);
+          } else {
+        layout.setBackgroundResource(R.drawable.futurecity);
 
-        //}
+        }
+        */
 
 
         setContentView(R.layout.activity_level_select);

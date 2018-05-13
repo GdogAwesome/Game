@@ -18,7 +18,7 @@ public class TextureUtils {
 
         int[] textureHandle = new int[totalTextures];
 
-        //GLES20.glActiveTexture(GLES20.GL_TEXTURE0 );
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 );
 
         GLES20.glGenTextures(totalTextures, textureHandle,0  );
         //Log.e("boss image", Integer.toString(textureHandle[0]));
@@ -47,7 +47,7 @@ public class TextureUtils {
                  *
                  * load Texture
                  */
-                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                options.inPreferredConfig = Bitmap.Config.RGB_565;
 
                 final Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resource[i], options);
 
@@ -64,6 +64,70 @@ public class TextureUtils {
 
                 // bitmap = null;
                 bitmap.recycle();
+
+
+            }
+            if (textureHandle[i] == 0) {
+                throw new RuntimeException("Error loading texture");
+            }
+        }
+
+        return textureHandle;
+
+    }
+    public static int[] LoadNormalsTexture(Context context, int[] resource, int totalTextures){
+        int[] textSize = new int[1];
+        GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE,textSize, 0);
+
+        int[] textureHandle = new int[totalTextures];
+
+        //GLES20.glActiveTexture(GLES20.GL_TEXTURE0 );
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + 1);
+
+        GLES20.glGenTextures(totalTextures, textureHandle,0  );
+        //Log.e("boss image", Integer.toString(textureHandle[0]));
+        for(int i = 0; i < totalTextures; i ++) {
+
+            if (textureHandle[i] != 0) {
+
+                final BitmapFactory.Options op = new BitmapFactory.Options();
+                op.inScaled = false;
+
+                /**
+                 *
+                 * check to see if bm is larger than largest texture available in opengl
+                 */
+                op.inJustDecodeBounds = true;
+                BitmapFactory.decodeResource(context.getResources(),resource[i], op);
+                if(op.outWidth > textSize[0]){
+                    op.inSampleSize = 2;
+                }else{
+                    op.inSampleSize = 1;
+                }
+                op.inJustDecodeBounds = false;
+
+
+                /**
+                 *
+                 * load Texture
+                 */
+                op.inPreferredConfig = Bitmap.Config.RGB_565;
+
+                final Bitmap bm = BitmapFactory.decodeResource(context.getResources(), resource[i], op);
+
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[i]);
+                // GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+
+                GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bm, 0);
+
+                //GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+                Log.e("texture w", Integer.toString(bm.getWidth()));
+
+                // bm = null;
+                bm.recycle();
 
 
             }

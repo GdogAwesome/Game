@@ -2,8 +2,7 @@ package com.example.bradmobile.testtexture;
 
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
+
 
 
 public class Hero extends HeroEntity {
@@ -21,8 +20,8 @@ public class Hero extends HeroEntity {
 	 * @param x pos of character cast as an int
 	 * @param y pos of character cast as an int
 	 */
-	public Hero (Context context, Canvas canvas, int x, int y, Paint p ){
-		super(context,x, y, p);
+	public Hero (Context context, int x, int y ){
+		super(context,x, y);
 
 		
 
