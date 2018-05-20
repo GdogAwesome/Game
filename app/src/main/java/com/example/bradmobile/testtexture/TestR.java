@@ -41,6 +41,7 @@ public class TestR implements GLSurfaceView.Renderer {
     private ShotEntity shots;
     private EnemyContainer enemies;
     private Controller controller;
+    private Map1 map;
     private boolean hasGameController;
     public int textureLocation = 0;
 
@@ -49,7 +50,6 @@ public class TestR implements GLSurfaceView.Renderer {
 
     private float ratio = 1;
 
-    private Map1 map;
 
     private int mPositionSize = 3;
     private int mColorStrideBytes = mColorSize * mBytesPerFloat;
@@ -96,14 +96,17 @@ public class TestR implements GLSurfaceView.Renderer {
     private int mNormalTextureHandle;
     private int mLightPosHandle;
     private int mNormalPerVertexHandle;
+    private int mNormalAnimFrame;
+    private int mNormalHasAnim;
     private int[] normalMapTexture = new int[1];
 
 //Map objects
     private int[] mapTextures = new int[3];
    private FloatBuffer[] mapVertexCoords;
+   private ShortBuffer mapAnimBuffer;
     private int mapTextureCoordVBO = 0;
     private ShortBuffer drawIndices;
-    private int[] mapVertexCoordVBO = new int[2];
+    private int[] mapVertexCoordVBO = new int[4];
     private int[] mapTextureHandle = new int[2];
     private FloatBuffer[] mapTextureCoords;
     private float[][] mMapModelMatrix = new float[2][16];
@@ -340,13 +343,15 @@ public class TestR implements GLSurfaceView.Renderer {
         normalVertexShaderHandle = compileShader(GLES20.GL_VERTEX_SHADER, vShader);
 
         mNormalPerVertexHandle = createAndLinkProgram(normalVertexShaderHandle, normalFragmentShaderHandle,
-                new String[] {"a_Position", "a_TexCoordinate"});
+                new String[] {"a_Position", "a_TexCoordinate, a_HasAnim"});
 
 
         mMVNormalMatrixHandle = GLES20.glGetUniformLocation(mNormalPerVertexHandle,"u_MVMatrix");
         mMVPNormalMatrixHandle = GLES20.glGetUniformLocation(mNormalPerVertexHandle,"u_MVPMatrix");
         mNormalPositionHandle = GLES20.glGetAttribLocation(mNormalPerVertexHandle,"a_Position");
         mLightPosHandle = GLES20.glGetUniformLocation(mNormalPerVertexHandle, "u_LightPos");
+        mNormalAnimFrame = GLES20.glGetUniformLocation(mNormalPerVertexHandle, "u_AnimFrame");
+        mNormalHasAnim = GLES20.glGetAttribLocation(mNormalPerVertexHandle, "a_HasAnim");
 
         mNormalTextureCoordinateHandle = GLES20.glGetAttribLocation(mNormalPerVertexHandle, "a_TexCoordinate");
         mNormalTextureUniformHandle = GLES20.glGetUniformLocation(mNormalPerVertexHandle, "u_Texture");
@@ -434,6 +439,9 @@ public class TestR implements GLSurfaceView.Renderer {
         //Log.e("texture handle", Integer.toString(mapTextureHandle));
 
     }
+    public void setMapAnimBuffer(ShortBuffer a){
+        this.mapAnimBuffer = a;
+    }
 
     public void setmMapModelMatrix (float[][] m){
         mMapModelMatrix = m;
@@ -454,6 +462,9 @@ public class TestR implements GLSurfaceView.Renderer {
     public void setHero(HeroEntity hero){
         this.hero = hero;
 
+    }
+    public void setMap(Map1 map){
+        this.map = map;
     }
     public void setController(Controller c){
         this.controller = c;
@@ -526,26 +537,37 @@ public class TestR implements GLSurfaceView.Renderer {
 
         //setup up light position
         Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, .25f, -0.5f, - 0.5f);
+        Matrix.translateM(mLightModelMatrix, 0, .25f, -0.25f, - 0.5f);
 
         Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
         Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
 
         GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
 
-
+        //pass in vertex coords
         GLES20.glEnableVertexAttribArray(mNormalPositionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mapVertexCoordVBO[0]);
         GLES20.glVertexAttribPointer(mNormalPositionHandle, mPositionSize,GLES20.GL_FLOAT,false,0, 0);
 
-
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,0);
 
+        // pass in animframe coords
+        //mapAnimBuffer.position(map.getAnimBufferOffset());//10 * 6 * 4 );
+        GLES20.glEnableVertexAttribArray(mNormalHasAnim);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mapVertexCoordVBO[2]);
+        GLES20.glVertexAttribPointer(mNormalHasAnim, 1, GLES20.GL_SHORT, false,  0, map.getAnimBufferOffset());
+
+        // pass in anim frame pos
+        GLES20.glUniform1i(mNormalAnimFrame, (map.getAnimFrame()));
+
+
         // Pass in the texture coordinate information -- currently not using vbo
-        mapTextureCoords[0].position(0);
+
+        //mapTextureCoords[0].position(map.getTextureBufferOffset());// 6 * 4 * 2);
         GLES20.glEnableVertexAttribArray(mNormalTextureCoordinateHandle);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mapVertexCoordVBO[3]);
         GLES20.glVertexAttribPointer(mNormalTextureCoordinateHandle, mTextureCoordSize, GLES20.GL_FLOAT, false,
-                0, mapTextureCoords[0]);
+                0, map.getTextureBufferOffset());
 
 
         Matrix.multiplyMM(mMVPMatrix ,0,mViewMatrix, 0, mMapModelMatrix[0],0);
@@ -577,6 +599,21 @@ public class TestR implements GLSurfaceView.Renderer {
         //bind buffers
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, tempBuffer[0]);
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, mPositionData.capacity() * 4, mPositionData, GLES20.GL_STATIC_DRAW);
+        //unbind buffers
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,0);
+
+
+
+        return tempBuffer;
+    }
+    public static int[] getPositionVBOShort(ShortBuffer mPositionData){
+        int[] tempBuffer = new int[1];
+        mPositionData.rewind();
+        //set up buffers
+        GLES20.glGenBuffers(1,tempBuffer,0);
+        //bind buffers
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, tempBuffer[0]);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, mPositionData.capacity() * 2, mPositionData, GLES20.GL_STATIC_DRAW);
         //unbind buffers
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,0);
 
@@ -624,8 +661,12 @@ public class TestR implements GLSurfaceView.Renderer {
         normalMapTexture = TextureUtils.LoadNormalsTexture(context,temp,1);
         mapVertexCoordVBO[0] = getPositionVBO(mapVertexCoords[0])[0];
         mapVertexCoordVBO[1] = getPositionVBO(mapVertexCoords[1])[0];
-
-
+        mapVertexCoordVBO[2] = getPositionVBOShort(mapAnimBuffer)[0];
+        mapVertexCoordVBO[3] = getPositionVBO(mapTextureCoords[0])[0];
+        mapVertexCoords[0] = null;
+        mapVertexCoords[1] = null;
+        mapAnimBuffer = null;
+        mapTextureCoords[0] = null;
 
         shots.loadVBOs();
         shots.setTextureHandle();

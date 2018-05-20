@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
@@ -62,13 +63,17 @@ public class Map1 {
 	private float[] mModelMatrix = new float[16];
 	private float[] mBackgroundMatrix = new float[16];
 	private float[] mTextureCoordinateData = new float[480];
+	private short[] mAnimData;
 	private short[] mIndices = new short[6 * 60];
-	private float[] mBgTextureCoordinateData; // = new float[24];
+	private float[] mBgTextureCoordinateData = new float[24];
 	private FloatBuffer TextureCoordinateBuffer;
 	private FloatBuffer BgTextureCoordinateBuffer;
 	private FloatBuffer PositionFloatBuffer;
 	private FloatBuffer BgPositionFloatBuffer;
 	private ShortBuffer drawListBuffer;
+	private ShortBuffer animBuffer;
+	private int animBufferOffset = 0;
+	private int textureBufferOffset = 0;
 	private float[] mPositionData = new float[720];
 	private float[] mBgPositionData; // = new float[36];
 	private float totalMoveSpace = 0f;
@@ -76,6 +81,7 @@ public class Map1 {
 	private float BgTotalMoveSpace = 0f;
 	private double absoluteMoveSpace = 0f;
     private boolean mapNeedsRenderUpdate = false;
+    private int offsetCounter = 0;
 
 
 	//keep track of update time
@@ -199,7 +205,7 @@ public class Map1 {
 			if(!reverseAnim){
 				if(framePos < 3){
 					framePos += 1;
-					updateAnimBlocks();
+					//updateAnimBlocks();
 				}else{
 					reverseAnim = true;
 
@@ -207,7 +213,7 @@ public class Map1 {
 			}else if(reverseAnim){
 				if(framePos > 0){
 					framePos -=1;
-					updateAnimBlocks();
+					//updateAnimBlocks();
 				}else{
 					reverseAnim = false;
 					//framePos += 1;
@@ -283,10 +289,11 @@ public class Map1 {
 			setupPolyCoords();
 
 			setupBgTextureCoords();
-			createFloatBuffers();
+
 			setupTextureCoords();
+		createFloatBuffers();
 		//updateTextureCoords();
-			updateSegments();
+			//updateSegments();
 
 		/**
 		 * 
@@ -352,6 +359,7 @@ public class Map1 {
 						bottomX[2] += 1;
 						bottomX[3] += 1;
 						bottomX[4] += 1;
+						offsetCounter ++;
 						updateSegments();
 						rightMapEdge = false;
 					}else{
@@ -366,12 +374,15 @@ public class Map1 {
 						Matrix.translateM(mModelMatrix, 0, (-1f * (Constants.TEST_RUN_SPEED)), 0.0f, 0.0f);
 
 
+
 						absoluteMoveSpace += Constants.TEST_RUN_SPEED;
 					}
+					textureBufferOffset = (offsetCounter * 4 * 4 * 2 * 3) * 4;
+					animBufferOffset = (offsetCounter * 4 * 4 * 3) * 2;
 
 
                     mapNeedsRenderUpdate = true;
-					updateTextureCoords();
+					//updateTextureCoords();
 
 				}
 
@@ -405,6 +416,7 @@ public class Map1 {
 						bottomX[2] -= 1;
 						bottomX[3] -= 1;
 						bottomX[4] -= 1;
+						offsetCounter --;
 						mapUpdateLeft = true;
 						leftMapEdge = false;
 					}else{
@@ -422,11 +434,13 @@ public class Map1 {
 					}
 
 
+					textureBufferOffset = (offsetCounter * 4 * 4 * 2 * 3) * 4;
+					animBufferOffset = (offsetCounter * 4 * 4 * 3) * 2;
 
 					updateSegments();
 
 					mapNeedsRenderUpdate = true;
-					updateTextureCoords();
+					//updateTextureCoords();
 
 
 				}
@@ -441,8 +455,6 @@ public class Map1 {
 		
 		
 	}
-
-
 
 	public boolean CutScene(){
 		return cutScene;
@@ -549,14 +561,18 @@ public class Map1 {
 
 	public FloatBuffer[] getDrawCoords(){
 
-		TextureCoordinateBuffer.rewind();
-		TextureCoordinateBuffer.put(mTextureCoordinateData);
+		//TextureCoordinateBuffer.rewind();
+		//TextureCoordinateBuffer.put(mTextureCoordinateData);
 		FloatBuffer[] temp =new FloatBuffer[2];
 		temp[0] = TextureCoordinateBuffer;
 		temp[1] = BgTextureCoordinateBuffer;
 
         return temp;
     }
+
+    public ShortBuffer getAnimBuffer(){
+		return animBuffer;
+	}
 
     private void createFloatBuffers(){
 		
@@ -565,6 +581,7 @@ public class Map1 {
 		BgTextureCoordinateBuffer = BufferUtils.getFloatBuffer(mBgTextureCoordinateData, 4);
 		BgPositionFloatBuffer = BufferUtils.getFloatBuffer(mBgPositionData, 4 );
 		drawListBuffer = BufferUtils.getShortBuffer(mIndices, 2);
+		animBuffer = BufferUtils.getShortBuffer(mAnimData, 2);
 
 	}
 	public FloatBuffer[] getPositionFloatBuffer(){
@@ -597,7 +614,7 @@ public class Map1 {
     }
     private void setupModelMatrix(){
         Matrix.setIdentityM(mModelMatrix, 0 );
-        Matrix.scaleM(mModelMatrix, 0 , 1.02f,1.03f, 1.0f); // x= 1.02 y = 1.o3
+        Matrix.scaleM(mModelMatrix, 0 , 1.02f,1.03f, 1.0f); // x= 1.02 y = 1.03
         Matrix.translateM(mModelMatrix, 0, 0.0f, -0.02f, -2.51f );
 
 
@@ -622,8 +639,8 @@ public class Map1 {
 			pos2 = skyBlocks[bottomX[blockIndex]].renderMapBlock()[segmentIndex][2];
 			pos3 = skyBlocks[bottomX[blockIndex]].renderMapBlock()[segmentIndex][3];
 			if (skyBlocks[bottomX[blockIndex]].getAnim()[segmentIndex]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
+				//pos0 += (tileWidth * (float)(framePos));
+				//pos2 += (tileWidth * (float)(framePos));
 
 			}
 		}else if(layer ==1){
@@ -632,8 +649,8 @@ public class Map1 {
 			pos2 = topBlocks[bottomX[blockIndex]].renderMapBlock()[segmentIndex][2];
 			pos3 = topBlocks[bottomX[blockIndex]].renderMapBlock()[segmentIndex][3];
 			if (topBlocks[bottomX[blockIndex]].getAnim()[segmentIndex]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
+				//pos0 += (tileWidth * (float)(framePos));
+				//pos2 += (tileWidth * (float)(framePos));
 
 			}
 		}else if(layer ==2){
@@ -642,8 +659,8 @@ public class Map1 {
 			pos2 = bottomBlocks[bottomX[blockIndex]].renderMapBlock()[segmentIndex][2];
 			pos3 = bottomBlocks[bottomX[blockIndex]].renderMapBlock()[segmentIndex][3];
 			if (bottomBlocks[bottomX[blockIndex]].getAnim()[segmentIndex]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
+				//pos0 += (tileWidth * (float)(framePos));
+				//pos2 += (tileWidth * (float)(framePos));
 
 			}
 		}
@@ -724,11 +741,16 @@ public class Map1 {
     public void setupTextureCoords(){
 
 		int frameCount = 0;
+		int animCountPos = 0;
+		int length = mapLength ;
+		int remainder = mapLength % 5;
+		int addToTiles = 5;
 		int currentPos = 0;
 		float pos0;
 		float pos1;
 		float pos2;
 		float pos3;
+		Log.e("remainder",  Integer.toString(remainder));
 
 		/**
 		 *
@@ -736,14 +758,428 @@ public class Map1 {
 		 * set up sky blocks
 		 */
 
+		mTextureCoordinateData = new float[ mapLength * 4 * 4 * 2 * 3 ];// maplength * segments per block(4) * coordinates per segment(4) * variables per coordinate(2) * how many blocks high(3)
+		mAnimData = new short[mapLength * 4 * 4 * 3 ]; // mapLength * segments per block(4) * coordinates per segment(4) * how many blocks high(3)
 
-		for(int i = 0; i < 5; i++) {
-			currentPos =  frameCount * 16;
+		for(int k = 0 ; k < length; k += 1) {
+
+				currentPos = frameCount * 16;
+				animCountPos = frameCount * 8;
+
+				/**
+				 *
+				 * setup texture Coords
+				 */
+
+				//todo interleave first and second segments
+				/**
+				 *
+				 * set up first sky
+				 *
+				 */
+
+				pos0 = skyBlocks[k].renderMapBlock()[0][0];
+				pos1 = skyBlocks[k].renderMapBlock()[0][1];
+				pos2 = skyBlocks[k].renderMapBlock()[0][2];
+				pos3 = skyBlocks[k].renderMapBlock()[0][3];
+
+				if (skyBlocks[k].getAnim()[0]) {
+					mAnimData[animCountPos] = 1;
+					mAnimData[animCountPos + 1] = 1;
+					mAnimData[animCountPos + 2] = 1;
+					mAnimData[animCountPos + 3] = 1;
+
+				}else{
+					mAnimData[animCountPos] = 0;
+					mAnimData[animCountPos + 1] = 0;
+					mAnimData[animCountPos + 2] = 0;
+					mAnimData[animCountPos + 3] = 0;
+				}
+
+				mTextureCoordinateData[currentPos] = pos0;
+				mTextureCoordinateData[currentPos + 1] = pos3;
+				mTextureCoordinateData[currentPos + 2] = pos0;
+				mTextureCoordinateData[currentPos + 3] = pos1;
+				//mTextureCoordinateData[currentPos + 4] = pos2;
+				//mTextureCoordinateData[currentPos + 5] = pos3 ;
+
+
+				//mTextureCoordinateData[currentPos + 6] = pos0;
+				//mTextureCoordinateData[currentPos + 7] = pos1;
+				mTextureCoordinateData[currentPos + 4] = pos2;
+				mTextureCoordinateData[currentPos + 5] = pos1;
+				mTextureCoordinateData[currentPos + 6] = pos2;
+				mTextureCoordinateData[currentPos + 7] = pos3;
+
+				/**
+				 *
+				 * set up second sky
+				 */
+
+				pos0 = skyBlocks[k].renderMapBlock()[2][0];
+				pos1 = skyBlocks[k].renderMapBlock()[2][1];
+				pos2 = skyBlocks[k].renderMapBlock()[2][2];
+				pos3 = skyBlocks[k].renderMapBlock()[2][3];
+				if (skyBlocks[k].getAnim()[2]) {
+					mAnimData[animCountPos + 4] = 1;
+					mAnimData[animCountPos + 5] = 1;
+					mAnimData[animCountPos + 6] = 1;
+					mAnimData[animCountPos + 7] = 1;
+
+				}else{
+					mAnimData[animCountPos + 4] = 0;
+					mAnimData[animCountPos + 5] = 0;
+					mAnimData[animCountPos + 6] = 0;
+					mAnimData[animCountPos + 7] = 0;
+				}
+
+				mTextureCoordinateData[currentPos + 8] = pos0;
+				mTextureCoordinateData[currentPos + 9] = pos3;
+				mTextureCoordinateData[currentPos + 10] = pos0;
+				mTextureCoordinateData[currentPos + 11] = pos1;
+				//mTextureCoordinateData[currentPos + 16] = pos2;
+				//mTextureCoordinateData[currentPos + 17] = pos3;
+
+				//mTextureCoordinateData[currentPos + 18] = pos0;
+				//mTextureCoordinateData[currentPos + 19] = pos1;
+				mTextureCoordinateData[currentPos + 12] = pos2;
+				mTextureCoordinateData[currentPos + 13] = pos1;
+				mTextureCoordinateData[currentPos + 14] = pos2;
+				mTextureCoordinateData[currentPos + 15] = pos3;
+
+
+				//Log.d("bottom X", Integer.toString(k));
+				frameCount++;
+
+
+				/**
+				 *
+				 * set up third sky
+				 */
+				currentPos = frameCount * 16;
+				animCountPos = frameCount * 8;
+
+				pos0 = topBlocks[k].renderMapBlock()[0][0];
+				pos1 = topBlocks[k].renderMapBlock()[0][1];
+				pos2 = topBlocks[k].renderMapBlock()[0][2];
+				pos3 = topBlocks[k].renderMapBlock()[0][3];
+
+				if (topBlocks[k].getAnim()[0]) {
+					mAnimData[animCountPos] = 1;
+					mAnimData[animCountPos + 1] = 1;
+					mAnimData[animCountPos + 2] = 1;
+					mAnimData[animCountPos + 3] = 1;
+
+				}else{
+					mAnimData[animCountPos] = 0;
+					mAnimData[animCountPos + 1] = 0;
+					mAnimData[animCountPos + 2] = 0;
+					mAnimData[animCountPos + 3] = 0;
+				}
+
+				mTextureCoordinateData[currentPos] = pos0;
+				mTextureCoordinateData[currentPos + 1] = pos3;
+				mTextureCoordinateData[currentPos + 2] = pos0;
+				mTextureCoordinateData[currentPos + 3] = pos1;
+				//mTextureCoordinateData[currentPos + 4] = pos2;
+				//mTextureCoordinateData[currentPos + 5] = pos3 ;
+
+
+				//mTextureCoordinateData[currentPos + 6] = pos0;
+				//mTextureCoordinateData[currentPos + 7] = pos1;
+				mTextureCoordinateData[currentPos + 4] = pos2;
+				mTextureCoordinateData[currentPos + 5] = pos1;
+				mTextureCoordinateData[currentPos + 6] = pos2;
+				mTextureCoordinateData[currentPos + 7] = pos3;
+
+				/**
+				 *
+				 * set up fourth sky
+				 */
+			pos0 = topBlocks[k].renderMapBlock()[2][0];
+			pos1 = topBlocks[k].renderMapBlock()[2][1];
+			pos2 = topBlocks[k].renderMapBlock()[2][2];
+			pos3 = topBlocks[k].renderMapBlock()[2][3];
+				if (topBlocks[k].getAnim()[2]) {
+					mAnimData[animCountPos + 4] = 1;
+					mAnimData[animCountPos + 5] = 1;
+					mAnimData[animCountPos + 6] = 1;
+					mAnimData[animCountPos + 7] = 1;
+
+				}else{
+					mAnimData[animCountPos + 4] = 0;
+					mAnimData[animCountPos + 5] = 0;
+					mAnimData[animCountPos + 6] = 0;
+					mAnimData[animCountPos + 7] = 0;
+				}
+
+				mTextureCoordinateData[currentPos + 8] = pos0;
+				mTextureCoordinateData[currentPos + 9] = pos3;
+				mTextureCoordinateData[currentPos + 10] = pos0;
+				mTextureCoordinateData[currentPos + 11] = pos1;
+				//mTextureCoordinateData[currentPos + 16] = pos2;
+				//mTextureCoordinateData[currentPos + 17] = pos3;
+
+				//mTextureCoordinateData[currentPos + 18] = pos0;
+				//mTextureCoordinateData[currentPos + 19] = pos1;
+				mTextureCoordinateData[currentPos + 12] = pos2;
+				mTextureCoordinateData[currentPos + 13] = pos1;
+				mTextureCoordinateData[currentPos + 14] = pos2;
+				mTextureCoordinateData[currentPos + 15] = pos3;
+
+				frameCount++;
+
 
 
 			/**
 			 *
-			 * setup texture Coords
+			 * set up top Blocks
+			 */
+
+				//todo interleave first and second segments
+				/**
+				 *
+				 * set up first sky
+				 */
+				currentPos = frameCount * 16;
+				animCountPos = frameCount * 8;
+
+				pos0 = bottomBlocks[k].renderMapBlock()[0][0];
+				pos1 = bottomBlocks[k].renderMapBlock()[0][1];
+				pos2 = bottomBlocks[k].renderMapBlock()[0][2];
+				pos3 = bottomBlocks[k].renderMapBlock()[0][3];
+
+				if (bottomBlocks[k].getAnim()[0]) {
+					mAnimData[animCountPos] = 1;
+					mAnimData[animCountPos + 1] = 1;
+					mAnimData[animCountPos + 2] = 1;
+					mAnimData[animCountPos + 3] = 1;
+
+				}else{
+					mAnimData[animCountPos] = 0;
+					mAnimData[animCountPos + 1] = 0;
+					mAnimData[animCountPos + 2] = 0;
+					mAnimData[animCountPos + 3] = 0;
+				}
+
+				mTextureCoordinateData[currentPos] = pos0;
+				mTextureCoordinateData[currentPos + 1] = pos3;
+				mTextureCoordinateData[currentPos + 2] = pos0;
+				mTextureCoordinateData[currentPos + 3] = pos1;
+				//mTextureCoordinateData[currentPos + 4] = pos2;
+				//mTextureCoordinateData[currentPos + 5] = pos3 ;
+
+
+				//mTextureCoordinateData[currentPos + 6] = pos0;
+				//mTextureCoordinateData[currentPos + 7] = pos1;
+				mTextureCoordinateData[currentPos + 4] = pos2;
+				mTextureCoordinateData[currentPos + 5] = pos1;
+				mTextureCoordinateData[currentPos + 6] = pos2;
+				mTextureCoordinateData[currentPos + 7] = pos3;
+
+				/**
+				 *
+				 * set up second sky
+				 */
+			pos0 = bottomBlocks[k].renderMapBlock()[2][0];
+			pos1 = bottomBlocks[k].renderMapBlock()[2][1];
+			pos2 = bottomBlocks[k].renderMapBlock()[2][2];
+			pos3 = bottomBlocks[k].renderMapBlock()[2][3];
+
+				if (bottomBlocks[k].getAnim()[2]) {
+					mAnimData[animCountPos + 4] = 1;
+					mAnimData[animCountPos + 5] = 1;
+					mAnimData[animCountPos + 6] = 1;
+					mAnimData[animCountPos + 7] = 1;
+
+				}else{
+					mAnimData[animCountPos + 4] = 0;
+					mAnimData[animCountPos + 5] = 0;
+					mAnimData[animCountPos + 6] = 0;
+					mAnimData[animCountPos + 7] = 0;
+				}
+
+				mTextureCoordinateData[currentPos + 8] = pos0;
+				mTextureCoordinateData[currentPos + 9] = pos3;
+				mTextureCoordinateData[currentPos + 10] = pos0;
+				mTextureCoordinateData[currentPos + 11] = pos1;
+				//mTextureCoordinateData[currentPos + 16] = pos2;
+				//mTextureCoordinateData[currentPos + 17] = pos3;
+
+				//mTextureCoordinateData[currentPos + 18] = pos0;
+				//mTextureCoordinateData[currentPos + 19] = pos1;
+				mTextureCoordinateData[currentPos + 12] = pos2;
+				mTextureCoordinateData[currentPos + 13] = pos1;
+				mTextureCoordinateData[currentPos + 14] = pos2;
+				mTextureCoordinateData[currentPos + 15] = pos3;
+
+
+				//Log.d("bottom X", Integer.toString(k));
+				frameCount++;
+
+				/**
+				 *
+				 * replace here
+				 */
+				currentPos = frameCount * 16;
+				animCountPos = frameCount * 8;
+
+			pos0 = skyBlocks[k].renderMapBlock()[1][0];
+			pos1 = skyBlocks[k].renderMapBlock()[1][1];
+			pos2 = skyBlocks[k].renderMapBlock()[1][2];
+			pos3 = skyBlocks[k].renderMapBlock()[1][3];
+
+			if (skyBlocks[k].getAnim()[1]) {
+				mAnimData[animCountPos] = 1;
+				mAnimData[animCountPos + 1] = 1;
+				mAnimData[animCountPos + 2] = 1;
+				mAnimData[animCountPos + 3] = 1;
+
+			}else{
+				mAnimData[animCountPos] = 0;
+				mAnimData[animCountPos + 1] = 0;
+				mAnimData[animCountPos + 2] = 0;
+				mAnimData[animCountPos + 3] = 0;
+			}
+
+			mTextureCoordinateData[currentPos] = pos0;
+			mTextureCoordinateData[currentPos + 1] = pos3;
+			mTextureCoordinateData[currentPos + 2] = pos0;
+			mTextureCoordinateData[currentPos + 3] = pos1;
+			//mTextureCoordinateData[currentPos + 4] = pos2;
+			//mTextureCoordinateData[currentPos + 5] = pos3 ;
+
+
+			//mTextureCoordinateData[currentPos + 6] = pos0;
+			//mTextureCoordinateData[currentPos + 7] = pos1;
+			mTextureCoordinateData[currentPos + 4] = pos2;
+			mTextureCoordinateData[currentPos + 5] = pos1;
+			mTextureCoordinateData[currentPos + 6] = pos2;
+			mTextureCoordinateData[currentPos + 7] = pos3;
+
+			/**
+			 *
+			 * set up second sky
+			 */
+
+			pos0 = skyBlocks[k].renderMapBlock()[3][0];
+			pos1 = skyBlocks[k].renderMapBlock()[3][1];
+			pos2 = skyBlocks[k].renderMapBlock()[3][2];
+			pos3 = skyBlocks[k].renderMapBlock()[3][3];
+			if (skyBlocks[k].getAnim()[3]) {
+				mAnimData[animCountPos + 4] = 1;
+				mAnimData[animCountPos + 5] = 1;
+				mAnimData[animCountPos + 6] = 1;
+				mAnimData[animCountPos + 7] = 1;
+
+			}else{
+				mAnimData[animCountPos + 4] = 0;
+				mAnimData[animCountPos + 5] = 0;
+				mAnimData[animCountPos + 6] = 0;
+				mAnimData[animCountPos + 7] = 0;
+			}
+
+			mTextureCoordinateData[currentPos + 8] = pos0;
+			mTextureCoordinateData[currentPos + 9] = pos3;
+			mTextureCoordinateData[currentPos + 10] = pos0;
+			mTextureCoordinateData[currentPos + 11] = pos1;
+			//mTextureCoordinateData[currentPos + 16] = pos2;
+			//mTextureCoordinateData[currentPos + 17] = pos3;
+
+			//mTextureCoordinateData[currentPos + 18] = pos0;
+			//mTextureCoordinateData[currentPos + 19] = pos1;
+			mTextureCoordinateData[currentPos + 12] = pos2;
+			mTextureCoordinateData[currentPos + 13] = pos1;
+			mTextureCoordinateData[currentPos + 14] = pos2;
+			mTextureCoordinateData[currentPos + 15] = pos3;
+
+
+			//Log.d("bottom X", Integer.toString(k));
+			frameCount++;
+
+
+			/**
+			 *
+			 * set up third sky
+			 */
+			currentPos = frameCount * 16;
+			animCountPos = frameCount * 8;
+
+			pos0 = topBlocks[k].renderMapBlock()[1][0];
+			pos1 = topBlocks[k].renderMapBlock()[1][1];
+			pos2 = topBlocks[k].renderMapBlock()[1][2];
+			pos3 = topBlocks[k].renderMapBlock()[1][3];
+
+			if (topBlocks[k].getAnim()[1]) {
+				mAnimData[animCountPos] = 1;
+				mAnimData[animCountPos + 1] = 1;
+				mAnimData[animCountPos + 2] = 1;
+				mAnimData[animCountPos + 3] = 1;
+
+			}else{
+				mAnimData[animCountPos] = 0;
+				mAnimData[animCountPos + 1] = 0;
+				mAnimData[animCountPos + 2] = 0;
+				mAnimData[animCountPos + 3] = 0;
+			}
+
+			mTextureCoordinateData[currentPos] = pos0;
+			mTextureCoordinateData[currentPos + 1] = pos3;
+			mTextureCoordinateData[currentPos + 2] = pos0;
+			mTextureCoordinateData[currentPos + 3] = pos1;
+			//mTextureCoordinateData[currentPos + 4] = pos2;
+			//mTextureCoordinateData[currentPos + 5] = pos3 ;
+
+
+			//mTextureCoordinateData[currentPos + 6] = pos0;
+			//mTextureCoordinateData[currentPos + 7] = pos1;
+			mTextureCoordinateData[currentPos + 4] = pos2;
+			mTextureCoordinateData[currentPos + 5] = pos1;
+			mTextureCoordinateData[currentPos + 6] = pos2;
+			mTextureCoordinateData[currentPos + 7] = pos3;
+
+			/**
+			 *
+			 * set up fourth sky
+			 */
+			pos0 = topBlocks[k].renderMapBlock()[3][0];
+			pos1 = topBlocks[k].renderMapBlock()[3][1];
+			pos2 = topBlocks[k].renderMapBlock()[3][2];
+			pos3 = topBlocks[k].renderMapBlock()[3][3];
+			if (topBlocks[k].getAnim()[3]) {
+				mAnimData[animCountPos + 4] = 1;
+				mAnimData[animCountPos + 5] = 1;
+				mAnimData[animCountPos + 6] = 1;
+				mAnimData[animCountPos + 7] = 1;
+
+			}else{
+				mAnimData[animCountPos + 4] = 0;
+				mAnimData[animCountPos + 5] = 0;
+				mAnimData[animCountPos + 6] = 0;
+				mAnimData[animCountPos + 7] = 0;
+			}
+
+			mTextureCoordinateData[currentPos + 8] = pos0;
+			mTextureCoordinateData[currentPos + 9] = pos3;
+			mTextureCoordinateData[currentPos + 10] = pos0;
+			mTextureCoordinateData[currentPos + 11] = pos1;
+			//mTextureCoordinateData[currentPos + 16] = pos2;
+			//mTextureCoordinateData[currentPos + 17] = pos3;
+
+			//mTextureCoordinateData[currentPos + 18] = pos0;
+			//mTextureCoordinateData[currentPos + 19] = pos1;
+			mTextureCoordinateData[currentPos + 12] = pos2;
+			mTextureCoordinateData[currentPos + 13] = pos1;
+			mTextureCoordinateData[currentPos + 14] = pos2;
+			mTextureCoordinateData[currentPos + 15] = pos3;
+
+			frameCount++;
+
+
+
+			/**
+			 *
+			 * set up top Blocks
 			 */
 
 			//todo interleave first and second segments
@@ -751,24 +1187,33 @@ public class Map1 {
 			 *
 			 * set up first sky
 			 */
-			pos0 = skyBlocks[bottomX[i]].renderMapBlock()[0][0];
-			pos1 = skyBlocks[bottomX[i]].renderMapBlock()[0][1];
-			pos2 = skyBlocks[bottomX[i]].renderMapBlock()[0][2];
-			pos3 = skyBlocks[bottomX[i]].renderMapBlock()[0][3];
+			currentPos = frameCount * 16;
+			animCountPos = frameCount * 8;
 
-			if (skyBlocks[bottomX[i]].getAnim()[0]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
+			pos0 = bottomBlocks[k].renderMapBlock()[1][0];
+			pos1 = bottomBlocks[k].renderMapBlock()[1][1];
+			pos2 = bottomBlocks[k].renderMapBlock()[1][2];
+			pos3 = bottomBlocks[k].renderMapBlock()[1][3];
 
+			if (bottomBlocks[k].getAnim()[1]) {
+				mAnimData[animCountPos] = 1;
+				mAnimData[animCountPos + 1] = 1;
+				mAnimData[animCountPos + 2] = 1;
+				mAnimData[animCountPos + 3] = 1;
+
+			}else{
+				mAnimData[animCountPos] = 0;
+				mAnimData[animCountPos + 1] = 0;
+				mAnimData[animCountPos + 2] = 0;
+				mAnimData[animCountPos + 3] = 0;
 			}
 
 			mTextureCoordinateData[currentPos] = pos0;
-			mTextureCoordinateData[currentPos + 1] = pos3 ;
+			mTextureCoordinateData[currentPos + 1] = pos3;
 			mTextureCoordinateData[currentPos + 2] = pos0;
 			mTextureCoordinateData[currentPos + 3] = pos1;
 			//mTextureCoordinateData[currentPos + 4] = pos2;
 			//mTextureCoordinateData[currentPos + 5] = pos3 ;
-
 
 
 			//mTextureCoordinateData[currentPos + 6] = pos0;
@@ -776,21 +1221,28 @@ public class Map1 {
 			mTextureCoordinateData[currentPos + 4] = pos2;
 			mTextureCoordinateData[currentPos + 5] = pos1;
 			mTextureCoordinateData[currentPos + 6] = pos2;
-			mTextureCoordinateData[currentPos + 7] = pos3 ;
+			mTextureCoordinateData[currentPos + 7] = pos3;
 
 			/**
 			 *
 			 * set up second sky
 			 */
+			pos0 = bottomBlocks[k].renderMapBlock()[3][0];
+			pos1 = bottomBlocks[k].renderMapBlock()[3][1];
+			pos2 = bottomBlocks[k].renderMapBlock()[3][2];
+			pos3 = bottomBlocks[k].renderMapBlock()[3][3];
 
-			pos0 = skyBlocks[bottomX[i]].renderMapBlock()[1][0];
-			pos1 = skyBlocks[bottomX[i]].renderMapBlock()[1][1];
-			pos2 = skyBlocks[bottomX[i]].renderMapBlock()[1][2];
-			pos3 = skyBlocks[bottomX[i]].renderMapBlock()[1][3];
-			if (skyBlocks[bottomX[i]].getAnim()[1]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
+			if (bottomBlocks[k].getAnim()[3]) {
+				mAnimData[animCountPos + 4] = 1;
+				mAnimData[animCountPos + 5] = 1;
+				mAnimData[animCountPos + 6] = 1;
+				mAnimData[animCountPos + 7] = 1;
 
+			}else{
+				mAnimData[animCountPos + 4] = 0;
+				mAnimData[animCountPos + 5] = 0;
+				mAnimData[animCountPos + 6] = 0;
+				mAnimData[animCountPos + 7] = 0;
 			}
 
 			mTextureCoordinateData[currentPos + 8] = pos0;
@@ -808,348 +1260,9 @@ public class Map1 {
 			mTextureCoordinateData[currentPos + 15] = pos3;
 
 
-			//Log.d("bottom X", Integer.toString(bottomX[i]));
+			//Log.d("bottom X", Integer.toString(k));
 			frameCount++;
-		}
-		for(int i = 0; i < 5; i++){
 
-			/**
-			 *
-			 * set up third sky
-			 */
-			currentPos =  frameCount * 16;
-			pos0 = skyBlocks[bottomX[i]].renderMapBlock()[2][0];
-			pos1 = skyBlocks[bottomX[i]].renderMapBlock()[2][1];
-			pos2 = skyBlocks[bottomX[i]].renderMapBlock()[2][2];
-			pos3 = skyBlocks[bottomX[i]].renderMapBlock()[2][3];
-
-			if (skyBlocks[bottomX[i]].getAnim()[2]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
-
-			}
-
-			mTextureCoordinateData[currentPos] = pos0;
-			mTextureCoordinateData[currentPos + 1] = pos3 ;
-			mTextureCoordinateData[currentPos + 2] = pos0;
-			mTextureCoordinateData[currentPos + 3] = pos1;
-			//mTextureCoordinateData[currentPos + 4] = pos2;
-			//mTextureCoordinateData[currentPos + 5] = pos3 ;
-
-
-
-			//mTextureCoordinateData[currentPos + 6] = pos0;
-			//mTextureCoordinateData[currentPos + 7] = pos1;
-			mTextureCoordinateData[currentPos + 4] = pos2;
-			mTextureCoordinateData[currentPos + 5] = pos1;
-			mTextureCoordinateData[currentPos + 6] = pos2;
-			mTextureCoordinateData[currentPos + 7] = pos3 ;
-
-			/**
-			 *
-			 * set up fourth sky
-			 */
-			pos0 = skyBlocks[bottomX[i]].renderMapBlock()[3][0];
-			pos1 = skyBlocks[bottomX[i]].renderMapBlock()[3][1];
-			pos2 = skyBlocks[bottomX[i]].renderMapBlock()[3][2];
-			pos3 = skyBlocks[bottomX[i]].renderMapBlock()[3][3];
-			if (skyBlocks[bottomX[i]].getAnim()[3]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
-
-			}
-
-			mTextureCoordinateData[currentPos + 8] = pos0;
-			mTextureCoordinateData[currentPos + 9] = pos3;
-			mTextureCoordinateData[currentPos + 10] = pos0;
-			mTextureCoordinateData[currentPos + 11] = pos1;
-			//mTextureCoordinateData[currentPos + 16] = pos2;
-			//mTextureCoordinateData[currentPos + 17] = pos3;
-
-			//mTextureCoordinateData[currentPos + 18] = pos0;
-			//mTextureCoordinateData[currentPos + 19] = pos1;
-			mTextureCoordinateData[currentPos + 12] = pos2;
-			mTextureCoordinateData[currentPos + 13] = pos1;
-			mTextureCoordinateData[currentPos + 14] = pos2;
-			mTextureCoordinateData[currentPos + 15] = pos3;
-
-			frameCount++;
-		}
-
-
-		/**
-		 *
-		 * set up top Blocks
-		 */
-		for(int i = 0; i < 5; i++) {
-
-			//todo interleave first and second segments
-			/**
-			 *
-			 * set up first sky
-			 */
-			currentPos =  frameCount * 16;
-
-			pos0 = topBlocks[bottomX[i]].renderMapBlock()[0][0];
-			pos1 = topBlocks[bottomX[i]].renderMapBlock()[0][1];
-			pos2 = topBlocks[bottomX[i]].renderMapBlock()[0][2];
-			pos3 = topBlocks[bottomX[i]].renderMapBlock()[0][3];
-
-			if (topBlocks[bottomX[i]].getAnim()[0]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
-
-			}
-
-			mTextureCoordinateData[currentPos] = pos0;
-			mTextureCoordinateData[currentPos + 1] = pos3 ;
-			mTextureCoordinateData[currentPos + 2] = pos0;
-			mTextureCoordinateData[currentPos + 3] = pos1;
-			//mTextureCoordinateData[currentPos + 4] = pos2;
-			//mTextureCoordinateData[currentPos + 5] = pos3 ;
-
-
-
-			//mTextureCoordinateData[currentPos + 6] = pos0;
-			//mTextureCoordinateData[currentPos + 7] = pos1;
-			mTextureCoordinateData[currentPos + 4] = pos2;
-			mTextureCoordinateData[currentPos + 5] = pos1;
-			mTextureCoordinateData[currentPos + 6] = pos2;
-			mTextureCoordinateData[currentPos + 7] = pos3 ;
-
-			/**
-			 *
-			 * set up second sky
-			 */
-			pos0 = topBlocks[bottomX[i]].renderMapBlock()[1][0];
-			pos1 = topBlocks[bottomX[i]].renderMapBlock()[1][1];
-			pos2 = topBlocks[bottomX[i]].renderMapBlock()[1][2];
-			pos3 = topBlocks[bottomX[i]].renderMapBlock()[1][3];
-
-			if (topBlocks[bottomX[i]].getAnim()[1]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
-
-			}
-
-			mTextureCoordinateData[currentPos + 8] = pos0;
-			mTextureCoordinateData[currentPos + 9] = pos3;
-			mTextureCoordinateData[currentPos + 10] = pos0;
-			mTextureCoordinateData[currentPos + 11] = pos1;
-			//mTextureCoordinateData[currentPos + 16] = pos2;
-			//mTextureCoordinateData[currentPos + 17] = pos3;
-
-			//mTextureCoordinateData[currentPos + 18] = pos0;
-			//mTextureCoordinateData[currentPos + 19] = pos1;
-			mTextureCoordinateData[currentPos + 12] = pos2;
-			mTextureCoordinateData[currentPos + 13] = pos1;
-			mTextureCoordinateData[currentPos + 14] = pos2;
-			mTextureCoordinateData[currentPos + 15] = pos3;
-
-
-			//Log.d("bottom X", Integer.toString(bottomX[i]));
-			frameCount++;
-		}
-		for(int i = 0; i < 5; i++){
-
-			/**
-			 *
-			 * set up third sky
-			 */
-			currentPos =  frameCount * 16;
-			pos0 = topBlocks[bottomX[i]].renderMapBlock()[2][0];
-			pos1 = topBlocks[bottomX[i]].renderMapBlock()[2][1];
-			pos2 = topBlocks[bottomX[i]].renderMapBlock()[2][2];
-			pos3 = topBlocks[bottomX[i]].renderMapBlock()[2][3];
-			if (topBlocks[bottomX[i]].getAnim()[2]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
-
-			}
-
-			mTextureCoordinateData[currentPos] = pos0;
-			mTextureCoordinateData[currentPos + 1] = pos3 ;
-			mTextureCoordinateData[currentPos + 2] = pos0;
-			mTextureCoordinateData[currentPos + 3] = pos1;
-			//mTextureCoordinateData[currentPos + 4] = pos2;
-			//mTextureCoordinateData[currentPos + 5] = pos3 ;
-
-
-
-			//mTextureCoordinateData[currentPos + 6] = pos0;
-			//mTextureCoordinateData[currentPos + 7] = pos1;
-			mTextureCoordinateData[currentPos + 4] = pos2;
-			mTextureCoordinateData[currentPos + 5] = pos1;
-			mTextureCoordinateData[currentPos + 6] = pos2;
-			mTextureCoordinateData[currentPos + 7] = pos3 ;
-
-			/**
-			 *
-			 * set up fourth sky
-			 */
-			pos0 = topBlocks[bottomX[i]].renderMapBlock()[3][0];
-			pos1 = topBlocks[bottomX[i]].renderMapBlock()[3][1];
-			pos2 = topBlocks[bottomX[i]].renderMapBlock()[3][2];
-			pos3 = topBlocks[bottomX[i]].renderMapBlock()[3][3];
-			if (topBlocks[bottomX[i]].getAnim()[3]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
-
-			}
-
-			mTextureCoordinateData[currentPos + 8] = pos0;
-			mTextureCoordinateData[currentPos + 9] = pos3;
-			mTextureCoordinateData[currentPos + 10] = pos0;
-			mTextureCoordinateData[currentPos + 11] = pos1;
-			//mTextureCoordinateData[currentPos + 16] = pos2;
-			//mTextureCoordinateData[currentPos + 17] = pos3;
-
-			//mTextureCoordinateData[currentPos + 18] = pos0;
-			//mTextureCoordinateData[currentPos + 19] = pos1;
-			mTextureCoordinateData[currentPos + 12] = pos2;
-			mTextureCoordinateData[currentPos + 13] = pos1;
-			mTextureCoordinateData[currentPos + 14] = pos2;
-			mTextureCoordinateData[currentPos + 15] = pos3;
-			frameCount++;
-		}
-
-		/**
-		 *
-		 * set up bottom blocks
-		 */
-
-		for(int i = 0; i < 5; i++) {
-
-			//todo interleave first and second segments
-			/**
-			 *
-			 * set up first sky
-			 */
-			currentPos =  frameCount * 16;
-			pos0 = bottomBlocks[bottomX[i]].renderMapBlock()[0][0];
-			pos1 = bottomBlocks[bottomX[i]].renderMapBlock()[0][1];
-			pos2 = bottomBlocks[bottomX[i]].renderMapBlock()[0][2];
-			pos3 = bottomBlocks[bottomX[i]].renderMapBlock()[0][3];
-			if (bottomBlocks[bottomX[i]].getAnim()[0]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
-
-			}
-
-			mTextureCoordinateData[currentPos] = pos0;
-			mTextureCoordinateData[currentPos + 1] = pos3 ;
-			mTextureCoordinateData[currentPos + 2] = pos0;
-			mTextureCoordinateData[currentPos + 3] = pos1;
-			//mTextureCoordinateData[currentPos + 4] = pos2;
-			//mTextureCoordinateData[currentPos + 5] = pos3 ;
-
-
-
-			//mTextureCoordinateData[currentPos + 6] = pos0;
-			//mTextureCoordinateData[currentPos + 7] = pos1;
-			mTextureCoordinateData[currentPos + 4] = pos2;
-			mTextureCoordinateData[currentPos + 5] = pos1;
-			mTextureCoordinateData[currentPos + 6] = pos2;
-			mTextureCoordinateData[currentPos + 7] = pos3 ;
-
-			/**
-			 *
-			 * set up second sky
-			 */
-
-			pos0 = bottomBlocks[bottomX[i]].renderMapBlock()[1][0];
-			pos1 = bottomBlocks[bottomX[i]].renderMapBlock()[1][1];
-			pos2 = bottomBlocks[bottomX[i]].renderMapBlock()[1][2];
-			pos3 = bottomBlocks[bottomX[i]].renderMapBlock()[1][3];
-			if (bottomBlocks[bottomX[i]].getAnim()[1]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
-
-			}
-
-			mTextureCoordinateData[currentPos + 8] = pos0;
-			mTextureCoordinateData[currentPos + 9] = pos3;
-			mTextureCoordinateData[currentPos + 10] = pos0;
-			mTextureCoordinateData[currentPos + 11] = pos1;
-			//mTextureCoordinateData[currentPos + 16] = pos2;
-			//mTextureCoordinateData[currentPos + 17] = pos3;
-
-			//mTextureCoordinateData[currentPos + 18] = pos0;
-			//mTextureCoordinateData[currentPos + 19] = pos1;
-			mTextureCoordinateData[currentPos + 12] = pos2;
-			mTextureCoordinateData[currentPos + 13] = pos1;
-			mTextureCoordinateData[currentPos + 14] = pos2;
-			mTextureCoordinateData[currentPos + 15] = pos3;
-
-
-
-			//Log.d("bottom X", Integer.toString(bottomX[i]));
-			frameCount++;
-		}
-		for(int i = 0; i < 5; i++){
-
-			/**
-			 *
-			 * set up third sky
-			 */
-			currentPos =  frameCount * 16;
-			pos0 = bottomBlocks[bottomX[i]].renderMapBlock()[2][0];
-			pos1 = bottomBlocks[bottomX[i]].renderMapBlock()[2][1];
-			pos2 = bottomBlocks[bottomX[i]].renderMapBlock()[2][2];
-			pos3 = bottomBlocks[bottomX[i]].renderMapBlock()[2][3];
-
-			if (bottomBlocks[bottomX[i]].getAnim()[2]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
-
-			}
-
-			mTextureCoordinateData[currentPos] = pos0;
-			mTextureCoordinateData[currentPos + 1] = pos3 ;
-			mTextureCoordinateData[currentPos + 2] = pos0;
-			mTextureCoordinateData[currentPos + 3] = pos1;
-			//mTextureCoordinateData[currentPos + 4] = pos2;
-			//mTextureCoordinateData[currentPos + 5] = pos3 ;
-
-
-
-			//mTextureCoordinateData[currentPos + 6] = pos0;
-			//mTextureCoordinateData[currentPos + 7] = pos1;
-			mTextureCoordinateData[currentPos + 4] = pos2;
-			mTextureCoordinateData[currentPos + 5] = pos1;
-			mTextureCoordinateData[currentPos + 6] = pos2;
-			mTextureCoordinateData[currentPos + 7] = pos3 ;
-
-			/**
-			 *
-			 * set up fourth sky
-			 */
-			pos0 = bottomBlocks[bottomX[i]].renderMapBlock()[3][0];
-			pos1 = bottomBlocks[bottomX[i]].renderMapBlock()[3][1];
-			pos2 = bottomBlocks[bottomX[i]].renderMapBlock()[3][2];
-			pos3 = bottomBlocks[bottomX[i]].renderMapBlock()[3][3];
-
-			if (bottomBlocks[bottomX[i]].getAnim()[3]) {
-				pos0 += (tileWidth * (float)(framePos));
-				pos2 += (tileWidth * (float)(framePos));
-
-			}
-
-			mTextureCoordinateData[currentPos + 8] = pos0;
-			mTextureCoordinateData[currentPos + 9] = pos3;
-			mTextureCoordinateData[currentPos + 10] = pos0;
-			mTextureCoordinateData[currentPos + 11] = pos1;
-			//mTextureCoordinateData[currentPos + 16] = pos2;
-			//mTextureCoordinateData[currentPos + 17] = pos3;
-
-			//mTextureCoordinateData[currentPos + 18] = pos0;
-			//mTextureCoordinateData[currentPos + 19] = pos1;
-			mTextureCoordinateData[currentPos + 12] = pos2;
-			mTextureCoordinateData[currentPos + 13] = pos1;
-			mTextureCoordinateData[currentPos + 14] = pos2;
-			mTextureCoordinateData[currentPos + 15] = pos3;
-
-			frameCount++;
 		}
 
 
@@ -1196,8 +1309,12 @@ public class Map1 {
 		int squareCount = 0;
 		int lastSquare = 0;
 
+		//for(float h = (1f - hSegH); h  > -1.0f; h -= segH ){
+			//for(float w =( -1.0f + hSegW); w < 1.4f; w += segW){
+		for(float w =( -1.0f + hSegW); w < 1.4f; w += segW){
 		for(float h = (1f - hSegH); h  > -1.0f; h -= segH ){
-			for(float w =( -1.0f + hSegW); w < 1.4f; w += segW){
+
+
 
 
 				//first triangle
@@ -1504,6 +1621,15 @@ public class Map1 {
 
 	public int getMapLength(){
 		return mapLength;
+	}
+	public int getAnimBufferOffset(){
+		return animBufferOffset;
+	}
+	public int getTextureBufferOffset(){
+		return textureBufferOffset;
+	}
+	public int getAnimFrame(){
+		return framePos ;
 	}
 	public boolean isHasScene(){
 		return hasScene;

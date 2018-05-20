@@ -39,7 +39,7 @@ public class ShotEntity extends Entity{
     private float barBorderHDiff = (hBorderHeight - hBarHeight) * .5f;
     private float hDrawFrame = originalHFrame;
     private float fullHealth = 100f;
-	private int maxShots = 400;
+	private int maxShots = 200;
 
 	/**
 	 *
@@ -57,7 +57,7 @@ public class ShotEntity extends Entity{
 	private Shot[] shotArray = new Shot[maxShots];
 	private boolean[] bulletState = new boolean[maxShots];
 	private boolean[] friendlyState = new boolean[maxShots];
-	private EnemyEntity[] enemyList = new EnemyEntity[30];
+	private EnemyEntity[] enemyList ;
 	private Item[] items = new Item[10];
     private Item tempItem;
 	private boolean[] itemActive = new boolean[10];
@@ -72,7 +72,7 @@ public class ShotEntity extends Entity{
 
 	Canvas canvas;
 	private float[][][] obstacleList;
-	private boolean[][] hasOList = new boolean[8][4];
+	private boolean[][] hasOList;// = new boolean[8][4];
 
 	static float CHARACTER_WIDTH = Constants.CHARACTER_WIDTH;
 	private float ShotSize = CHARACTER_WIDTH / 2.5f;

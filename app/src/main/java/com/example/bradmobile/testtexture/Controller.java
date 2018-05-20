@@ -244,19 +244,48 @@ public class Controller extends Entity {
         }
 
         public void handleControllerInput(int keyCode, KeyEvent keyEvent){
-        switch(keyCode){
 
-            case KeyEvent.KEYCODE_BUTTON_X:
-                Log.e("keycode", " x");
-                shoot = true;
-                fireState = 1;
-                break;
-            case KeyEvent.KEYCODE_BUTTON_A:
-                jump = true;
-                fromButtonA = true;
-                break;
+
+            if(keyEvent.getKeyCode() == KeyEvent.KEYCODE_BUTTON_X  || keyEvent.getKeyCode() == KeyEvent.KEYCODE_BUTTON_A) {
+                    handleButtonInput(keyEvent);
+            }
+
+            if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    playerCommand = 2;
+            } else if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                    playerCommand = 1;
+
+            } else if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
+
+            } else if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
+
+            } else if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER) {
+                playerCommand = 0;
+            }else{
+                playerCommand = 0;
+            }
+
 
         }
+
+        private void handleButtonInput(KeyEvent keyEvent){
+            if(keyEvent.getKeyCode() == KeyEvent.KEYCODE_BUTTON_X ) {
+
+                if(keyEvent.getKeyCode() != KeyEvent.ACTION_UP){
+                    jump = false;
+                }
+                shoot = true;
+                fireState = 2 ;
+            }
+            if( keyEvent.getKeyCode() == KeyEvent.KEYCODE_BUTTON_A){
+                jump = true;
+            }
+
+
+
+
+
+
 
         }
 

@@ -375,6 +375,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         renderer.setEnemies(enemies);
         renderer.setHero(hero);
         renderer.setController(controller);
+        renderer.setMap(Map);
 
 
         if(renderer.surfaceActive()){
@@ -713,6 +714,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         renderer.setMapVertexCoord(Map.getPositionFloatBuffer());
         renderer.setmMapModelMatrix(Map.getmModelMatrix());
         renderer.setMapDrawIndices(Map.getDrawListBuffer());
+        renderer.setMapAnimBuffer(Map.getAnimBuffer());
     }
 
 
@@ -832,20 +834,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         boolean handled = false;
         controller.handleControllerInput(keyCode, event);
 
-        switch(keyCode){
 
-            case KeyEvent.KEYCODE_DPAD_CENTER:
-
-                playerCommand = 0;
-                handled = true;
-                break;
-            case KeyEvent.KEYCODE_DPAD_RIGHT:
-
-                playerCommand = 1;
-                handled = true;
-                break;
-
-        }
 
         playerCommand = controller.getPlayerCommand();
 
