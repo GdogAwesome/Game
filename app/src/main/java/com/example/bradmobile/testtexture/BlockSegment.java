@@ -24,8 +24,8 @@ public class BlockSegment {
 	int ViewY;
 	private double calcX = 0;
 	private double calcY = 0;
-	double totalWidth = 2800f;
-	double totalHeight = 1400f;
+	double totalWidth = 2048f;
+	double totalHeight = 2048f;
 
 	double tileWidth = (200.0000f / totalWidth);// - .0007f;
 	double tileHeight = 150.0000f / totalHeight;
@@ -83,9 +83,9 @@ public class BlockSegment {
 
 
 		drawInfo[0] = (float)(this.spritePosX / totalWidth) + .0005f;// offset rounding error ?
-		drawInfo[3] = (float)(this.spritePosY / totalHeight)+ .0008f;
+		drawInfo[3] = (float)(this.spritePosY / totalHeight) + .00015f;
 		drawInfo[2] = (float)((this.spritePosX + 200)/ totalWidth) - .0005f;
-		drawInfo[1] = (float)((this.spritePosY + 150) / totalHeight) - .0005f ;
+		drawInfo[1] = (float)((this.spritePosY + 150) / totalHeight)- .0001f ;
 		/*
 		drawInfo[2] = drawInfo[0] + tileWidth;
 		drawInfo[1] = drawInfo[3] + tileHeight;
@@ -144,10 +144,10 @@ public class BlockSegment {
 			rectObject[3] = y2;
 			
 		}else if(hasO == false){
-			rectObject[0] = 0;
-			rectObject[1] = 0;
-			rectObject[2] = 0;
-			rectObject[3] = 0;
+			rectObject[0] = 1000.0f;
+			rectObject[1] = 1000.0f;
+			rectObject[2] = 1000.0f;
+			rectObject[3] = 1000.0f;
 		}
 		finalRectObject[0] = (float)((((calcX - halfX) / 1600) * 2) + (rectObject[0] * obstacleTileWidth));
 		finalRectObject[1] = (float)((((heightDiff - halfY) / 900) * 2) - (rectObject[1] * obstacleTileHeight));

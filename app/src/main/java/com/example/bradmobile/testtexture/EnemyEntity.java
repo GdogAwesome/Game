@@ -111,6 +111,11 @@ public class EnemyEntity {
 
 		animHandler = new Anim();
 
+		//animHandler.setupAnim(Anim.STANDING, 6, 0, 6, false, true, true);
+		//animHandler.setupAnim(Anim.DYING, 4, 4, 8, false, false, false);
+
+		//animHandler.stop();
+
 		this.x = x;
 		this.y = y;
 		

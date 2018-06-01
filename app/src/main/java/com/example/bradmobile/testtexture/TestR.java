@@ -155,7 +155,8 @@ public class TestR implements GLSurfaceView.Renderer {
         // Use culling to remove back faces.
 
         // disable depth testing
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+        //GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glDepthFunc(GLES20.GL_ALWAYS);
 
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
@@ -226,7 +227,7 @@ public class TestR implements GLSurfaceView.Renderer {
         final float bottom = -1.0f;
         final float top = 1.0f;
         final float near = 1.0f;
-        final float far = 10.0f;
+        final float far = 3.0f;
         //Log.e("left", Float.toString(left));
        // Log.e("right", Float.toString(right));
 

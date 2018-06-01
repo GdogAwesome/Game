@@ -1,4 +1,4 @@
-precision lowp float;
+precision highp float;
 
 uniform sampler2D u_Texture;
 uniform sampler2D u_NormalMap;

@@ -25,6 +25,10 @@ public class Controller extends Entity {
     private float[] mFireMatrix = new float[16];
     private float[] mJumpMatrix = new float[16];
     private boolean fromButtonA = false;
+    private boolean upPressed = false;
+    private boolean downPressed = false;
+    private boolean leftPressed = false;
+    private boolean rightPressed = false;
 
     private float screenSpaceArrowX;
     private float screenSpaceArrowY;
@@ -243,50 +247,119 @@ public class Controller extends Entity {
 
         }
 
-        public void handleControllerInput(int keyCode, KeyEvent keyEvent){
+        public boolean handleControllerInput(int keyCode, KeyEvent keyEvent, boolean pressed){
 
+        boolean handled = false;
 
             if(keyEvent.getKeyCode() == KeyEvent.KEYCODE_BUTTON_X  || keyEvent.getKeyCode() == KeyEvent.KEYCODE_BUTTON_A) {
-                    handleButtonInput(keyEvent);
-            }
-
-            if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
-                    playerCommand = 2;
-            } else if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                    playerCommand = 1;
-
-            } else if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
-
-            } else if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
-
-            } else if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER) {
-                playerCommand = 0;
+                    handleButtonInput(keyEvent, pressed);
+                    handled = true;
             }else{
-                playerCommand = 0;
+
+                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
+
+                    if(pressed){
+                        leftPressed = true;
+                    }else{
+                        leftPressed = false;
+                    }
+                    handled = true;
+                }
+                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                    if(pressed){
+                        rightPressed = true;
+                    }else{
+                        rightPressed = false;
+                    }
+                    handled = true;
+
+                }
+                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
+
+                    if(pressed){
+                        upPressed = true;
+                    }else{
+                        upPressed = false;
+                    }
+                    handled = true;
+
+                }
+                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
+
+                    if(pressed){
+                        downPressed = true;
+                    }else{
+                        downPressed = false;
+                    }
+                    handled = true;
+                }
+                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER) {
+                    handled = true;
+                }
+
             }
+            combineFireAndDirection(leftPressed, rightPressed, upPressed, downPressed);
+
+            return handled;
 
 
         }
 
-        private void handleButtonInput(KeyEvent keyEvent){
+        private void handleButtonInput(KeyEvent keyEvent, boolean pressed){
             if(keyEvent.getKeyCode() == KeyEvent.KEYCODE_BUTTON_X ) {
+                if(pressed) {
+                    shoot = true;
 
-                if(keyEvent.getKeyCode() != KeyEvent.ACTION_UP){
-                    jump = false;
+                }else{
+                    shoot = false;
                 }
-                shoot = true;
-                fireState = 2 ;
+
             }
             if( keyEvent.getKeyCode() == KeyEvent.KEYCODE_BUTTON_A){
-                jump = true;
+                if(pressed) {
+                    jump = true;
+                }else{
+                    jump = false;
+                }
             }
 
 
 
+        }
+        private void combineFireAndDirection(boolean left, boolean right, boolean up, boolean down){
 
+        if(left && up){
+            playerCommand = 2;
+            if(shoot){
+                fireState = 3;
+            }
+        }else if(left){
+            playerCommand = 2;
+            if(shoot){
+                fireState = 1;
+            }
+        }else if(right && up){
+            playerCommand = 1;
+            if(shoot){
+                fireState = 3;
+            }
+        }else if(right){
+            playerCommand = 1;
+            if(shoot){
+                fireState = 1;
+            }
+        }else if(up){
+            //playerCommand = 0;
+            if(shoot) {
+                fireState = 4;
+            }
+        }else{
+            playerCommand =0;
+            if(shoot){
+                fireState = 1;
+            }
 
-
-
+        }
         }
 
 @Override

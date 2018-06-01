@@ -87,12 +87,12 @@ public class Constants {
 		 MAIN_CHAR_WIDTH = 300;
 		 MAIN_CHAR_HEIGHT = 250;
 		 FRAME_VARIANCE = 2.5f;
-		TEST_RUN_SPEED = ((((float)RUN_SPEED / (float)SCREEN_WIDTH) * 1.2f) * 3.0f) * scale;
+		TEST_RUN_SPEED = ((((float)RUN_SPEED / (float)SCREEN_WIDTH) * 1.5f) * 3.0f) * scale;
 		TOTAL_MAP_MOVE = ((1f -(8f / 10f)) * 2.5f);
 
 
 		 FALL_SPEED = 90;
-		 SHOT_SPEED = TEST_RUN_SPEED * 5f;
+		 SHOT_SPEED = TEST_RUN_SPEED * 4f;
 		TEST_SHOT_SPEED = TEST_RUN_SPEED * 3f;
 	}
 	public static boolean getMusicState(){

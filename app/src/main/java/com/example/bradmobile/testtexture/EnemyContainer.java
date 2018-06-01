@@ -15,6 +15,7 @@ import android.util.Log;
  */
 public class EnemyContainer extends Entity {
     private FlyingEnemy enemy;
+    private EnemyQueue eQueue;
     ShotEntity shots;
     BossEntity boss;
     Bitmap enemyImage;
@@ -23,7 +24,7 @@ public class EnemyContainer extends Entity {
     private float mapPosX = 0f;
     HeroEntity hero;
 
-    public static final int MAX_ENEMIES = 100;
+    public static final int MAX_ENEMIES = 50;
     private EnemyEntity[] enemyList = new EnemyEntity[MAX_ENEMIES];
     private boolean[] enemyActive = new boolean[MAX_ENEMIES];
     public final static int FLYING_SHIP = 0;
@@ -46,8 +47,11 @@ public class EnemyContainer extends Entity {
 
         float flyingEnemyHeight =  .8f;
 
+        eQueue = new EnemyQueue(enemyList, enemyActive);
         initEnemyTypes(context, bossType);
+        eQueue.initQueue(1);
 
+        /*
         for(int i = 0; i < MAX_ENEMIES; i++) {
 
 
@@ -61,6 +65,7 @@ public class EnemyContainer extends Entity {
             }
 
         }
+        */
 
     }
 
@@ -73,11 +78,12 @@ public class EnemyContainer extends Entity {
 
                     this.mapPosX = mapPosX;
         if(!bossActive) {
+            eQueue.checkQueueDistance(mapPosX);
             for (int e = 0; e < MAX_ENEMIES; e++) {
 
                 if (enemyList[e] != null) {
                     //Log.d("Active Enemy ", Integer.toString(e));
-                    if ((enemyList[e].x - mapPosX) > - screenWidth && (enemyList[e].x - mapPosX) < screenWidth && !enemyList[e].isDead()) {
+                    if ((enemyList[e].x - mapPosX) > - screenWidth * 2.0f && !enemyList[e].isDead()) {
                         enemyActive[e] = true;
                         //enemyList[e].setContinuousFire(false);
                     } else {
@@ -229,6 +235,8 @@ public class EnemyContainer extends Entity {
         this.initEntity(context, 800, 0, R.drawable.ship,168, 127, 6, 2, .25f, .25f, FLYING_SHIP,false );
         this.initEntity(context, 0, 200, R.drawable.ship, 192, 100, 6, 1, .25f, .25f, ELECTRIC_SHIP, false );
 
+        eQueue.initEnemies(FLYING_SHIP, this.getObjectBounds(FLYING_SHIP));
+        eQueue.initEnemies(ELECTRIC_SHIP, this.getObjectBounds(ELECTRIC_SHIP));
         setupBossEntity(bossType);
     }
     private void setupBossEntity(int bossType){

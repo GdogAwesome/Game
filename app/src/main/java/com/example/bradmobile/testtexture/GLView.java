@@ -330,10 +330,7 @@ public class GLView extends GLSurfaceView implements Runnable {
     private void initEntities(Context context, int mapNo) {
 
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
 
-        options.inSampleSize = 1;
-        options.inPreferredConfig = Bitmap.Config.RGB_565;//ARGB_8888;
 
         hero = new Hero(context, (halfScreen - (CHARACTER_WIDTH /2)), 250 );
         hero.InitHero("source/pos1.png", CHARACTER_WIDTH,CHARACTER_HEIGHT);
@@ -397,6 +394,13 @@ public class GLView extends GLSurfaceView implements Runnable {
     }
 
     public void calcLogic() {
+        //get controller input
+        playerCommand = controller.getPlayerCommand();
+
+        shoot = controller.getShoot();
+        startJumping = controller.getJump();
+        hero.setFiring(controller.getShoot());
+        shotHeight = controller.getFireState();
 
         if (shoot) {
             hero.tryToShoot();
@@ -519,136 +523,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         jumping = hero.contJump();
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent me) {
-        if(!hasGameController) {
 
-            int action = MotionEventCompat.getActionMasked(me);
-            int pointerId;
-
-            int index;
-
-            switch (action) {
-
-                case MotionEvent.ACTION_DOWN:
-                    interact = true;
-                    //playerCommand = 1;
-                    //leftPlayerMove(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
-                    //leftPlayerMove(me.getX(), me.getY());
-                    pointerId = me.getPointerId(0);
-
-                    index = me.findPointerIndex(pointerId);
-                    //x =  (int)me.getX(index);
-                    //y = (int)me.getY(index);
-
-                    controller.retControlFromTouch(me.getX(index), me.getY(index), false);
-                    if (me.getPointerCount() > 1) {
-                        twoPointers = true;
-                        pointerId = me.getPointerId(1);
-                        index = me.findPointerIndex(pointerId);
-                        //x = (int) me.getX(index);
-                        //y = (int) me.getY(index);
-                        controller.retControlFromTouch(me.getX(index), me.getY(index), false);
-                    }
-
-                    break;
-                case MotionEvent.ACTION_UP:
-                    //interact = false;
-                    playerCommand = 0;
-                    // buttonReleaseLeft(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
-                    pointerId = me.getPointerId(0);
-                    index = me.findPointerIndex(pointerId);
-                    // x =  (int)me.getX(index);
-                    // y = (int)me.getY(index);
-                    controller.retControlFromTouch(me.getX(index), me.getY(index), true);
-                    if (me.getPointerCount() > 1) {
-                        twoPointers = true;
-                        pointerId = me.getPointerId(1);
-                        index = me.findPointerIndex(pointerId);
-                        //x = (int) me.getX(index);
-                        //y = (int) me.getY(index);
-                        controller.retControlFromTouch(me.getX(index), me.getY(index), true);
-                    }
-
-
-                    break;
-                case MotionEvent.ACTION_MOVE:
-
-                    //leftPlayerMove(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
-                    //leftPlayerMove(me.getX(),me.getY());
-                    pointerId = me.getPointerId(0);
-                    index = me.findPointerIndex(pointerId);
-                    // x =  (int)me.getX(index);
-                    // y = (int)me.getY(index);
-                    controller.retControlFromTouch(me.getX(index), me.getY(index), false);
-                    if (me.getPointerCount() > 1) {
-                        twoPointers = true;
-                        pointerId = me.getPointerId(1);
-                        index = me.findPointerIndex(pointerId);
-                        //x = (int) me.getX(index);
-                        //y = (int) me.getY(index);
-                        controller.retControlFromTouch(me.getX(index), me.getY(index), false);
-
-                    }
-                    break;
-
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    interact = true;
-                    //playerCommand = 1;
-                    //leftPlayerMove(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
-                    //leftPlayerMove(me.getX(), me.getY());
-                    pointerId = me.getPointerId(0);
-                    index = me.findPointerIndex(pointerId);
-                    // x =  (int)me.getX(index);
-                    // y = (int)me.getY(index);
-
-                    controller.retControlFromTouch(me.getX(index), me.getY(index), false);
-                    if (me.getPointerCount() > 1) {
-                        twoPointers = true;
-                        pointerId = me.getPointerId(1);
-                        index = me.findPointerIndex(pointerId);
-                        //x = (int) me.getX(index);
-                        //y = (int) me.getY(index);
-                        controller.retControlFromTouch(me.getX(index), me.getY(index), false);
-                    }
-                    break;
-                case MotionEvent.ACTION_POINTER_UP:
-                    // interact = false;
-                    playerCommand = 0;
-                    //buttonReleaseLeft(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
-                    //buttonReleaseLeft(me.getX(), me.getY());
-                    //buttonReleaseRight(0, 0);
-                    pointerId = me.getPointerId(0);
-                    index = me.findPointerIndex(pointerId);
-                    // x =  (int)me.getX(index);
-                    // y = (int)me.getY(index);
-
-                    controller.retControlFromTouch(me.getX(index), me.getY(index), true);
-
-                    if (me.getPointerCount() > 1) {
-                        twoPointers = true;
-                        pointerId = me.getPointerId(1);
-                        index = me.findPointerIndex(pointerId);
-                        //x = (int) me.getX(index);
-                        //y = (int) me.getY(index);
-                        controller.retControlFromTouch(me.getX(index), me.getY(index), true);
-                    }
-
-                    break;
-
-            }
-            playerCommand = controller.getPlayerCommand();
-
-            shoot = controller.getShoot();
-            startJumping = controller.getJump();
-            hero.setFiring(controller.getShoot());
-            shotHeight = controller.getFireState();
-        }
-
-
-        return true;
-
-    }
     public void checkHState(){
         if(hero.getDead()  ){
             if(hero.getLives() <= 0){
@@ -828,23 +703,154 @@ public class GLView extends GLSurfaceView implements Runnable {
         return gameControllerDeviceIds;
     }
     @Override
+    public boolean onTouchEvent(MotionEvent me) {
+        if(!hasGameController) {
+
+            int action = MotionEventCompat.getActionMasked(me);
+            int pointerId;
+
+            int index;
+
+            switch (action) {
+
+                case MotionEvent.ACTION_DOWN:
+                    interact = true;
+                    //playerCommand = 1;
+                    //leftPlayerMove(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
+                    //leftPlayerMove(me.getX(), me.getY());
+                    pointerId = me.getPointerId(0);
+
+                    index = me.findPointerIndex(pointerId);
+                    //x =  (int)me.getX(index);
+                    //y = (int)me.getY(index);
+
+                    controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+                    if (me.getPointerCount() > 1) {
+                        twoPointers = true;
+                        pointerId = me.getPointerId(1);
+                        index = me.findPointerIndex(pointerId);
+                        //x = (int) me.getX(index);
+                        //y = (int) me.getY(index);
+                        controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+                    }
+
+                    break;
+                case MotionEvent.ACTION_UP:
+                    //interact = false;
+                    playerCommand = 0;
+                    // buttonReleaseLeft(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
+                    pointerId = me.getPointerId(0);
+                    index = me.findPointerIndex(pointerId);
+                    // x =  (int)me.getX(index);
+                    // y = (int)me.getY(index);
+                    controller.retControlFromTouch(me.getX(index), me.getY(index), true);
+                    if (me.getPointerCount() > 1) {
+                        twoPointers = true;
+                        pointerId = me.getPointerId(1);
+                        index = me.findPointerIndex(pointerId);
+                        //x = (int) me.getX(index);
+                        //y = (int) me.getY(index);
+                        controller.retControlFromTouch(me.getX(index), me.getY(index), true);
+                    }
+
+
+                    break;
+                case MotionEvent.ACTION_MOVE:
+
+                    //leftPlayerMove(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
+                    //leftPlayerMove(me.getX(),me.getY());
+                    pointerId = me.getPointerId(0);
+                    index = me.findPointerIndex(pointerId);
+                    // x =  (int)me.getX(index);
+                    // y = (int)me.getY(index);
+                    controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+                    if (me.getPointerCount() > 1) {
+                        twoPointers = true;
+                        pointerId = me.getPointerId(1);
+                        index = me.findPointerIndex(pointerId);
+                        //x = (int) me.getX(index);
+                        //y = (int) me.getY(index);
+                        controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+
+                    }
+                    break;
+
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    interact = true;
+                    //playerCommand = 1;
+                    //leftPlayerMove(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
+                    //leftPlayerMove(me.getX(), me.getY());
+                    pointerId = me.getPointerId(0);
+                    index = me.findPointerIndex(pointerId);
+                    // x =  (int)me.getX(index);
+                    // y = (int)me.getY(index);
+
+                    controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+                    if (me.getPointerCount() > 1) {
+                        twoPointers = true;
+                        pointerId = me.getPointerId(1);
+                        index = me.findPointerIndex(pointerId);
+                        //x = (int) me.getX(index);
+                        //y = (int) me.getY(index);
+                        controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+                    }
+                    break;
+                case MotionEvent.ACTION_POINTER_UP:
+                    // interact = false;
+                    playerCommand = 0;
+                    //buttonReleaseLeft(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
+                    //buttonReleaseLeft(me.getX(), me.getY());
+                    //buttonReleaseRight(0, 0);
+                    pointerId = me.getPointerId(0);
+                    index = me.findPointerIndex(pointerId);
+                    // x =  (int)me.getX(index);
+                    // y = (int)me.getY(index);
+
+                    controller.retControlFromTouch(me.getX(index), me.getY(index), true);
+
+                    if (me.getPointerCount() > 1) {
+                        twoPointers = true;
+                        pointerId = me.getPointerId(1);
+                        index = me.findPointerIndex(pointerId);
+                        //x = (int) me.getX(index);
+                        //y = (int) me.getY(index);
+                        controller.retControlFromTouch(me.getX(index), me.getY(index), true);
+                    }
+
+                    break;
+
+            }
+            /*
+            playerCommand = controller.getPlayerCommand();
+
+            shoot = controller.getShoot();
+            startJumping = controller.getJump();
+            hero.setFiring(controller.getShoot());
+            shotHeight = controller.getFireState();
+            */
+        }
+
+
+        return true;
+
+    }
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event){
 
-        Log.e("controller input", "true");
+
         boolean handled = false;
-        controller.handleControllerInput(keyCode, event);
+        handled = controller.handleControllerInput(keyCode, event, true);
 
+        return handled || super.onKeyDown(keyCode, event);
+    }
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event){
 
+        boolean handled = false;
+        handled = controller.handleControllerInput(keyCode, event, false);
 
-        playerCommand = controller.getPlayerCommand();
+        return handled || super.onKeyDown(keyCode, event);
 
-        shoot = controller.getShoot();
-        startJumping = controller.getJump();
-        hero.setFiring(controller.getShoot());
-        shotHeight = controller.getFireState();
-
-
-        return /*handled ||*/ super.onKeyDown(keyCode, event);
     }
 
     /*

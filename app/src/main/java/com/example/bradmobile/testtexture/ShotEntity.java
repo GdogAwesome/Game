@@ -211,7 +211,7 @@ public class ShotEntity extends Entity{
 					if(shotArray[i].dead()){
 						
 						bulletState[i] = false;
-					}else if(shotArray[i].drawShot()[0] > 1.2f || shotArray[i].drawShot()[0]< -1.2f){
+					}else if(shotArray[i].drawShot()[0] > 1.5f || shotArray[i].drawShot()[0]< -1.5f){
 						bulletState[i] = false;
 						
 					}else if(!shotArray[i].isFriendly()){
@@ -363,13 +363,15 @@ public class ShotEntity extends Entity{
 		//textCoordsFB.position(12);
 		for(int i = 0; i< maxShots; i++) {
 			if(bulletState[i]) {
+
+			    // if current shot texture is different bind appropriate texture
 				if(currentTextureHandle != getObjectTextureHandle(shotArray[i].getShotObject()) ){
 
 					currentTextureHandle = getObjectTextureHandle(shotArray[i].getShotObject());
 
 					GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, currentTextureHandle);
 				}
-
+                //if current shot vbo's are not the same bind appropriate vbos
 				if(currentShotType != shotArray[i].getShotObject()){
 					currentShotType = shotArray[i].getShotObject();
 					GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, polyVBOHandle[currentShotType]);

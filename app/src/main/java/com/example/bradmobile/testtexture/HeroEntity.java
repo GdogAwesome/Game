@@ -216,6 +216,8 @@ public class HeroEntity extends Entity {
         	paused = true;
         	cueToPause = false;
 		}
+
+		updateShotLocation();
 	}
 	public void jump(){
 		
@@ -282,6 +284,7 @@ public class HeroEntity extends Entity {
 	 * control what happens while use is running forward
 	 */
 	public void running(){
+		//TODO fix torso anim to use new method of animation
 		if( doneStart && !contJump){
 		counter += FRAME_VARIANCE;
 		if( momentum < 10){
@@ -329,6 +332,7 @@ public class HeroEntity extends Entity {
 			}
 
 	    }
+
 	    animHandler.run();
 		
 	}
@@ -439,11 +443,11 @@ public class HeroEntity extends Entity {
 				this.shotAngle = 1;
 
 				if (facingForward) {
-					torsoAngle = 0;
+					torsoAngle = 0f;
 					fireStats[0] = mModelMatrix[1][12] + (((CHARACTER_WIDTH * .46666666f)));
 					fireStats[1] = mModelMatrix[1][13] + (CHARACTER_TORSO_HEIGHT * .02f);
 				} else {
-					torsoAngle = 180;
+					torsoAngle = 180f;
 					fireStats[0] = (mModelMatrix[1][12] - (CHARACTER_WIDTH * .46666666f));
 					fireStats[1] = mModelMatrix[1][13] + (CHARACTER_TORSO_HEIGHT * .02f);
 
