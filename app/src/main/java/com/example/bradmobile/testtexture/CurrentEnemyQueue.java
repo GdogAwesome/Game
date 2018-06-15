@@ -9,6 +9,7 @@ public class CurrentEnemyQueue {
     private int[] enemyTypes;
     private float distance = 0;
     private float[][] enemyBounds;
+    private float remainder = 0.0f;
 
 
     public CurrentEnemyQueue(EnemyEntity[] enemyList, boolean[] enemyActive) {
@@ -43,6 +44,19 @@ public class CurrentEnemyQueue {
                 if(!eActive[k]){
                     eList[k] = privateEList[i];
                     eActive[k] = true;
+
+                    remainder = k % 3;
+                    if (remainder <= 0.0){
+                        eList[k].setHasItem(true,Item.WEAPON_UPGRADE_FLAME);
+                    }
+                    remainder = k % 5;
+                    if (remainder <= 0.0){
+                        eList[k].setHasItem(true,Item.HEALTH_UPGRADE);
+                    }
+                    remainder = k % 4;
+                    if(remainder <= 0.0){
+                        eList[k].setHasItem(true, Item.WEAPON_UPGRADE_SPRAY);
+                    }
                     k = EnemyContainer.MAX_ENEMIES;
 
                 }
@@ -52,7 +66,7 @@ public class CurrentEnemyQueue {
 
     private EnemyEntity getEnemyEntity(int enemyType, float[] objectBounds, int index){
         EnemyEntity tempE;
-        float offset = ((float)(index) * .1f) + 1.0f;
+        float offset = ((float)(index) * .25f) + 1.0f;
         switch(enemyType){
             case EnemyContainer.ELECTRIC_SHIP:
                 tempE = new FlyingEnemy(distance + offset, .5f, enemyType);

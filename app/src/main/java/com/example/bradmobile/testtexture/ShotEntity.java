@@ -211,7 +211,7 @@ public class ShotEntity extends Entity{
 					if(shotArray[i].dead()){
 						
 						bulletState[i] = false;
-					}else if(shotArray[i].drawShot()[0] > 1.5f || shotArray[i].drawShot()[0]< -1.5f){
+					}else if(shotArray[i].drawShot()[0] > 3.0f || shotArray[i].drawShot()[0]< -3.0f){
 						bulletState[i] = false;
 						
 					}else if(!shotArray[i].isFriendly()){
@@ -259,13 +259,13 @@ public class ShotEntity extends Entity{
 
 													get ground for obstacle to drop on
 													 */
-													for(int o = 0; o < 8; o++) {
+													for(int o = 0; o < 10; o++) {
                                                         for (int p = 0; p < 4; p++) {
 															if(hasOList[o][p]) {
 																if (enemyList[k].getAbsoluteX() - mapOffsetX >= (obstacleList[o][p][0]) && enemyList[k].getAbsoluteX() - mapOffsetX <= (obstacleList[o][p][2])  && enemyList[k].getY() >= obstacleList[o][p][1]) {
 																	if (obstacleList[o][p][1] < lowestLevel) {
 																		lowestLevel = obstacleList[o][p][1];
-																		o = 8;
+																		o = 10;
 																		p =4;
 																	}
 
@@ -295,7 +295,7 @@ public class ShotEntity extends Entity{
 					}
 					
 					if(!shotArray[i].dying()){
-						for(int o = 0; o < 8; o++){
+						for(int o = 0; o < 10; o++){
 							for(int j = 0; j < 4; j++){
 								if (hasOList[o][j]) {
 
@@ -305,7 +305,7 @@ public class ShotEntity extends Entity{
 										if ((shotArray[i].drawShot()[1] ) < obstacleList[o][j][1] && shotArray[i].drawShot()[1] > obstacleList[o][j][3]) {
 
 											shotArray[i].impact(true);
-											o = 8;
+											o = 10;
 											j = 4;
 										}
 
@@ -356,9 +356,6 @@ public class ShotEntity extends Entity{
 		int currentTextureHandle = -1;
 		// Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
 		GLES20.glUniform1i(mTextureUniformHandle, 0);
-
-
-
 
 		//textCoordsFB.position(12);
 		for(int i = 0; i< maxShots; i++) {

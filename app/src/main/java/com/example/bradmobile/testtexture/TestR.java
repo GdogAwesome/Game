@@ -1,25 +1,17 @@
 package com.example.bradmobile.testtexture;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
-import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
-import android.opengl.GLUtils;
 import android.opengl.Matrix;
-import android.os.SystemClock;
 import android.util.Log;
 
 import com.example.bradmobile.testtexture.Utils.BufferUtils;
 import com.example.bradmobile.testtexture.Utils.TextureUtils;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import com.example.bradmobile.testtexture.ShaderLibrary.*;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -30,31 +22,14 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class TestR implements GLSurfaceView.Renderer {
 
-
-
-    private int mColorOffset = 0;
-    private int mPositionOffset =0;
-    private int mBytesPerFloat = 4;
-    private int mColorSize = 4;
-    private int mNormalSize = 3;
     private int mTextureCoordSize = 2;
     private ShotEntity shots;
     private EnemyContainer enemies;
     private Controller controller;
+    private Shader shader;
     private Map1 map;
     private boolean hasGameController;
-    public int textureLocation = 0;
-
-
-    private int[] VBO = new int[4];
-
-    private float ratio = 1;
-
-
     private int mPositionSize = 3;
-    private int mColorStrideBytes = mColorSize * mBytesPerFloat;
-    private int mPositionStrideBytes = mPositionSize * mBytesPerFloat;
-
     //this matrix is used as the camera
     private float[] mViewMatrix = new float[16];
 
@@ -80,31 +55,15 @@ public class TestR implements GLSurfaceView.Renderer {
 
     private final int POSTITION_DATA_SIZE =  3;
 
-    // setup handles for regular draw
-    private int mMVPMatrixHandle;
-    private int mMVMatrixHandle;
-    private int mPositionHandle;
-    private int mTextureUniformHandle;
-    private int mTextureCoordinateHandle;
 
-    //setup handle for normal map draw
-    private int mNormalTextureUniformHandle;
-    private int mMVPNormalMatrixHandle;
-    private int mMVNormalMatrixHandle;
-    private int mNormalPositionHandle;
-    private int mNormalTextureCoordinateHandle;
-    private int mNormalTextureHandle;
-    private int mLightPosHandle;
-    private int mNormalPerVertexHandle;
-    private int mNormalAnimFrame;
-    private int mNormalHasAnim;
     private int[] normalMapTexture = new int[1];
 
 //Map objects
     private int[] mapTextures = new int[3];
+    private int[] testIndices = new int[240];
+    private IntBuffer testIndicesBuffer;
    private FloatBuffer[] mapVertexCoords;
    private ShortBuffer mapAnimBuffer;
-    private int mapTextureCoordVBO = 0;
     private ShortBuffer drawIndices;
     private int[] mapVertexCoordVBO = new int[4];
     private int[] mapTextureHandle = new int[2];
@@ -121,16 +80,6 @@ public class TestR implements GLSurfaceView.Renderer {
 
     private boolean surfaceActive = false;
 
-    private String vShader;
-    private String fShader;
-
-    private int vertexShaderHandle;
-    private int fragmentShaderHandle;
-    private int normalVertexShaderHandle;
-    private int normalFragmentShaderHandle;
-
-    private int mPerVertexProgramHandle;
-    private int mPointProgramHandle;
 
     HeroEntity hero;
 
@@ -141,10 +90,7 @@ public class TestR implements GLSurfaceView.Renderer {
 
     TestR(Context context){
         this.context = context;
-
-
-
-
+        shader = new Shader(context);
     }
 
     @Override
@@ -154,6 +100,10 @@ public class TestR implements GLSurfaceView.Renderer {
         GLES20.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
         // Use culling to remove back faces.
 
+        for(int i = 0; i< testIndices.length; i++){
+            testIndices[i] = 0;// ((i)  * 4 * 4 * 3);
+        }
+        testIndicesBuffer = BufferUtils.getIntBuffer(testIndices,4);
         // disable depth testing
         //GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -189,18 +139,12 @@ public class TestR implements GLSurfaceView.Renderer {
         // view matrix. In OpenGL 2, we can keep track of these matrices separately if we choose.
         Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
 
-
+        shader.LoadShaders();
         setupObjects();
 
 
         Matrix.setIdentityM(mIdentityMatrix,0);
         Matrix.translateM(mIdentityMatrix, 0, 0.0f, 0.0f, -2.51f);
-
-        //TODO setup proper shader class to handle all this
-
-        setupRegularShaders();
-        setupNormalsShader();
-
 
 
         surfaceActive = true;
@@ -228,8 +172,6 @@ public class TestR implements GLSurfaceView.Renderer {
         final float top = 1.0f;
         final float near = 1.0f;
         final float far = 3.0f;
-        //Log.e("left", Float.toString(left));
-       // Log.e("right", Float.toString(right));
 
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
 
@@ -240,7 +182,6 @@ public class TestR implements GLSurfaceView.Renderer {
     }
     @Override
     public void onDrawFrame(GL10 glUnused) {
-        //GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 
         /**
          *
@@ -250,181 +191,131 @@ public class TestR implements GLSurfaceView.Renderer {
          */
 
         // TODO move this below drawMap after setting up map shader
-        GLES20.glUseProgram(mPerVertexProgramHandle);
+        shader.useRegularProgrma();
 
         drawMap();
 
-        GLES20.glUseProgram(mPerVertexProgramHandle);
-
-        enemies.draw(mTextureUniformHandle, mTextureCoordinateHandle, mPositionHandle,mMVMatrixHandle,mMVPMatrixHandle,mProjectionMatrix,mMVPMatrix,mViewMatrix);
-        shots.draw(mTextureUniformHandle, mTextureCoordinateHandle, mPositionHandle,mMVMatrixHandle,mMVPMatrixHandle,mProjectionMatrix,mMVPMatrix,mViewMatrix);
-        hero.draw(mTextureUniformHandle, mTextureCoordinateHandle, mPositionHandle,mMVMatrixHandle,mMVPMatrixHandle,mProjectionMatrix,mMVPMatrix,mViewMatrix);
+        shader.useRegularProgrma();
+        enemies.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(),shader.getmMVMatrixHandle(),shader.getmMVPMatrixHandle(),mProjectionMatrix,mMVPMatrix,mViewMatrix);
+        shots.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(),shader.getmMVMatrixHandle(),shader.getmMVPMatrixHandle(),mProjectionMatrix,mMVPMatrix,mViewMatrix);
+        hero.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(),shader.getmMVMatrixHandle(),shader.getmMVPMatrixHandle(),mProjectionMatrix,mMVPMatrix,mViewMatrix);
         if(!hasGameController) {
-            controller.draw(mTextureUniformHandle, mTextureCoordinateHandle, mPositionHandle, mMVMatrixHandle, mMVPMatrixHandle, mProjectionMatrix, mMVPMatrix, mViewMatrix);
+            controller.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(),shader.getmMVMatrixHandle(),shader.getmMVPMatrixHandle(),mProjectionMatrix,mMVPMatrix,mViewMatrix);
         }
 
     }
+    private void drawMap(){
 
+        /**
+         *
+         *
+         * draw map background
+         */
 
-    private String getVertexShader(int res){
+        // Set the active texture unit to texture unit 0.
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 
-        String shader = "";
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mapTextureHandle[1]);
 
-        InputStream is = context.getResources().openRawResource(res);
+        // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
+        GLES20.glUniform1i(shader.getmTextureUniformHandle(), 0);
 
-        InputStreamReader sr = new InputStreamReader(is);
-        BufferedReader reader = new BufferedReader(sr);
-        String temp = null;
 
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mapVertexCoordVBO[1]);
+        GLES20.glEnableVertexAttribArray(shader.getmPositionHandle());
+        GLES20.glVertexAttribPointer(shader.getmPositionHandle(), mPositionSize,GLES20.GL_FLOAT,false,0,0);
 
 
-        try {
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,0);
 
+        // Pass in the texture coordinate information -- currently not using vbo
+        mapTextureCoords[1].rewind();//.position(0);
+        GLES20.glEnableVertexAttribArray(shader.getmTextureCoordinateHandle());
+        GLES20.glVertexAttribPointer(shader.getmTextureCoordinateHandle(), mTextureCoordSize, GLES20.GL_FLOAT, false,
+                0, mapTextureCoords[1]);
 
-        if(reader != null){
-            while((temp = reader.readLine()) != null) {
 
-                shader += temp +"\n";
-            }
+        Matrix.multiplyMM(mMVPMatrix ,0,mViewMatrix, 0, mMapModelMatrix[1],0);
+        GLES20.glUniformMatrix4fv(shader.getmMVMatrixHandle(), 1, false, mMVPMatrix, 0);
 
-        }
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
 
-            is.close();
-            sr.close();
-            reader.close();
+        GLES20.glUniformMatrix4fv(shader.getmMVPMatrixHandle(),1,false,mMVPMatrix,0);
 
-        }catch(IOException e){
-         Log.e("shader not loader", "", e);
-        }finally{
 
-        }
-        return shader;
 
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0,12);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
-    }
-    private String getFragmentShader(int res){
+        /**
+         * Draw Map
+         *
+         *
+         */
 
-        String shader = "";
+        shader.useNormalProgram();
 
-        InputStream is = context.getResources().openRawResource(res);
+        GLES20.glUniform1i(shader.getmNormalTextureHandle(), 1);
+        GLES20.glUniform1i(shader.getmNormalTextureUniformHandle(), 0);
 
-        InputStreamReader sr = new InputStreamReader(is);
-        BufferedReader reader = new BufferedReader(sr);
-        String temp = null;
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + 1);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, normalMapTexture[0]);
 
-        try {
 
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mapTextureHandle[0]);
 
-            if(reader != null){
-                while((temp = reader.readLine()) != null) {
 
-                    shader += temp +"\n";
-                }
 
-            }
+        //setup up light position
+        Matrix.setIdentityM(mLightModelMatrix, 0);
+        Matrix.translateM(mLightModelMatrix, 0, .25f, -0.25f, - 0.5f);
 
-            is.close();
-            sr.close();
-            reader.close();
+        Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
+        Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
 
-        }catch(IOException e){
-            Log.e("shader not loaded", "", e);
-        }finally{
+        GLES20.glUniform3f(shader.getmLightPosHandle(), mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
 
-        }
-        return shader;
-    }
-    private void setupNormalsShader(){
-        vShader = getVertexShader(R.raw.v_shader_map);
+        //pass in vertex coords
+        GLES20.glEnableVertexAttribArray(shader.getmNormalPositionHandle());
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mapVertexCoordVBO[0]);
+        //GLES20.glVertexAttribPointer(shader.getmNormalPositionHandle(), mPositionSize,GLES20.GL_FLOAT,false,0, 0);
+        GLES20.glVertexAttribPointer(shader.getmNormalPositionHandle(), mPositionSize,GLES20.GL_FLOAT,false,0, 0);
 
 
-        fShader = getFragmentShader(R.raw.f_shader_map);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,0);
 
-        normalFragmentShaderHandle = compileShader(GLES20.GL_FRAGMENT_SHADER, fShader);
-        normalVertexShaderHandle = compileShader(GLES20.GL_VERTEX_SHADER, vShader);
+        // pass in animframe coords
+        //mapAnimBuffer.position(map.getAnimBufferOffset());//10 * 6 * 4 );
+        GLES20.glEnableVertexAttribArray(shader.getmNormalHasAnim());
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mapVertexCoordVBO[2]);
+        GLES20.glVertexAttribPointer(shader.getmNormalHasAnim(), 1, GLES20.GL_SHORT, false,  0, map.getAnimBufferOffset());
 
-        mNormalPerVertexHandle = createAndLinkProgram(normalVertexShaderHandle, normalFragmentShaderHandle,
-                new String[] {"a_Position", "a_TexCoordinate, a_HasAnim"});
+        // pass in anim frame pos
+        GLES20.glUniform1i(shader.getmNormalAnimFrame(), (map.getAnimFrame()));
 
 
-        mMVNormalMatrixHandle = GLES20.glGetUniformLocation(mNormalPerVertexHandle,"u_MVMatrix");
-        mMVPNormalMatrixHandle = GLES20.glGetUniformLocation(mNormalPerVertexHandle,"u_MVPMatrix");
-        mNormalPositionHandle = GLES20.glGetAttribLocation(mNormalPerVertexHandle,"a_Position");
-        mLightPosHandle = GLES20.glGetUniformLocation(mNormalPerVertexHandle, "u_LightPos");
-        mNormalAnimFrame = GLES20.glGetUniformLocation(mNormalPerVertexHandle, "u_AnimFrame");
-        mNormalHasAnim = GLES20.glGetAttribLocation(mNormalPerVertexHandle, "a_HasAnim");
+        // Pass in the texture coordinate information -- currently not using vbo
 
-        mNormalTextureCoordinateHandle = GLES20.glGetAttribLocation(mNormalPerVertexHandle, "a_TexCoordinate");
-        mNormalTextureUniformHandle = GLES20.glGetUniformLocation(mNormalPerVertexHandle, "u_Texture");
-        mNormalTextureHandle = GLES20.glGetUniformLocation(mNormalPerVertexHandle, "u_NormalMap");
+        //mapTextureCoords[0].position(map.getTextureBufferOffset());// 6 * 4 * 2);
+        GLES20.glEnableVertexAttribArray(shader.getmNormalTextureCoordinateHandle());
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mapVertexCoordVBO[3]);
+        GLES20.glVertexAttribPointer(shader.getmNormalTextureCoordinateHandle(), mTextureCoordSize, GLES20.GL_FLOAT, false,
+                0,  map.getTextureBufferOffset());
 
-        Log.d("normal Texture Handle", Integer.toString(mNormalTextureHandle));
 
+        Matrix.multiplyMM(mMVPMatrix ,0,mViewMatrix, 0, mMapModelMatrix[0],0);
+        GLES20.glUniformMatrix4fv(shader.getmMVNormalMatrixHandle(), 1, false, mMVPMatrix, 0);
 
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
 
-    }
-    private void setupRegularShaders(){
-        vShader = getVertexShader(R.raw.v_shader);
+        GLES20.glUniformMatrix4fv(shader.getmMVPNormalMatrixHandle(),1,false,mMVPMatrix,0);
 
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, 360, GLES20.GL_UNSIGNED_SHORT, drawIndices);
 
-        fShader = getFragmentShader(R.raw.f_shader);
 
-        fragmentShaderHandle = compileShader(GLES20.GL_FRAGMENT_SHADER, fShader);
-        vertexShaderHandle = compileShader(GLES20.GL_VERTEX_SHADER, vShader);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
-        mPerVertexProgramHandle = createAndLinkProgram(vertexShaderHandle, fragmentShaderHandle,
-                new String[] {"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
-
-
-        mMVMatrixHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle,"u_MVMatrix");
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle,"u_MVPMatrix");
-        mPositionHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle,"a_Position");
-
-
-        mTextureCoordinateHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_TexCoordinate");
-        mTextureUniformHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "u_Texture");
-
-    }
-
-    private int compileShader(int shaderType, String shaderSource){
-        int shaderHandle = GLES20.glCreateShader(shaderType);
-
-        if(shaderHandle != 0){
-
-            GLES20.glShaderSource(shaderHandle,shaderSource);
-
-            GLES20.glCompileShader(shaderHandle);
-
-
-        }
-
-
-        return shaderHandle;
-    }
-
-    private int createAndLinkProgram(int vHandle, int fHandle,String[] attributes){
-        int programHandle = GLES20.glCreateProgram();
-
-        if(programHandle != 0){
-
-            GLES20.glAttachShader(programHandle,vHandle);
-
-            GLES20.glAttachShader(programHandle, fHandle);
-
-            if(attributes != null){
-
-                final int size = attributes.length;
-                for(int i =0; i < size; i++){
-
-                    GLES20.glBindAttribLocation(programHandle,i, attributes[i]);
-                }
-            }
-
-            GLES20.glLinkProgram(programHandle);
-
-
-        }
-        return programHandle;
     }
 
     public void setMapVertexCoord( FloatBuffer[] v){
@@ -470,127 +361,6 @@ public class TestR implements GLSurfaceView.Renderer {
     public void setController(Controller c){
         this.controller = c;
     }
-
-
-    private void drawMap(){
-
-        /**
-         *
-         *
-         * draw map background
-         */
-
-        // Set the active texture unit to texture unit 0.
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mapTextureHandle[1]);
-
-        // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
-        GLES20.glUniform1i(mTextureUniformHandle, 0);
-
-
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mapVertexCoordVBO[1]);
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, mPositionSize,GLES20.GL_FLOAT,false,0,0);
-
-
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,0);
-
-        // Pass in the texture coordinate information -- currently not using vbo
-        mapTextureCoords[1].rewind();//.position(0);
-        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
-        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, mTextureCoordSize, GLES20.GL_FLOAT, false,
-                0, mapTextureCoords[1]);
-
-
-        Matrix.multiplyMM(mMVPMatrix ,0,mViewMatrix, 0, mMapModelMatrix[1],0);
-        GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
-
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle,1,false,mMVPMatrix,0);
-
-
-
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0,12);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-
-        /**
-         * Draw Map
-         *
-         *
-         */
-
-        GLES20.glUseProgram(mNormalPerVertexHandle);
-
-
-        GLES20.glUniform1i(mNormalTextureHandle, 1);
-        GLES20.glUniform1i(mNormalTextureUniformHandle, 0);
-
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + 1);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, normalMapTexture[0]);
-
-
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mapTextureHandle[0]);
-
-
-
-        //setup up light position
-        Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, .25f, -0.25f, - 0.5f);
-
-        Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
-        Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
-
-        GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
-
-        //pass in vertex coords
-        GLES20.glEnableVertexAttribArray(mNormalPositionHandle);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mapVertexCoordVBO[0]);
-        GLES20.glVertexAttribPointer(mNormalPositionHandle, mPositionSize,GLES20.GL_FLOAT,false,0, 0);
-
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,0);
-
-        // pass in animframe coords
-        //mapAnimBuffer.position(map.getAnimBufferOffset());//10 * 6 * 4 );
-        GLES20.glEnableVertexAttribArray(mNormalHasAnim);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mapVertexCoordVBO[2]);
-        GLES20.glVertexAttribPointer(mNormalHasAnim, 1, GLES20.GL_SHORT, false,  0, map.getAnimBufferOffset());
-
-        // pass in anim frame pos
-        GLES20.glUniform1i(mNormalAnimFrame, (map.getAnimFrame()));
-
-
-        // Pass in the texture coordinate information -- currently not using vbo
-
-        //mapTextureCoords[0].position(map.getTextureBufferOffset());// 6 * 4 * 2);
-        GLES20.glEnableVertexAttribArray(mNormalTextureCoordinateHandle);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mapVertexCoordVBO[3]);
-        GLES20.glVertexAttribPointer(mNormalTextureCoordinateHandle, mTextureCoordSize, GLES20.GL_FLOAT, false,
-                0, map.getTextureBufferOffset());
-
-
-        Matrix.multiplyMM(mMVPMatrix ,0,mViewMatrix, 0, mMapModelMatrix[0],0);
-        GLES20.glUniformMatrix4fv(mMVNormalMatrixHandle, 1, false, mMVPMatrix, 0);
-
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-
-        GLES20.glUniformMatrix4fv(mMVPNormalMatrixHandle,1,false,mMVPMatrix,0);
-
-
-
-        //GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0,360);
-
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, 360, GLES20.GL_UNSIGNED_SHORT, drawIndices);
-
-
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-
-    }
-
-
-
 
     public static int[] getPositionVBO(FloatBuffer mPositionData){
         int[] tempBuffer = new int[1];

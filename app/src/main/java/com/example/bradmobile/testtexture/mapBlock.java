@@ -41,16 +41,16 @@ public class mapBlock {
 	 * 
 	 * @param x
 	 * @param y
-	 * @param obsticles
+	 * @param obstacles
 	 */
 
 	
-	public mapBlock(float x, float y, int obsticles ){
+	public mapBlock(float x, float y, int obstacles ){
 		
 		posX = x;
 		posY = y;
 
-		this.objects = obsticles;
+		this.objects = obstacles;
 
 		
 
@@ -61,7 +61,7 @@ public class mapBlock {
 
 		for(int i = 0; i< 4; i++){
 			
-				segment = new BlockSegment(XPositions[i],YPositions[i], DX[i], DY[i]);
+				segment = new BlockSegment(XPositions[i],YPositions[i] , DX[i], DY[i]);
 				segment.setObstacleRect(hasO[i],obstacleList[i][0], obstacleList[i][1], obstacleList[i][2], obstacleList[i][3]);
 				segment.setAnim(hasAnim[i]);
 				segments[i] = segment;

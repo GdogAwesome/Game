@@ -9,6 +9,7 @@ public class EnemyQueue {
     private int queueNo= 0;
     private int[] enemyTypes = new int[maxEnemyTypes];
     private int totalEnemyTypes = 0;
+    private  int totalQueues = 15;
     private int maxQueues = 15;
     private float[][] enemyBounds = new float[maxEnemyTypes][4];
     private CurrentEnemyQueue[] currentQueue = new CurrentEnemyQueue[maxQueues];
@@ -45,18 +46,19 @@ public class EnemyQueue {
      * @param mapNo
      */
     public void initQueue(int mapNo){
-        int[] enemyTypes = new int[]{0 ,0,0,0,0};
-        queueActive = new boolean[enemyTypes.length];
+        int[] enemyTypes = new int[]{0 ,0,0,0,0, 0, 0, 0};
+        queueActive = new boolean[totalQueues];
         float[][] enemyBounds = new float[enemyTypes.length][4];
         for(int i = 0;  i < enemyTypes.length; i ++){
             enemyBounds[i] = this.enemyBounds[enemyTypes[i]];
         }
 
+        for(int i = 0; i < totalQueues; i ++){
 
-        currentQueue[0].loadQueue(enemyTypes, enemyBounds,3.0f);
-        currentQueue[1].loadQueue(enemyTypes, enemyBounds,6.0f);
-        queueActive[0] = true;
-        queueActive[1] = true;
+            currentQueue[i].loadQueue(enemyTypes, enemyBounds,(3.0f * (float)(i + 1)));
+            queueActive[i] = true;
+
+        }
 
     }
 
@@ -67,13 +69,14 @@ public class EnemyQueue {
                 currentQueue[queueNo].loadEnemies();
                 queueActive[queueNo] = false;
 
+                //TODO hardcoded for testing
+                if(queueNo < totalQueues - 1 ){
+                    queueNo ++ ;
+
+                }
+
             }
 
-            //TODO hardcoded for testing
-            if(queueNo < 1 ){
-                queueNo ++ ;
-
-            }
 
         }
 

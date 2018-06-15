@@ -273,18 +273,7 @@ public class EnemyContainer extends Entity {
         }
         enemy.InitEnemy(4,2, this.getObjectBounds(enemyType));
 
-        remainder =index% 3;
-        if (remainder <= 0.0){
-            enemy.setHasItem(true,Item.WEAPON_UPGRADE_FLAME);
-        }
-        remainder =index% 5;
-        if (remainder <= 0.0){
-            enemy.setHasItem(true,Item.HEALTH_UPGRADE);
-        }
-        remainder =index% 4;
-        if(remainder <= 0.0){
-            enemy.setHasItem(true, Item.WEAPON_UPGRADE_SPRAY);
-        }
+
 
         enemyList[index] = enemy;
         enemyActive[index] = false;

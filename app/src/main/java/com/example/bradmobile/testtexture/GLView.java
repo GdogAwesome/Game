@@ -106,15 +106,15 @@ public class GLView extends GLSurfaceView implements Runnable {
 
 
 
-    public boolean[][] hasOList = new boolean[8][4];
-    public float[][][] obstacleList = new float[8][4][4];
+    public boolean[][] hasOList = new boolean[10][4];
+    public float[][][] obstacleList = new float[10][4][4];
     public boolean twoPointers = false;
 
 
 
     private boolean running = true;
-    private final int MAX_FPS = 60;
-    private final int FRAME_PERIOD = 1000/MAX_FPS;
+    private final float MAX_FPS = 59.0f;
+    private final float FRAME_PERIOD = 1000.0f/MAX_FPS;
     private final int MAX_FRAME_SKIPS = 0;
 
 
@@ -427,26 +427,30 @@ public class GLView extends GLSurfaceView implements Runnable {
             Get map Obstacles
 
              */
-        hasOList[0] = Map.getLeftThasO();
-        hasOList[4] = Map.getLeftBhasO();
-        hasOList[1] = Map.getCenterThasO();
-        hasOList[5] = Map.getCenterBhasO();
-        hasOList[2] = Map.getRightThasO();
-        hasOList[6] = Map.getRightBhasO();
-        hasOList[3] = Map.getFarRightThasO();
-        hasOList[7] = Map.getFarRightBhasO();
+            hasOList[0] = Map.getFarLeftThasO();
+            hasOList[5] = Map.getFarLeftThasO();
+        hasOList[1] = Map.getLeftThasO();
+        hasOList[6] = Map.getLeftBhasO();
+        hasOList[2] = Map.getCenterThasO();
+        hasOList[7] = Map.getCenterBhasO();
+        hasOList[3] = Map.getRightThasO();
+        hasOList[8] = Map.getRightBhasO();
+        hasOList[4] = Map.getFarRightThasO();
+        hasOList[9] = Map.getFarRightBhasO();
 
-        obstacleList[0] = Map.getLeftTopObstacle();
-        obstacleList[4] = Map.getLeftBottomObstacle();
+        obstacleList[0] = Map.getFarLeftTopObstacle();
+        obstacleList[5] = Map.getFarLeftBottomObstacle();
+        obstacleList[1] = Map.getLeftTopObstacle();
+        obstacleList[6] = Map.getLeftBottomObstacle();
         //obstacleList[2] = Map.getCenterSkyObstacle();
-        obstacleList[1] = Map.getCenterTopObstacle();
-        obstacleList[5] = Map.getCenterBottomObstacle();
+        obstacleList[2] = Map.getCenterTopObstacle();
+        obstacleList[7] = Map.getCenterBottomObstacle();
         //obstacleList[5] = Map.getRightSkyObstacle();
-        obstacleList[2] = Map.getRightTopObstacle();
-        obstacleList[6] = Map.getRightBottomObstacle();
+        obstacleList[3] = Map.getRightTopObstacle();
+        obstacleList[8] = Map.getRightBottomObstacle();
 
-        obstacleList[3] = Map.getFarRightTopObstacle();
-        obstacleList[7] = Map.getFarRightBottomObstacle();
+        obstacleList[4] = Map.getFarRightTopObstacle();
+        obstacleList[9] = Map.getFarRightBottomObstacle();
 
 
 		/*
@@ -458,7 +462,7 @@ public class GLView extends GLSurfaceView implements Runnable {
 
 
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 4; j++) {
 
                 if(hasOList[i][j]) {
@@ -474,7 +478,7 @@ public class GLView extends GLSurfaceView implements Runnable {
 
                             hero.setGround(obstacleList[i][j][1]);
                         }
-                            i = 8;
+                            i = 10;
                             j = 4;
 
                     } else {
@@ -704,16 +708,18 @@ public class GLView extends GLSurfaceView implements Runnable {
     }
     @Override
     public boolean onTouchEvent(MotionEvent me) {
+        boolean handled = false;
         if(!hasGameController) {
 
             int action = MotionEventCompat.getActionMasked(me);
             int pointerId;
 
+
             int index;
 
-            switch (action) {
+            //switch (action) {
 
-                case MotionEvent.ACTION_DOWN:
+                if(action == MotionEvent.ACTION_DOWN){
                     interact = true;
                     //playerCommand = 1;
                     //leftPlayerMove(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
@@ -724,18 +730,18 @@ public class GLView extends GLSurfaceView implements Runnable {
                     //x =  (int)me.getX(index);
                     //y = (int)me.getY(index);
 
-                    controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+                    handled = controller.retControlFromTouch(me.getX(index), me.getY(index), false);
                     if (me.getPointerCount() > 1) {
                         twoPointers = true;
                         pointerId = me.getPointerId(1);
                         index = me.findPointerIndex(pointerId);
                         //x = (int) me.getX(index);
                         //y = (int) me.getY(index);
-                        controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+                        handled = controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+                    }
                     }
 
-                    break;
-                case MotionEvent.ACTION_UP:
+                if(action ==  MotionEvent.ACTION_UP){
                     //interact = false;
                     playerCommand = 0;
                     // buttonReleaseLeft(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
@@ -743,19 +749,19 @@ public class GLView extends GLSurfaceView implements Runnable {
                     index = me.findPointerIndex(pointerId);
                     // x =  (int)me.getX(index);
                     // y = (int)me.getY(index);
-                    controller.retControlFromTouch(me.getX(index), me.getY(index), true);
+                    handled = controller.retControlFromTouch(me.getX(index), me.getY(index), true);
                     if (me.getPointerCount() > 1) {
                         twoPointers = true;
                         pointerId = me.getPointerId(1);
                         index = me.findPointerIndex(pointerId);
                         //x = (int) me.getX(index);
                         //y = (int) me.getY(index);
-                        controller.retControlFromTouch(me.getX(index), me.getY(index), true);
+                        handled = controller.retControlFromTouch(me.getX(index), me.getY(index), true);
                     }
 
 
-                    break;
-                case MotionEvent.ACTION_MOVE:
+                 }
+                if(action == MotionEvent.ACTION_MOVE){
 
                     //leftPlayerMove(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
                     //leftPlayerMove(me.getX(),me.getY());
@@ -763,19 +769,20 @@ public class GLView extends GLSurfaceView implements Runnable {
                     index = me.findPointerIndex(pointerId);
                     // x =  (int)me.getX(index);
                     // y = (int)me.getY(index);
-                    controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+                    handled = controller.retControlFromTouch(me.getX(index), me.getY(index), false);
                     if (me.getPointerCount() > 1) {
                         twoPointers = true;
                         pointerId = me.getPointerId(1);
                         index = me.findPointerIndex(pointerId);
                         //x = (int) me.getX(index);
                         //y = (int) me.getY(index);
-                        controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+                        handled = controller.retControlFromTouch(me.getX(index), me.getY(index), false);
 
                     }
-                    break;
 
-                case MotionEvent.ACTION_POINTER_DOWN:
+                    }
+
+                if(action ==  MotionEvent.ACTION_POINTER_DOWN){
                     interact = true;
                     //playerCommand = 1;
                     //leftPlayerMove(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
@@ -785,17 +792,17 @@ public class GLView extends GLSurfaceView implements Runnable {
                     // x =  (int)me.getX(index);
                     // y = (int)me.getY(index);
 
-                    controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+                    handled = controller.retControlFromTouch(me.getX(index), me.getY(index), false);
                     if (me.getPointerCount() > 1) {
                         twoPointers = true;
                         pointerId = me.getPointerId(1);
                         index = me.findPointerIndex(pointerId);
                         //x = (int) me.getX(index);
                         //y = (int) me.getY(index);
-                        controller.retControlFromTouch(me.getX(index), me.getY(index), false);
+                        handled = controller.retControlFromTouch(me.getX(index), me.getY(index), false);
                     }
-                    break;
-                case MotionEvent.ACTION_POINTER_UP:
+                }
+                if(action == MotionEvent.ACTION_POINTER_UP){
                     // interact = false;
                     playerCommand = 0;
                     //buttonReleaseLeft(MotionEventCompat.getX(me, index), MotionEventCompat.getY(me, index));
@@ -806,7 +813,7 @@ public class GLView extends GLSurfaceView implements Runnable {
                     // x =  (int)me.getX(index);
                     // y = (int)me.getY(index);
 
-                    controller.retControlFromTouch(me.getX(index), me.getY(index), true);
+                    handled = controller.retControlFromTouch(me.getX(index), me.getY(index), true);
 
                     if (me.getPointerCount() > 1) {
                         twoPointers = true;
@@ -814,12 +821,12 @@ public class GLView extends GLSurfaceView implements Runnable {
                         index = me.findPointerIndex(pointerId);
                         //x = (int) me.getX(index);
                         //y = (int) me.getY(index);
-                        controller.retControlFromTouch(me.getX(index), me.getY(index), true);
+                        handled = controller.retControlFromTouch(me.getX(index), me.getY(index), true);
                     }
 
-                    break;
+                }
 
-            }
+
             /*
             playerCommand = controller.getPlayerCommand();
 
@@ -831,7 +838,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         }
 
 
-        return true;
+        return handled;
 
     }
     @Override

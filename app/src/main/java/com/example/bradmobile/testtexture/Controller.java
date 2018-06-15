@@ -106,8 +106,7 @@ public class Controller extends Entity {
 
 
     }
-    public int retControlFromTouch(float x, float y, boolean release){
-
+    public boolean retControlFromTouch(float x, float y, boolean release){
 
 
                 if(x > (Constants.SCREEN_WIDTH /2)){
@@ -141,7 +140,7 @@ public class Controller extends Entity {
 
 
 
-        return playerCommand;
+        return true;
 
     }
 

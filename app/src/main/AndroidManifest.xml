@@ -23,7 +23,7 @@
             android:name=".StartScreen"
             android:screenOrientation="landscape">
 
-            <!-- android:launchMode="singleInstance" -->
+            android:launchMode="singleInstance"
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -80,8 +80,7 @@ public class EnemyEntity {
 	protected boolean continuousFire = false;
 	protected float shotAngle = 180f;
 	public boolean justDied = true;
-    public float sampleFrameW = 0;
-    public float sampleFrameH =0;
+
 
 	public boolean dying = false;
 	public boolean dead = false;

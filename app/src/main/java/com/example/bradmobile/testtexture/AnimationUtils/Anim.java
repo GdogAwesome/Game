@@ -140,8 +140,14 @@ public class Anim {
 
         return a;
     }
+    public void jump(){
+        currentAnim.runAnim(jump, JUMP, frameTime[JUMP], reciprocating[JUMP], continuous[JUMP], interruptible[JUMP]);
+    }
     public void run(){
         currentAnim.runAnim(continuousRun, CONTINUOUS_RUN, frameTime[CONTINUOUS_RUN], reciprocating[CONTINUOUS_RUN], continuous[CONTINUOUS_RUN], interruptible[CONTINUOUS_RUN]);
+    }
+    public void startRun(){
+        currentAnim.runAnim(startRun, START_RUN, frameTime[START_RUN], reciprocating[START_RUN], continuous[START_RUN], interruptible[START_RUN]);
     }
     public void stop(){
         currentAnim.runAnim(standing, STANDING, frameTime[STANDING], reciprocating[STANDING], continuous[STANDING], interruptible[STANDING]);

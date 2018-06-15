@@ -11,10 +11,7 @@ public class BlockSegment {
 	private double spritePosY;
 	private int objects;
 	public boolean hasObstacle = false;
-	int segmentWidth = 200;
-	int segmentHeight = 150;
-	public final static int BLOCK_WIDTH = Constants.BLOCK_WIDTH;
-	public final static int BLOCK_HEIGHT = Constants.BLOCK_HEIGHT;
+
 	public final static int SEGMENT_WIDTH = Constants.SEGMENT_WIDTH;
 	public final static int SEGMENT_HEIGHT = Constants.SEGMENT_HEIGHT;
 	public float[] drawInfo = new float[4];

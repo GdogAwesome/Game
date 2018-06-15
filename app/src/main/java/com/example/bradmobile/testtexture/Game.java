@@ -165,13 +165,16 @@ public class Game extends AppCompatActivity {
              uiOptions = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                     | View.SYSTEM_UI_FLAG_FULLSCREEN
                     | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+
+             rd.setSystemUiVisibility(uiOptions);
         }else{
             //TODO this doesn't quite work right but it doesn't mess up the screen touch coordinates
-             uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+
+             //uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
 
         }
 
-        rd.setSystemUiVisibility(uiOptions);
+
     }
 
 /*

@@ -9,6 +9,7 @@ import com.example.bradmobile.testtexture.AnimationUtils.*;
 
 public class HeroEntity extends Entity {
     private Anim animHandler;
+    private Anim tAnimHandler;
 	protected float x;
 	protected float y;
 
@@ -120,6 +121,7 @@ public class HeroEntity extends Entity {
 		this.y = 0;
 		mBox = new MessageBox();
 		animHandler = new Anim();
+		tAnimHandler = new Anim();
 
 		heroImage =  R.drawable.pos4;
 
@@ -227,6 +229,7 @@ public class HeroEntity extends Entity {
 			beginningPos = mModelMatrix[0][13]+(matrixToFootingOffset);
 			firstRun = false;
 			lastJumpCount = FRAME_VARIANCE;
+			animHandler.jump();
 			currentJumpPos = -.894F;
 			contJump = true;
 			momentum = 0;
@@ -287,54 +290,22 @@ public class HeroEntity extends Entity {
 		//TODO fix torso anim to use new method of animation
 		if( doneStart && !contJump){
 		counter += FRAME_VARIANCE;
+
 		if( momentum < 10){
 			momentum ++;
 		}
-		
-			if(counter >= 5){
-			
-				xPosCounter++;
-					counter = 0;
-			
-				if(xPosCounter >= 4){
-					yPosCounter ++;
-					xPosCounter = 0;
-					
-					if(yPosCounter >= 4 ){
-						yPosCounter = 0;
-					}
-			    }
-			    if(!firing) {
-					xTorsoCounter = yPosCounter;
-					yTorsoCounter = 1;
-				}
 
-			}
+			animHandler.run();
+			tAnimHandler.run();
 		}else if ( !doneStart && !contJump)
 		{
 			counter += FRAME_VARIANCE;
-			
-			
-			if(counter >= 5){
-				xPosCounter ++;
-				counter = 0;
-				if(xPosCounter >= 4){
-	
-					xPosCounter = 0;
-					yPosCounter = 0;
-
-					lastCount = FRAME_VARIANCE;
+			animHandler.startRun();
+			tAnimHandler.run();
 					doneStart = true;
-				}
-					lastCount += FRAME_VARIANCE;
-
-		
-			}
 
 	    }
 
-	    animHandler.run();
-		
 	}
 
 	
@@ -351,6 +322,7 @@ public class HeroEntity extends Entity {
 		lastCount = FRAME_VARIANCE;
 		doneStart = false;
 		animHandler.stop();
+		tAnimHandler.stop();
 	}
 	public void move(float mapPosX, boolean mR,boolean mL){
 
@@ -497,10 +469,19 @@ public class HeroEntity extends Entity {
 
 			}
 			yTorsoCounter = 0;
-			if (lastRotation != torsoAngle) {
+			if (lastRotation != shotAngle) {
 				//rotateTorso(torsoAngle);
 				lastRotation = torsoAngle;
 				xTorsoCounter = shotAngle - 1;
+				if(shotAngle == 1){
+					tAnimHandler.Attack1();
+				}else if(shotAngle == 2){
+					tAnimHandler.Attack2();
+				}else if(shotAngle == 3){
+					tAnimHandler.Attack3();
+				}else if(shotAngle == 4){
+					tAnimHandler.Attack4();
+				}
 			}
 		}
 	}
@@ -572,7 +553,18 @@ public class HeroEntity extends Entity {
 		this.initEntity(context, 0, 1250, R.drawable.pos4, 300, 200, 4, 2, CHARACTER_WIDTH, CHARACTER_TORSO_HEIGHT, 1, false );
 		animHandler.setupAnim(Anim.CONTINUOUS_RUN, 16, 0, 2, true, false, true);
 		animHandler.setupAnim(Anim.STANDING, 1, 17, 5, false, true, true);
-		animHandler.run();
+		animHandler.setupAnim(Anim.START_RUN, 4, 16, 2, false, false,false);
+		animHandler.setupAnim(Anim.JUMP, 4, 12, 10, false, false, false );
+		tAnimHandler.setupAnim(Anim.CONTINUOUS_RUN, 4, 4, 8 , false, true, true);
+		tAnimHandler.setupAnim(Anim.ATTACK_1, 1, 0, 5, false, true,true );
+		tAnimHandler.setupAnim(Anim.ATTACK_2, 1, 1, 5, false, true,true );
+		tAnimHandler.setupAnim(Anim.ATTACK_3, 1, 2, 5, false, true,true );
+		tAnimHandler.setupAnim(Anim.ATTACK_4, 1, 3, 5, false, true,true );
+		tAnimHandler.setupAnim(Anim.STANDING, 1, 5, 8 , false, true, true);
+
+		animHandler.stop();
+		tAnimHandler.stop();
+
 		mBox.initMBox(context);
 
 
@@ -762,7 +754,7 @@ public class HeroEntity extends Entity {
 		GLES20.glUniform1i(mTextureUniformHandle, 0);
 
 		 currentFrame[0] = animHandler.getAnimIndex();// ((xPosCounter + ((yPosCounter ) * 4)) * 12) * 4;
-		 currentFrame[1] = ((xTorsoCounter + (yTorsoCounter * 4)) * 12) * 4;
+		 currentFrame[1] = tAnimHandler.getAnimIndex(); //((xTorsoCounter + (yTorsoCounter * 4)) * 12) * 4;
 
 
 
@@ -869,6 +861,7 @@ public class HeroEntity extends Entity {
 	}
 	public void update(){
 		animHandler.update();
+		tAnimHandler.update();
 	}
 
 

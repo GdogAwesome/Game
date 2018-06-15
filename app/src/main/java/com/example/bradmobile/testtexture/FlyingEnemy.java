@@ -38,9 +38,6 @@ public class FlyingEnemy extends EnemyEntity {
     @Override
 	public void move(float heroX, float heroY){
 		//super.move(heroX, heroY);
-
-
-
 				if(!dying) {
 
 					animHandler.stop();
