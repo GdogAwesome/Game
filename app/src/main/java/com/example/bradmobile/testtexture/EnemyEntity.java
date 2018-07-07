@@ -33,7 +33,7 @@ public class EnemyEntity {
 	int r = 0;
 	int b = 0;
 	float xView = 0f ;
-	int yView = 0;
+	float yView = 0f;
 	float moveSpeed = .002f;
 	int intShotAngle = 1;
 	float currentJumpPos = -12.2F;
@@ -321,7 +321,7 @@ public class EnemyEntity {
 		}
 		
 		fireStats[0] = xView;
-		fireStats[1] = this.y ;
+		fireStats[1] = yView ;
 		fireStats[2] = shotSpeed;
 		fireStats[3] = shotPower;
         fireStats[4] = intShotAngle;
@@ -341,10 +341,11 @@ public class EnemyEntity {
 		animHandler.update();
 
 	}
-	public void updateView(float x){
+	public void updateView(float x, float y){
 	    animHandler.update();
 		
 		xView = this.x - x;
+		yView = this.y + y;
 
 
 	}
@@ -355,7 +356,9 @@ public class EnemyEntity {
 	public int getItemType(){
 		return itemType;
 	}
-
+    public void setHealth(int h){
+	    this.health = h;
+    }
 	public void setHasItem(boolean hasItem, int itemType) {
 		this.itemType = itemType;
 		this.hasItem = hasItem;
@@ -376,6 +379,9 @@ public class EnemyEntity {
 
 	public float getY(){
 		return y;
+	}
+	public float getAbsoluteY(){
+		return yView;
 	}
 	public float getAbsoluteX(){
 		return xView;
@@ -407,6 +413,39 @@ public class EnemyEntity {
 		//updateAnimCont();
 		animHandler.stop();
 		animHandler.update();
+
+	}
+	public void followLooseXY(float xLead, float yLead, float disX, float disY){
+
+		float deltaY = ( -1*( y - yLead) * disY);
+		float deltaX = ( -1*(x - xLead) * disX);
+
+		updateRotation(xLead, yLead);
+		moveDirect(deltaX, deltaY);
+
+	}
+
+	public void followDirectXY(float xLead, float yLead, float disX, float disY){
+
+		float xDif = xLead - this.x;
+		float yDif = yLead - this.y;
+
+		double adj = (xDif);
+		double opp = (yDif);
+		double hyp = Math.sqrt(Math.pow(adj, 2.0d) + Math.pow(opp, 2.0d));
+
+		float sin = (float)(opp / hyp);
+		float cos = (float)(adj / hyp);
+
+		float targetXpos = xLead - (cos * disX) ;
+		float targetYpos = yLead - (sin * disY) ;
+
+		float deltaY = targetYpos - y;
+		float deltaX = targetXpos - x;
+
+
+		updateRotation(xLead, yLead);
+		moveDirect(deltaX, deltaY);
 
 	}
 
@@ -466,10 +505,10 @@ public class EnemyEntity {
 		return bounds;
 	}
 	public float[] getRelativeBounds(){
-		relativeBounds[0] = xView + bounds[0];
-		relativeBounds[1] = y + bounds[1];
-		relativeBounds[2] = xView + bounds[2];
-		relativeBounds[3] = y + bounds[3];
+		relativeBounds[0] = xView + (bounds[0] * .8f);
+		relativeBounds[1] = yView + (bounds[1] * .8f);
+		relativeBounds[2] = xView + (bounds[2] * .8f);
+		relativeBounds[3] = yView + (bounds[3] * .8f);
 		return relativeBounds;
 
 	}

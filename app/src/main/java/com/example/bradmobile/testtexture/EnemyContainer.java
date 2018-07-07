@@ -69,13 +69,11 @@ public class EnemyContainer extends Entity {
 
     }
 
-    public void updateEnemies(float heroX, float heroY, float mapPosX){
+    public void updateEnemies(float heroX, float heroY, float mapPosX, float mapPosY){
                     /*
             Check for active enemies
 
              */
-
-
                     this.mapPosX = mapPosX;
         if(!bossActive) {
             eQueue.checkQueueDistance(mapPosX);
@@ -98,7 +96,7 @@ public class EnemyContainer extends Entity {
         for(int i = 0; i< MAX_ENEMIES; i ++){
             if(enemyActive[i] ) {
                 enemyList[i].move(heroX, heroY);
-                enemyList[i].updateView(mapPosX);
+                enemyList[i].updateView(mapPosX, mapPosY);
                 if (enemyList[i].willShoot() ) {
 
                     shots.ShotFired(enemyList[i].fireStats(), i, false);
@@ -110,8 +108,8 @@ public class EnemyContainer extends Entity {
 
         }
         }else{
-
-            boss.updateBoss(heroX, heroY, mapPosX);
+            //Log.e("boss", "active");
+            boss.updateBoss(heroX, heroY, mapPosX, mapPosY);
             if(!boss.playingIntro){
                 hero.setPaused(false);
             }
@@ -163,7 +161,7 @@ public class EnemyContainer extends Entity {
                         0, enemyList[i].getAnimFrameOffsetBytes());
 
                 Matrix.setIdentityM(mModelMatrix,0);
-                Matrix.translateM(mModelMatrix,0, (enemyList[i].getX() - mapPosX), (enemyList[i].getY()), -2.51f);
+                Matrix.translateM(mModelMatrix,0, (enemyList[i].getAbsoluteX()), (enemyList[i].getAbsoluteY()), -2.51f);
                 Matrix.rotateM(mModelMatrix,0,  enemyList[i].getRotation(), 0f,0f, 1f);
 
                 //Log.e("advance", Float.toString(mModelmatrix[12]));
@@ -189,7 +187,7 @@ public class EnemyContainer extends Entity {
         //scoreString = Integer.toString(totalScore);
     }
 
-    public void initBoss(Context context, int b, boolean bossActive, float posX){
+    public void initBoss(Context context, int b, boolean bossActive, float posX, float posY){
 
 
 
@@ -197,7 +195,7 @@ public class EnemyContainer extends Entity {
             case BossEntity.FIRST_BOSS:
                 //initBossEntities(context,BossEntity.FIRST_BOSS);
                  boss = new FirstBoss();
-                boss.initBoss(context, enemyList, enemyActive, posX, 1f, 2, new float[][]{this.getObjectBounds(BOSS_ONE_BODY) , this.getObjectBounds(BOSS_ONE_ARM)});
+                boss.initBoss(hero, context, enemyList, enemyActive, posX,  posY, 2, new float[][]{this.getObjectBounds(BOSS_ONE_BODY) , this.getObjectBounds(BOSS_ONE_ARM)});
 
                 break;
         }

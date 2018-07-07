@@ -89,10 +89,13 @@ public class GLView extends GLSurfaceView implements Runnable {
     private float hRight = 0;
     private float hLeft = 0;
     private float hFooting = 0;
+    private float hHead = 0.0f;
     Handler mainHandler;
 
     public float mapPosX = 0f;
+    public float mapPosY = 0f;
     public float mapOffset = 0f;
+    private float obOffset;
     private boolean interact = false;
 
     //set up controller
@@ -213,7 +216,7 @@ public class GLView extends GLSurfaceView implements Runnable {
             Log.e("boss", "activated");
             Map.setBossActive(true);
             hero.expandBounds();
-            enemies.initBoss(context, Map.getBossType(), Map.isBossActive(), Map.getAbsoluteMove());
+            enemies.initBoss(context, Map.getBossType(), Map.isBossActive(), Map.getAbsoluteMoveX(), Map.getAbsoluteMoveY());
             enemies.setBossActive(Map.isBossActive());
             shots.setBossActive(Map.isBossActive());
             shots.addBoss(enemies.getBoss());
@@ -233,7 +236,7 @@ public class GLView extends GLSurfaceView implements Runnable {
             hero.move(playerCommand, Map.canMoveLeft, Map.canMoveRight);
 
 
-            enemies.updateEnemies(hero.getCenter(), hero.getFooting() + (hero.getObjectBounds(1)[1] * 3f),  Map.getAbsoluteMove());
+            enemies.updateEnemies(hero.getCenter(), hero.getFooting() + (hero.getObjectBounds(1)[1] * 3f),  Map.getAbsoluteMoveX(), Map.getAbsoluteMoveY());
 
 
 
@@ -352,7 +355,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         enemies.addShots(shots);
 
 
-        enemies.updateEnemies(hero.x,hero.y, Map.getAbsoluteMove());
+        enemies.updateEnemies(hero.x,hero.y, Map.getAbsoluteMoveX(),Map.getAbsoluteMoveY());
         shots.addEntities(hero);
         shots.updateObstacles(obstacleList, hasOList);
 
@@ -410,12 +413,19 @@ public class GLView extends GLSurfaceView implements Runnable {
         hRight = hero.getRight();//10
         heroCenter = hero.getCenter();
         hFooting = hero.getFooting();
-        mapPosX = Map.getAbsoluteMove();
+        hHead = hero.getHead();
+        mapPosX = Map.getAbsoluteMoveX();
+        mapPosY = Map.getAbsoluteMoveY();
+        obOffset = Map.getObstacleOffset();
         mapOffset = Map.getMapOffset();
         checkHState();
+        //Log.e("viewX", Float.toString(mapPosX));
 
-        hero.update();
-        shots.updateShots(mapOffset, mapPosX);
+
+
+         Map.moveMap(hero.getLeft(), hero.getRight(), hero.getHeroY(),canMoveLeft, canMoveRight, playerCommand);
+
+        shots.updateShots(mapOffset,obOffset, mapPosX, mapPosY);
 
         if (hero.canShoot) {
 
@@ -470,16 +480,18 @@ public class GLView extends GLSurfaceView implements Runnable {
 
                     if (heroCenter >= (obstacleList[i][j][0] + mapOffset) && heroCenter <= (obstacleList[i][j][2] + mapOffset)) {
 
-                        canMoveRight = !(hRight >= (obstacleList[i][j][0] + mapOffset)  && (hRight > (obstacleList[i][j][0] + mapOffset))  && (hFooting + .05f) < (obstacleList[i][j][1]) && hRight < (obstacleList[i][j][2] + mapOffset - .02f) );
+                        canMoveRight = !(hRight >= (obstacleList[i][j][0] + mapOffset)  && (hRight > (obstacleList[i][j][0] + mapOffset))  && (hFooting + .05f) < (obstacleList[i][j][1] + obOffset) && hRight < (obstacleList[i][j][2] + mapOffset ));// && hHead >(obstacleList[i][j][3] + obOffset) );
 
-                        canMoveLeft = !(hLeft <= (obstacleList[i][j][2] + mapOffset)&& (hLeft < (obstacleList[i][j][2] + mapOffset))  && (hFooting + .05f) < obstacleList[i][j][1] && hLeft >(obstacleList[i][j][0] + mapOffset + .02f) );
+                        canMoveLeft = !(hLeft <= (obstacleList[i][j][2] + mapOffset)&& (hLeft < (obstacleList[i][j][2] + mapOffset))  && (hFooting + .05f) < (obstacleList[i][j][1] + obOffset) && hLeft >(obstacleList[i][j][0] + mapOffset ));// && hHead >(obstacleList[i][j][3] + obOffset) );
 
                         if (canMoveRight && canMoveLeft) {
+                            //Log.e("ViewY", Float.toString(obstacleList[i][j][1]));
+                            hero.setGround(obstacleList[i][j][1] + obOffset );
 
-                            hero.setGround(obstacleList[i][j][1]);
                         }
-                            i = 10;
-                            j = 4;
+                        i = 10;
+                        j = 4;
+
 
                     } else {
 
@@ -490,6 +502,10 @@ public class GLView extends GLSurfaceView implements Runnable {
 
             }
         }
+        // if (hero.falling || hero.startFalling) {
+        hero.calcFooting();
+        // }
+        hero.update(0f, Map.getDeltaY());
 
         hero.updateMessage(mapPosX);
 
@@ -500,9 +516,11 @@ public class GLView extends GLSurfaceView implements Runnable {
                 canMoveRight = !hero.dying;
             }
 
-            mapPosX = Map.moveMap(hero.getLeft(), hero.getRight(), hero.y,canMoveLeft, canMoveRight, playerCommand);
+
 
         }
+
+
         if (startJumping) {
             if(!hero.dying) {
                 jumping = true;
@@ -512,9 +530,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         if (jumping) {
             hero.jump();
         }
-        if (hero.falling || hero.startFalling) {
-            hero.calcFooting();
-        }
+
         /*
         if(Map.getMapNeedsRenderUpdate()){
             renderer.setMapTextureCoords(Map.getDrawCoords());

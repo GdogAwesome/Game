@@ -62,8 +62,9 @@ public class Item {
 
     }
 
-    public void update(float viewX){
+    public void update(float viewX, float viewY){
         drawX = posX - viewX;
+        drawY = posY + viewY;
         if(droping){
             if((posY ) >= g){
                 posY -= .044444f;
@@ -85,9 +86,9 @@ public class Item {
 
     public float[] getDrawStats(){
         drawStats[0] = drawX;
-        drawStats[1] = posY;
+        drawStats[1] = drawY;
         drawStats[2] = drawX + width;
-        drawStats[3] = posY + height;
+        drawStats[3] = drawY + height;
 
         return drawStats;
     }

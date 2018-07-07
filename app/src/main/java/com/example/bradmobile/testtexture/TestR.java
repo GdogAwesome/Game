@@ -170,7 +170,7 @@ public class TestR implements GLSurfaceView.Renderer {
         final float right = 1;// ratio;
         final float bottom = -1.0f;
         final float top = 1.0f;
-        final float near = 1.0f;
+        final float near = 1.0f;//1.0f
         final float far = 3.0f;
 
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
@@ -311,7 +311,7 @@ public class TestR implements GLSurfaceView.Renderer {
 
         GLES20.glUniformMatrix4fv(shader.getmMVPNormalMatrixHandle(),1,false,mMVPMatrix,0);
 
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, 360, GLES20.GL_UNSIGNED_SHORT, drawIndices);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, map.getPrimativesToDraw(), GLES20.GL_UNSIGNED_SHORT, drawIndices);
 
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);

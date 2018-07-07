@@ -6,6 +6,10 @@ public class Shot {
 	
 	private float xPos;
 	private float yPos;
+	private float xView;
+	private float yView;
+	private float mapPosX = 0;
+	private float mapPosY = 0;
 	private float angle = 0;
 	private boolean leader = false;
 	private int indexOfLeader= 0;
@@ -33,6 +37,7 @@ public class Shot {
 	private int animCounterX = 0;
 	private boolean reverseAnim = false;
 
+
 	private float xDif = 0f;
 	private float yDif = 0f;
 	private float yDelta = 0f;
@@ -51,6 +56,12 @@ public class Shot {
 	public Shot( ){
 		
 
+	}
+	public void updateView(float mapPosX, float mapPosY){
+	    this.mapPosX =  mapPosX;
+	    this.mapPosY = mapPosY;
+		xView = xPos - mapPosX;
+		yView = yPos + mapPosY;		//Log.e("map posY", Float.toString(mapPosY));
 	}
 	public void advanceShot(){
 
@@ -83,11 +94,16 @@ public class Shot {
 			}
 			
 		}
+
 	}
 
 	public void fireShot(float x, float y,float drawX, float drawY, float shotSize, int angle,int shotPower, float shotSpeed, boolean friendly, int shotType){
-		xPos = x;
-		yPos = y;
+		xPos = x + drawX;
+		yPos = y - drawY;
+
+		xView = xPos - drawX;
+		yView = yPos + drawY;
+
 		this.shotSize = shotSize;
 		this.Dead = false;
 		this.Impact = false;
@@ -173,9 +189,12 @@ public class Shot {
 	 * @param leader
 	 * @param friendly
 	 */
-	public void fireLinkShot(float x, float y, float shotSize, int angle,int shotPower, int indexOfLeader,int srcOfShot, boolean leader,boolean flameTip, boolean friendly, int shotType) {
-		xPos = x;
-		yPos = y;
+	public void fireLinkShot(float x, float y,float drawX, float drawY, float shotSize, int angle,int shotPower, int indexOfLeader,int srcOfShot, boolean leader,boolean flameTip, boolean friendly, int shotType) {
+		xPos = x + drawX;
+		yPos = y - drawY;
+		xView = xPos - drawX;
+		yView = yPos + drawY;
+
 		this.shotSize = shotSize;
 		this.Dead = false;
 		this.Impact = false;
@@ -252,10 +271,10 @@ public class Shot {
 		return Dead;
 	}
 	public float[] drawShot(){
-		draw[0] = xPos;
-		draw[1] = yPos - (shotSize * .5f);
+		draw[0] = xView;
+		draw[1] = yView - (shotSize * .5f);
 		draw[2] = shotAnim[shotCountX];
-		draw[3] = yPos + (shotSize * .5f);
+		draw[3] = yView + (shotSize * .5f);
 		draw[4] = shotSize;
 		
 		return draw;
@@ -301,6 +320,7 @@ public class Shot {
 		xDelta = ((targetXDif - this.xPos) * .75f);
 		this.xPos += xDelta;
 		this.yPos += yDelta;
+
 
 
 	}
@@ -364,6 +384,12 @@ public class Shot {
 	public float getY(){
 		return yPos;
 	}
+	public float getAbsoluteX(){
+	    return xView;
+    }
+    public float getAbsoluteY(){
+	    return yView;
+    }
 	public int getSrcOfShot(){
 		return srcOfShot;
 	}

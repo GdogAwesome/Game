@@ -17,7 +17,7 @@ public class BossEntity {
     protected long counter = 0;
     protected int bossHeight = 400;
     protected int bossWidth = 200;
-
+    protected HeroEntity hero;
     public final static int FIRST_BOSS = 1;
     public final static int NO_BOSS = 0;
     protected boolean isActive = false;
@@ -49,9 +49,10 @@ public class BossEntity {
      * @param bodyBounds
      */
 
-    public void initBoss(Context context, EnemyEntity[] e, boolean[] ea, float xPos, float yPos, int objectCount, float[][] bodyBounds){
+    public void initBoss(HeroEntity hero, Context context, EnemyEntity[] e, boolean[] ea, float xPos, float yPos, int objectCount, float[][] bodyBounds){
         this.enemyList = e;
         this.enemyActive = ea;
+        this.hero = hero;
 
         isActive = true;
         playingIntro = true;
@@ -73,7 +74,7 @@ public class BossEntity {
         return enemyActive;
     }
 
-    public void updateBoss(float HX, float HY, float MPosX){
+    public void updateBoss(float HX, float HY, float _viewX, float _viewY){
 
     }
     public int getBossSize(){

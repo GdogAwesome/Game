@@ -25,6 +25,7 @@ public class ShotEntity extends Entity{
 
 	private float healthPercent = 1;
     private int heroHealth = 100;
+    private float mapDeltaY = 0.0f;
 
     private int hBarFrame = 200;
 	private int totalScore = 0;
@@ -62,7 +63,10 @@ public class ShotEntity extends Entity{
     private Item tempItem;
 	private boolean[] itemActive = new boolean[10];
 	private float xView = 0;
+	private float yView = 0.0f;
+	private float offsetX = 0.0f;
 	private float absoluteX = 0;
+	private float absoluteY = 0;
     private float hitAreaX;
     private float hitAreaY;
     private int hMarkerTimer = 0;
@@ -142,7 +146,7 @@ public class ShotEntity extends Entity{
 
 				if (!bulletState[i]) {
 					//sp.play(soundIds[0], 1, 1, 1, 0, 1.0f);
-					shotArray[i].fireShot(shotStats[0], shotStats[1], 0, 0, ShotSize, (int)shotStats[4], (int)shotStats[3], shotStats[2], friendly,Item.DEFAULT_VALUE);
+					shotArray[i].fireShot(shotStats[0], shotStats[1], absoluteX, absoluteY, ShotSize, (int)shotStats[4], (int)shotStats[3], shotStats[2], friendly,Item.DEFAULT_VALUE);
 					bulletState[i] = true;
 					friendlyState[i] = friendly;
 					i = maxShots;
@@ -158,7 +162,7 @@ public class ShotEntity extends Entity{
 				if (!bulletState[i]) {
 
 
-					shotArray[i].fireShot(shotStats[0], shotStats[1], 0, 0, ShotSize, ((int)shotStats[4] + shotsFired), (int)shotStats[3], shotStats[2], friendly, Item.WEAPON_UPGRADE_SPRAY);
+					shotArray[i].fireShot(shotStats[0], shotStats[1], absoluteX, absoluteY, ShotSize, ((int)shotStats[4] + shotsFired), (int)shotStats[3], shotStats[2], friendly, Item.WEAPON_UPGRADE_SPRAY);
 					bulletState[i] = true;
 					friendlyState[i] = friendly;
 					shotsFired ++;
@@ -195,11 +199,13 @@ public class ShotEntity extends Entity{
 		this.enemyList = enemies;
 		this.enemyActive = activeEnemies;
 	}
-	public void updateShots(float mapOffsetX, float absX){
+	public void updateShots(float mapOffsetX,float mapObOffset, float absX, float absY){
 			this.absoluteX = absX;
 			this.xView = mapOffsetX;
+			this.absoluteY = absY;
 			hero.updateTimer();
 			hitBox = hero.getHitBox();
+
 
 
 			for(int i =0; i < maxShots; i++){
@@ -262,9 +268,9 @@ public class ShotEntity extends Entity{
 													for(int o = 0; o < 10; o++) {
                                                         for (int p = 0; p < 4; p++) {
 															if(hasOList[o][p]) {
-																if (enemyList[k].getAbsoluteX() - mapOffsetX >= (obstacleList[o][p][0]) && enemyList[k].getAbsoluteX() - mapOffsetX <= (obstacleList[o][p][2])  && enemyList[k].getY() >= obstacleList[o][p][1]) {
-																	if (obstacleList[o][p][1] < lowestLevel) {
-																		lowestLevel = obstacleList[o][p][1];
+																if (enemyList[k].getAbsoluteX() - mapOffsetX >= (obstacleList[o][p][0]) && enemyList[k].getAbsoluteX() - mapOffsetX <= (obstacleList[o][p][2])  && enemyList[k].getAbsoluteY() >= obstacleList[o][p][1]+ mapObOffset) {
+																	if ((obstacleList[o][p][1] + mapObOffset) < lowestLevel) {
+																		lowestLevel = (obstacleList[o][p][1] + mapObOffset);
 																		o = 10;
 																		p =4;
 																	}
@@ -277,7 +283,7 @@ public class ShotEntity extends Entity{
 
                                                     }
 
-                                                    items[j].initItem(enemyList[k].getX(), enemyList[k].getY(),enemyList[k].getItemType(), lowestLevel);
+                                                    items[j].initItem(enemyList[k].getX(), enemyList[k].getAbsoluteY(),enemyList[k].getItemType(), lowestLevel);
 
                                                     lowestLevel = 2;
                                                     j = items.length;
@@ -299,10 +305,10 @@ public class ShotEntity extends Entity{
 							for(int j = 0; j < 4; j++){
 								if (hasOList[o][j]) {
 
-									if ((shotArray[i].drawShot()[0] ) >= (obstacleList[o][j][0] + xView) && shotArray[i].drawShot()[0] <= (obstacleList[o][j][2] + xView)) {
+									if ((shotArray[i].drawShot()[0] ) >= (obstacleList[o][j][0] + mapOffsetX) && shotArray[i].drawShot()[0] <= (obstacleList[o][j][2] + mapOffsetX)) {
 
 
-										if ((shotArray[i].drawShot()[1] ) < obstacleList[o][j][1] && shotArray[i].drawShot()[1] > obstacleList[o][j][3]) {
+										if ((shotArray[i].drawShot()[1] ) < (obstacleList[o][j][1] + mapObOffset) && shotArray[i].drawShot()[1] > (obstacleList[o][j][3]) + mapObOffset) {
 
 											shotArray[i].impact(true);
 											o = 10;
@@ -318,6 +324,7 @@ public class ShotEntity extends Entity{
 					
 				}
 
+				shotArray[i].updateView(absoluteX, absoluteY);
 			}
 			}
 
@@ -455,7 +462,7 @@ public class ShotEntity extends Entity{
 		for(int i = 0; i < 10; i++){
 			if (itemActive[i]) {
 				if(items[i].active) {
-					items[i].update(absoluteX);
+					items[i].update(absoluteX, absoluteY);
 					if(hero.getRight() >= items[i].getDrawStats()[0] +(this.getObjectBounds(items[i].getUType())[0]) && hero.getLeft() <= (items[i].getDrawStats()[2] + (this.getObjectBounds(items[i].getUType())[2]))
 							&& hero.getFooting() <= (items[i].getDrawStats()[1] + (this.getObjectBounds(items[i].getUType())[1])) && hero.getHitBox()[1] >= (items[i].getDrawStats()[3] + (this.getObjectBounds(items[i].getUType())[3])))
 					{
@@ -490,13 +497,13 @@ public class ShotEntity extends Entity{
 
 			if(enemyActive[i]){
 
-				if((enemyList[i].getAbsoluteX() > hitBox[0] &&
-						enemyList[i].getAbsoluteX() < hitBox[2]) ||
-						(enemyList[i].getAbsoluteX() + enemyList[i].getWidth() > hitBox[0]
-								&& enemyList[i].getAbsoluteX() + enemyList[i].getWidth() < hitBox[2]) ){
+				if((enemyList[i].getRelativeBounds()[2] > hitBox[0] &&
+						enemyList[i].getRelativeBounds()[2] < hitBox[2]) ||
+						(enemyList[i].getRelativeBounds()[0] > hitBox[0]
+								&& enemyList[i].getRelativeBounds()[0] < hitBox[2]) ){
 
-					if((enemyList[i].getY() < hitBox[1] && enemyList[i].getY() > hitBox[3])
-							|| (enemyList[i].getY()+ enemyList[i].getHeight() < hitBox[1] && enemyList[i].getY() > hitBox[3])) {
+					if((enemyList[i].getRelativeBounds()[3] < hitBox[1] && enemyList[i].getRelativeBounds()[3] > hitBox[3])
+							|| (enemyList[i].getRelativeBounds()[1] < hitBox[1] && enemyList[i].getRelativeBounds()[1] > hitBox[3])) {
 						if(!enemyList[i].dying ) {
 							updateHealthBar(5);
 						}
@@ -543,12 +550,12 @@ public class ShotEntity extends Entity{
 					if (shotsFired == 0) {
 
 						if(srcOfShot == -1) {
-							shotArray[i].fireLinkShot(shotStats[0], shotStats[1], ShotSize, (int) shotStats[4], (int) shotStats[3], 0, srcOfShot, true,false, friendly, upgradeType);
+							shotArray[i].fireLinkShot(shotStats[0], shotStats[1],absoluteX,absoluteY, ShotSize, (int) shotStats[4], (int) shotStats[3], 0, srcOfShot, true,false, friendly, upgradeType);
 							shotArray[i].updateAngleDegrees(hero.getTorsoAngle());
 							lastShotIndex = i;
 						}else {
 
-							shotArray[i].fireLinkShot(shotStats[0], shotStats[1], ShotSize, (int) shotStats[4], (int) shotStats[3], 0, srcOfShot, true,false, friendly, upgradeType);
+							shotArray[i].fireLinkShot(shotStats[0], shotStats[1],absoluteX,absoluteY, ShotSize, (int) shotStats[4], (int) shotStats[3], 0, srcOfShot, true,false, friendly, upgradeType);
 							shotArray[i].updateAngleDegrees(enemyList[srcOfShot].getShotAngle());
 							lastShotIndex = i;
 						}
@@ -556,9 +563,9 @@ public class ShotEntity extends Entity{
 
 					} else {
 						if(shotsFired == maxLinks -1) {
-							shotArray[i].fireLinkShot(shotArray[lastShotIndex].getX(), shotArray[lastShotIndex].getY(), ShotSize, 0, (int) shotStats[3], lastShotIndex, srcOfShot, false, true, friendly, upgradeType);
+							shotArray[i].fireLinkShot(shotArray[lastShotIndex].getAbsoluteX(), shotArray[lastShotIndex].getAbsoluteY(),absoluteX,absoluteY, ShotSize, 0, (int) shotStats[3], lastShotIndex, srcOfShot, false, true, friendly, upgradeType);
 						}else{
-							shotArray[i].fireLinkShot(shotArray[lastShotIndex].getX(), shotArray[lastShotIndex].getY(), ShotSize, 0, (int) shotStats[3], lastShotIndex, srcOfShot, false,false, friendly, upgradeType);
+							shotArray[i].fireLinkShot(shotArray[lastShotIndex].getAbsoluteX(), shotArray[lastShotIndex].getAbsoluteY(),absoluteX,absoluteY, ShotSize, 0, (int) shotStats[3], lastShotIndex, srcOfShot, false,false, friendly, upgradeType);
 						}
 
 						lastShotIndex = i;
@@ -601,7 +608,7 @@ public class ShotEntity extends Entity{
 					if (!shotArray[i].isLeader()) {
 						shotArray[i].advanceLink(shotArray[shotArray[i].getIndexOfLeader()].getX(), shotArray[shotArray[i].getIndexOfLeader()].getY(), shotArray[shotArray[i].getIndexOfLeader()].getRotation());
 					} else {
-						shotArray[i].updatePosition(hero.getFireStatsX(), hero.getFireStatsY());
+						shotArray[i].updatePosition(hero.getFireStatsX() +absoluteX , hero.getFireStatsY() - absoluteY);
 						shotArray[i].updateAngleDegrees(hero.getTorsoAngle());
 					}
 
@@ -620,7 +627,7 @@ public class ShotEntity extends Entity{
 						if (!shotArray[i].isLeader()) {
 							shotArray[i].advanceLink(shotArray[shotArray[i].getIndexOfLeader()].getX(), shotArray[shotArray[i].getIndexOfLeader()].getY(), shotArray[shotArray[i].getIndexOfLeader()].getRotation());
 						} else {
-							shotArray[i].updatePosition(enemyList[shotArray[i].getSrcOfShot()].fireStats()[0], enemyList[shotArray[i].getSrcOfShot()].getY());
+							shotArray[i].updatePosition(enemyList[shotArray[i].getSrcOfShot()].fireStats()[0] + absoluteX, enemyList[shotArray[i].getSrcOfShot()].getAbsoluteY() - absoluteY);
 							shotArray[i].updateAngleDegrees(enemyList[shotArray[i].getSrcOfShot()].getShotAngle());
 
 						}

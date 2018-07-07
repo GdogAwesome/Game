@@ -92,8 +92,8 @@ public class Constants {
 
 
 		 FALL_SPEED = 90;
-		 SHOT_SPEED = TEST_RUN_SPEED * 4f;
-		TEST_SHOT_SPEED = TEST_RUN_SPEED * 3f;
+		 SHOT_SPEED = TEST_RUN_SPEED * 2.7f;
+		TEST_SHOT_SPEED = TEST_RUN_SPEED * 1.5f;
 	}
 	public static boolean getMusicState(){
 		return music;

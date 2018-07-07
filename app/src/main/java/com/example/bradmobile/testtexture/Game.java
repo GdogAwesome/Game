@@ -66,7 +66,7 @@ public class Game extends AppCompatActivity {
         alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Quit",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                        Intent i = new Intent(getApplicationContext(), StartScreen.class);
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         i.putExtra("selection", "first");
                         startActivity(i);

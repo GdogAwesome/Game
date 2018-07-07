@@ -24,14 +24,19 @@ import com.example.bradmobile.testtexture.Utils.*;
 
 public class Map1 {
 	public float MapFinalPosX;
-	public float MapFinalPosY;
+	public float MapFinalPosY = 0f;
 	public float ViewX;
 	public float prevX;
 	public float viewX;
+	private float ViewY = 0;
+	private float obstacleOffset;
+	private float originalObOffset;
+	private float deltaY=0;
+	private float upperBounds = .70f;
+	private float lowerBounds = 0.0f;
+	private float currentDeltaY = 0;
 	public float prevY;
 	public float deltaX;
-	public float deltaY;
-	public float ViewY;
 	private movieScene currentScene = null;
 	public boolean endMap = false;
 	public boolean endLevel = false;
@@ -45,9 +50,7 @@ public class Map1 {
 	private boolean displaySM = true;
 	private int startX = Constants.START_X;
 	private boolean reverseAnim = false;
-	private boolean[][] bottomAnim  = new boolean[5][4];
-	private boolean[][] topAnim = new boolean[5][4];
-	private boolean[][] skyAnim = new boolean[5][4];
+
 	private boolean hasScene = true;
 	private boolean startPoints = false;// true;
 	private boolean showingPoints = false;
@@ -62,7 +65,7 @@ public class Map1 {
 	private int layerIndexOffset = 0;
 	private float[] mModelMatrix = new float[16];
 	private float[] mBackgroundMatrix = new float[16];
-	private float[] mTextureCoordinateData = new float[480];
+	private float[] mTextureCoordinateData;
 	private short[] mAnimData;
 	private short[] mIndices;
 	private float[] mBgTextureCoordinateData = new float[24];
@@ -74,12 +77,13 @@ public class Map1 {
 	private ShortBuffer animBuffer;
 	private int animBufferOffset = 0;
 	private int textureBufferOffset = 0;
-	private float[] mPositionData = new float[720];
+	private int primativesToDraw = 360;
+	private float[] mPositionData ;
 	private float[] mBgPositionData; // = new float[36];
 	private float totalMoveSpace = 0f;
 	private float BgMoveSpeed = Constants.TEST_RUN_SPEED * .5f;
 	private float BgTotalMoveSpace = 0f;
-	private double absoluteMoveSpace = 0f;
+	private double absoluteMoveSpace = 0.0f;
     private boolean mapNeedsRenderUpdate = false;
     private int offsetCounter = 0;
 
@@ -94,10 +98,6 @@ public class Map1 {
 	 * position info
 	 */
 
-	private float pos0 = 0;
-	private float pos1 = 0;
-	private float pos2 = 0;
-	private float pos3 = 0;
 
     private HeroEntity hero;
 	Context context;
@@ -109,29 +109,10 @@ public class Map1 {
 	float dif =  (((float)Constants.SCREEN_WIDTH - 1366) / Constants.SCREEN_WIDTH) ;
 	
 	public int[] posX = new int[]{ 0, 1, 2, 3, 4 };
-	public int[] posY = new int[]{0, 0, 1, 2};
+	public int[] posY = new int[]{0, 2, 3, 4};
 
-	float totalWidth = 2800f;
-	float totalHeight = 1400f;
-
-	float tileWidth = (200f / totalWidth);// + .0005f;
-	float tileHeight = 150f / totalHeight;
-
-
-	int bgH = 0;
-	int bgW = 0;
-	
-	
-	public float currentData;
 	public int[] currentBottom = new int[100];
 	public int[] currentTop = new int[100];
-	
-	
-
-	private Bitmap mapImage;
-	private Bitmap mapBackground;
-    private RectF whereToDraw = new RectF(0,0,0,0);
-    private Rect frameToDraw = new Rect(0,0,0,0);
 
 	public String ref;
 	private int mapLength = 0;
@@ -141,19 +122,13 @@ public class Map1 {
 	public final static int BLOCK_HEIGHT = Constants.BLOCK_HEIGHT;
 	public final static int SEGMENT_WIDTH = Constants.SEGMENT_WIDTH ;
 	public final static int SEGMENT_HEIGHT = Constants.SEGMENT_HEIGHT ;
-    public final static int drawWidth = Constants.SEGMENT_WIDTH+ 1;
-    public final static int drawHeight= Constants.SEGMENT_HEIGHT + 1;
-	public final static int SCREEN_WIDTH = Constants.SCREEN_WIDTH;
-	public final static int SCREEN_HEIGHT = Constants.SCREEN_HEIGHT;
 	public final static float RIGHT_BORDER = Constants.RIGHT_BORDER;
 	public final static float LEFT_BORDER = Constants.LEFT_BORDER;
-	public final static int RUN_SPEED = Constants.RUN_SPEED;
+
 
 	public boolean cutScene = false;
 	private mapBlock[][] mapBlocks;
-	//public mapBlock[] bottomBlocks ;
-	//public mapBlock[] topBlocks ;
-	//public mapBlock[] skyBlocks;
+
 
 	public boolean canMoveLeft = true;
 	public boolean canMoveRight = true;
@@ -252,7 +227,7 @@ public class Map1 {
 					break;
 				case 2:
 
-                    is = context.getResources().openRawResource(R.raw.test6_1);
+                    is = context.getResources().openRawResource(R.raw.test_map);
 					texture = R.drawable.test_map;
 					BgTexture = R.drawable.overgrown_city;
 					normalTexture = R.drawable.test_map_norm;
@@ -307,6 +282,63 @@ public class Map1 {
 	public float moveMap(float heroLeft, float heroRight, float heroy, boolean canMoveLeft, boolean canMoveRight, int playerCommand){//}, float viewX){
 
 
+		deltaY = 0.0f;
+		if(heroy > upperBounds){
+
+			//if(posY[1] != 0) {
+				deltaY = (heroy - upperBounds) * .25f;
+				currentDeltaY += deltaY;
+				Matrix.translateM(mModelMatrix, 0, 0.0f, -deltaY, 0.0f);
+				obstacleOffset -= deltaY;
+				MapFinalPosY -= deltaY;
+			//}
+			//deltaY = 0.0f;
+			if(currentDeltaY >= .333333f){
+				if(posY[1] > 0){
+					posY[3] -= 1;
+					posY[2] = posY[3] - 1;
+					posY[1] = posY[2] - 1;
+					posY[0] = posY[1] - 1;
+				}
+				currentDeltaY -= currentDeltaY;
+
+			}
+
+
+
+		}else if(heroy < lowerBounds){
+
+			if(currentDeltaY <= -.3333333f){
+				if(posY[3] < mapHeight -1){
+					posY[3] += 1;
+					posY[2] = posY[3] - 1;
+					posY[1] = posY[2] - 1;
+					posY[0] = posY[1] - 1;
+				}
+
+				currentDeltaY -= currentDeltaY;
+
+			}
+			if(obstacleOffset > originalObOffset){
+				obstacleOffset = originalObOffset;
+				mModelMatrix[13] = 0.0f;// -= mModelMatrix[13];
+				MapFinalPosY -= MapFinalPosY;
+				deltaY -= deltaY;
+
+
+			}else if( obstacleOffset < originalObOffset) {
+				deltaY =  (heroy - lowerBounds) * .25f;
+				currentDeltaY += deltaY;
+				obstacleOffset -= deltaY;
+				MapFinalPosY -= deltaY;
+				Matrix.translateM(mModelMatrix, 0, 0.0f, -deltaY, 0.0f);
+				//Log.e("too", "low");
+			}/*else{
+				obstacleOffset = originalObOffset;
+				deltaY = 0.0f;
+				mModelMatrix[13] = 0.0f;
+			}*/
+		}
 
 		beginTime = System.currentTimeMillis();
 			if (absoluteMoveSpace >= .25f && displayFM){
@@ -418,8 +450,8 @@ public class Map1 {
 					}
 
 
-					textureBufferOffset = (offsetCounter * 4 * 4 * 2 * mapHeight) * 4;
-					animBufferOffset = (offsetCounter * 4 * 4 * mapHeight) * 2;
+					textureBufferOffset = (offsetCounter * 4 * 4 * 2 * mapHeight ) * 4;
+					animBufferOffset = (offsetCounter * 4 * 4 * mapHeight ) * 2;
 
 					mapNeedsRenderUpdate = true;
 					//updateTextureCoords();
@@ -514,8 +546,12 @@ public class Map1 {
 	public float getMapOffset(){
 		return  mModelMatrix[12];
 	}
-	public float getAbsoluteMove(){
+	public float getAbsoluteMoveX(){
 		return (float)absoluteMoveSpace;
+	}
+	public float getAbsoluteMoveY(){
+		//Log.e("map pos y", Float.toString(MapFinalPosY));
+		return MapFinalPosY;
 	}
     public float[][] getmModelMatrix(){
 		float[][] temp = new float[2][16];
@@ -527,7 +563,7 @@ public class Map1 {
     private void setupModelMatrix(){
         Matrix.setIdentityM(mModelMatrix, 0 );
         Matrix.scaleM(mModelMatrix, 0 , 1.02f,1.03f, 1.0f); // x= 1.02 y = 1.03
-        Matrix.translateM(mModelMatrix, 0, 0.0f, -0.02f, -2.51f );
+        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -2.51f );
 
 
         Matrix.setIdentityM(mBackgroundMatrix, 0 );
@@ -565,8 +601,10 @@ public class Map1 {
 		 * set up sky blocks
 		 */
 
+
 		mTextureCoordinateData = new float[ mapLength * 4 * 4 * 2 * mapHeight ];// maplength * segments per block(4) * coordinates per segment(4) * variables per coordinate(2) * how many blocks high(3)
 		mAnimData = new short[mapLength * 4 * 4 * mapHeight ]; // mapLength * segments per block(4) * coordinates per segment(4) * how many blocks high(3)
+		primativesToDraw = ((mapHeight * 2) * 6 * 10);
 
 		for(int w = 0 ; w < length; w += 1) {
 			for (int h = heightStart; h < mapHeight; h++) {
@@ -664,7 +702,8 @@ public class Map1 {
 			 *
 			 * setup indices
 			 */
-			mIndices = new short[(mapLength* 2) * 60];
+			mIndices = new short[(mapHeight * 2) * 60];
+			mPositionData = new float[(mapHeight * 2) * 10 * 4 * 3];
 			int vertexCount = 0;
 			for (int currentIndex = 0; currentIndex < (mIndices.length); currentIndex += 6) {
 				mIndices[currentIndex] = (short) (vertexCount);
@@ -681,14 +720,16 @@ public class Map1 {
 			float segH = 2f / 6f;
 			float hSegW = segW / 2f;
 			float hSegH = segH / 2f;
+			int heightDiff = mapHeight - 3;
+			float startSegmentPos = ((float)(mapHeight + heightDiff ) *segH) - hSegH;
 
 			int squareCount = 0;
 			int lastSquare = 0;
 
-			//for(float h = (1f - hSegH); h  > -1.0f; h -= segH ){
-			//for(float w =( -1.0f + hSegW); w < 1.4f; w += segW){
+
 			for (float w = (-1.0f + hSegW); w < 1.4f; w += segW) {
-				for (float h = (1f - hSegH); h > -1.0f; h -= segH) {
+				for (float h = startSegmentPos; h > -1.0f; h -= segH) {
+					//for (float h = (1f - hSegH); h > -1.0f; h -= segH) {
 
 
 					//first triangle
@@ -793,14 +834,32 @@ public class Map1 {
 		InputStreamReader ir = new InputStreamReader(is);
 		BufferedReader reader = new BufferedReader(ir);
 
+
 		try {
 			this.ref = reader.readLine();
 
 			mapLength = Integer.parseInt(reader.readLine());
 			mapHeight = Integer.parseInt(reader.readLine());
-			Log.e("mapHeight", Integer.toString(mapHeight));
 
-			mapBlocks = new mapBlock[mapLength][mapHeight];
+			//setup view in relation to mapHeight
+			float viewDiff = (((float)(BLOCK_HEIGHT) *(float)(mapHeight)) - ((float)(BLOCK_HEIGHT) * 3.0f)  );
+			if(viewDiff == 0){
+				obstacleOffset = 0;
+			}else{
+				obstacleOffset = (((viewDiff * 2f) / 900f));
+			}
+			originalObOffset = obstacleOffset;
+
+			ViewY = 0;
+
+
+			int blockCounter = mapHeight -1;
+			posY[3] = mapHeight - 1;
+			posY[2] = posY[3] - 1;
+			posY[1] = posY[2] - 1;
+			posY[0] = posY[1] - 1;
+
+					mapBlocks = new mapBlock[mapLength][mapHeight];
 
 			//TODO Combine all this duplicate code into One function.
 			//System.out.println(mapLength);
@@ -858,15 +917,6 @@ public class Map1 {
 
 	}
 
-
-	public void dropAllButBackground(){
-		if(mapImage != null) {
-			mapImage.recycle();
-			mapImage = null;
-
-		}
-
-	}
 	public boolean isBossActive(){
 		return bossActive;
 	}
@@ -881,9 +931,23 @@ public class Map1 {
 		this.bossActivated = b;
 
 	}
+	public float getViewY(){
+		return ViewY;
+	}
+	public float getDeltaY(){
+		float tmp = deltaY ;
+
+		return tmp;
+	}
+	public float getObstacleOffset(){
+		return obstacleOffset;
+	}
 	public void resetPosX(){
 
 		viewX = 0;
+	}
+	public int getPrimativesToDraw(){
+		return primativesToDraw;
 	}
 	public ShortBuffer getDrawListBuffer(){
 		return drawListBuffer;

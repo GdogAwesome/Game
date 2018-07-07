@@ -6,9 +6,8 @@ import com.example.bradmobile.testtexture.AnimationUtils.Anim;
 public class FlyingEnemy extends EnemyEntity {
 
 	
-	/**Creates a hero entity to hold main characters
-	 * 
-	 * pass the game this belongs to
+	/**
+	 *
 	 * @param x pos of character cast as an int
 	 * @param y pos of character cast as an int
 	 */
@@ -67,7 +66,7 @@ public class FlyingEnemy extends EnemyEntity {
 						firing = true;
 						tryToShoot();
 					}else{
-						firing = false;
+						//firing = false;
 					}
 
 

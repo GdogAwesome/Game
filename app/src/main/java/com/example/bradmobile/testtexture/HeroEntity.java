@@ -67,6 +67,7 @@ public class HeroEntity extends Entity {
 	private float shotSpeed = 0;
     private int health = 100;
 	private float heightDifference = 0;
+	private float distanceToGround = 0.0f;
 	protected boolean contJump = false;
 	protected boolean startFalling = true;
 	protected boolean falling = false;
@@ -118,7 +119,7 @@ public class HeroEntity extends Entity {
 		super();
 
 		this.x = 0;
-		this.y = 0;
+		this.y = 0.0f;
 		mBox = new MessageBox();
 		animHandler = new Anim();
 		tAnimHandler = new Anim();
@@ -351,17 +352,23 @@ public class HeroEntity extends Entity {
 			if(startFalling){
 
 
-				fallMomentum = .000001F;
+				fallMomentum = 0.0F;
 				startFalling = false;	
 				falling = true;
 			}else if(!startFalling){
-				if(fallMomentum >= -.0008){
-					fallMomentum +=.01;
+				if(fallMomentum <= .06f){
+					fallMomentum +=.01f;
+
+				}
+				distanceToGround = ((mModelMatrix[0][13] - matrixToFootingOffset) - ground);
+				if(distanceToGround >= fallMomentum) {
 					mModelMatrix[0][13] -= fallMomentum;
+				}else{
+					mModelMatrix[0][13] -= distanceToGround;
 				}
 
 					if( mModelMatrix[0][13] - (matrixToFootingOffset)  <= ground  ){
-						
+
 						mModelMatrix[0][13] = ground + ( matrixToFootingOffset) ;
 						startFalling = true;
 						falling = false;
@@ -375,9 +382,12 @@ public class HeroEntity extends Entity {
 	public void calcFooting(){
 		if( mModelMatrix[0][13] - ( matrixToFootingOffset)  > ground && !contJump){
 			falling();
-		}
+		}/*else if((mModelMatrix[0][13] - ( matrixToFootingOffset)  < ground)){// && ((mModelMatrix[0][13] - ( matrixToFootingOffset) - ground) > -.01f)){
+			mModelMatrix[0][13] = ground + ( matrixToFootingOffset) ;
+		}*/
 
 	}
+
 	
 	
 	/**
@@ -540,7 +550,7 @@ public class HeroEntity extends Entity {
 	private void setupModelMatrix(){
 		float toGround = ground + (matrixToFootingOffset);
 		Matrix.setIdentityM(mModelMatrix[0],0);
-		Matrix.translateM(mModelMatrix[0], 0, 0 , 0, -2.5003f);
+		Matrix.translateM(mModelMatrix[0], 0, 0f , .5f, -2.5003f);
 
 		Matrix.setIdentityM(mModelMatrix[1],0);
 		Matrix.translateM(mModelMatrix[1], 0, 0 , 0, -2.5003f);
@@ -576,6 +586,9 @@ public class HeroEntity extends Entity {
 	}
 	public float getRight(){
 		return mModelMatrix[0][12] + (CHARACTER_WIDTH * .2f);
+	}
+	public float getHead(){
+		return mModelMatrix[1][13] + (CHARACTER_TORSO_HEIGHT * .25f);
 	}
 	public float getCenter(){return mModelMatrix[0][12];}
 	public float getFooting(){
@@ -859,9 +872,25 @@ public class HeroEntity extends Entity {
 	public void setPaused(boolean p){
 		this.paused = p;
 	}
-	public void update(){
+	public void update(float mapPosX, float mapPosY){
+	    if(mapPosY < 0.0f) {
+            if ((getFooting() - ground) > mapPosY) {
+                this.mModelMatrix[0][13] -= mapPosY;
+				 //Log.e("delta y", Float.toString(mapPosY));
+            }//else{
+                //this.mModelMatrix[0][13] -= mapPosY;
+           // }
+        }else if(mapPosY > 0.0f){
+			this.mModelMatrix[0][13] -= mapPosY;
+		}else{
+
+        }
+
 		animHandler.update();
 		tAnimHandler.update();
+	}
+	public float getHeroY(){
+		return mModelMatrix[0][13];
 	}
 
 
