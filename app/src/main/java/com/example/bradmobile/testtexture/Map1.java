@@ -32,8 +32,8 @@ public class Map1 {
 	private float obstacleOffset;
 	private float originalObOffset;
 	private float deltaY=0;
-	private float upperBounds = .70f;
-	private float lowerBounds = 0.0f;
+	private float upperBounds = .80f;
+	private float lowerBounds = .5f;
 	private float currentDeltaY = 0;
 	public float prevY;
 	public float deltaX;
@@ -189,8 +189,6 @@ public class Map1 {
 				}
 			}
 			timer = 0;
-			
-
 
 		}
 	}
@@ -380,6 +378,7 @@ public class Map1 {
 						posX[4] += 1;
 						offsetCounter ++;
 						rightMapEdge = false;
+
 					}else{
 						setEndMap(true);
 						rightMapEdge = true;
@@ -392,6 +391,7 @@ public class Map1 {
 						Matrix.translateM(mModelMatrix, 0, (-1f * (Constants.TEST_RUN_SPEED)), 0.0f, 0.0f);
 
 						absoluteMoveSpace += Constants.TEST_RUN_SPEED;
+
 					}
 					textureBufferOffset = (offsetCounter * 4 * 4 * 2 * mapHeight) * 4;
 					animBufferOffset = (offsetCounter * 4 * 4 * mapHeight) * 2;
@@ -602,8 +602,8 @@ public class Map1 {
 		 */
 
 
-		mTextureCoordinateData = new float[ mapLength * 4 * 4 * 2 * mapHeight ];// maplength * segments per block(4) * coordinates per segment(4) * variables per coordinate(2) * how many blocks high(3)
-		mAnimData = new short[mapLength * 4 * 4 * mapHeight ]; // mapLength * segments per block(4) * coordinates per segment(4) * how many blocks high(3)
+		mTextureCoordinateData = new float[ mapLength * 4 * 4 * 2 * mapHeight ];// maplength * segments per block(4) * coordinates per segment(4) * variables per coordinate(2) * mapHeight
+		mAnimData = new short[mapLength * 4 * 4 * mapHeight ]; // mapLength * segments per block(4) * coordinates per segment(4) * mapHeight
 		primativesToDraw = ((mapHeight * 2) * 6 * 10);
 
 		for(int w = 0 ; w < length; w += 1) {

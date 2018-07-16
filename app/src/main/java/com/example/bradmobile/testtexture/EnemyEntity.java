@@ -417,8 +417,8 @@ public class EnemyEntity {
 	}
 	public void followLooseXY(float xLead, float yLead, float disX, float disY){
 
-		float deltaY = ( -1*( y - yLead) * disY);
-		float deltaX = ( -1*(x - xLead) * disX);
+		float deltaY = ((yLead - y) * disY);
+		float deltaX = ((xLead - x) * disX);
 
 		updateRotation(xLead, yLead);
 		moveDirect(deltaX, deltaY);
