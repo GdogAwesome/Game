@@ -457,6 +457,7 @@ public class EnemyEntity {
 	public void dropImage(){
 		enemyImage = null;
 	}
+
 	public void setContinuousFire(boolean cont){
 		this.continuousFire = cont;
 

@@ -218,7 +218,7 @@ public class Shader {
     public void useNormalProgram(){
         GLES20.glUseProgram(mNormalPerVertexHandle);
     }
-    public void useRegularProgrma(){
+    public void useRegularProgram(){
         GLES20.glUseProgram(mPerVertexProgramHandle);
 
 

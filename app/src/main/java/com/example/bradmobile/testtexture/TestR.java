@@ -191,11 +191,11 @@ public class TestR implements GLSurfaceView.Renderer {
          */
 
         // TODO move this below drawMap after setting up map shader
-        shader.useRegularProgrma();
+        shader.useRegularProgram();
 
         drawMap();
 
-        shader.useRegularProgrma();
+        shader.useRegularProgram();
         enemies.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(),shader.getmMVMatrixHandle(),shader.getmMVPMatrixHandle(),mProjectionMatrix,mMVPMatrix,mViewMatrix);
         shots.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(),shader.getmMVMatrixHandle(),shader.getmMVPMatrixHandle(),mProjectionMatrix,mMVPMatrix,mViewMatrix);
         hero.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(),shader.getmMVMatrixHandle(),shader.getmMVPMatrixHandle(),mProjectionMatrix,mMVPMatrix,mViewMatrix);
@@ -216,6 +216,9 @@ public class TestR implements GLSurfaceView.Renderer {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mapTextureHandle[1]);
+
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT );
+
 
         // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
         GLES20.glUniform1i(shader.getmTextureUniformHandle(), 0);
@@ -247,6 +250,7 @@ public class TestR implements GLSurfaceView.Renderer {
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0,12);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE );
         /**
          * Draw Map
          *

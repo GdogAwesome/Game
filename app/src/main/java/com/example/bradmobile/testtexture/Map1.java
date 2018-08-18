@@ -33,7 +33,7 @@ public class Map1 {
 	private float originalObOffset;
 	private float deltaY=0;
 	private float upperBounds = .80f;
-	private float lowerBounds = .5f;
+	private float lowerBounds = .00f;
 	private float currentDeltaY = 0;
 	public float prevY;
 	public float deltaX;
@@ -88,10 +88,6 @@ public class Map1 {
     private int offsetCounter = 0;
 
 
-	//keep track of update time
-	private int updateTime = 4;
-	private long timeDiff;
-	private long beginTime;
 
 	/**
 	 *
@@ -306,7 +302,7 @@ public class Map1 {
 
 		}else if(heroy < lowerBounds){
 
-			if(currentDeltaY <= -.3333333f){
+			if(currentDeltaY <= -.33333333f){
 				if(posY[3] < mapHeight -1){
 					posY[3] += 1;
 					posY[2] = posY[3] - 1;
@@ -338,7 +334,7 @@ public class Map1 {
 			}*/
 		}
 
-		beginTime = System.currentTimeMillis();
+
 			if (absoluteMoveSpace >= .25f && displayFM){
                 hero.displayMessage(1);
 				displayFM = false;
@@ -379,12 +375,24 @@ public class Map1 {
 						offsetCounter ++;
 						rightMapEdge = false;
 
+
+
 					}else{
 						setEndMap(true);
 						rightMapEdge = true;
 					}
 
 					if(!rightMapEdge) {
+
+						if (BgTotalMoveSpace > (-2.0f * 1.02f)) {
+							BgTotalMoveSpace -= BgMoveSpeed;
+							mBackgroundMatrix[12] -= BgMoveSpeed;
+
+						} else if (BgTotalMoveSpace <= (-2.0f * 1.02f)) {
+							BgTotalMoveSpace -= BgTotalMoveSpace;
+							mBackgroundMatrix[12] -= mBackgroundMatrix[12];
+
+						}
 						Matrix.translateM(mModelMatrix, 0, (-1f * totalMoveSpace), 0.0f, 0.0f);
 						totalMoveSpace -= totalMoveSpace;//Constants.TOTAL_MAP_MOVE;
 						totalMoveSpace -= Constants.TEST_RUN_SPEED;
@@ -424,6 +432,7 @@ public class Map1 {
 
 				} else {
 
+
 					if (posX[0] > 0) {
 
 
@@ -435,12 +444,23 @@ public class Map1 {
 						offsetCounter --;
 						mapUpdateLeft = true;
 						leftMapEdge = false;
+
+
 					}else{
 						mapUpdateLeft = false;
 						leftMapEdge = true;
 					}
 
 					if(!leftMapEdge) {
+
+						if ((BgTotalMoveSpace + 1f) < 1.02f) {
+							BgTotalMoveSpace += BgMoveSpeed;
+							mBackgroundMatrix[12] += BgMoveSpeed;
+						} else if ((BgTotalMoveSpace + 1f) >= 1.02f) {
+							BgTotalMoveSpace -= 2.0f;
+							mBackgroundMatrix[12] -= 2.0f;
+
+						}
 
 						Matrix.translateM(mModelMatrix, 0, (-1f * Constants.TOTAL_MAP_MOVE) + totalMoveSpace, 0.0f, 0.0f);
 						totalMoveSpace -= Constants.TOTAL_MAP_MOVE + (-1f * totalMoveSpace);
@@ -460,8 +480,6 @@ public class Map1 {
 				}
 			}
 		}
-		timeDiff = (System.currentTimeMillis() - beginTime);
-			updateTime = (int)timeDiff;
 
 
 			ViewX = viewX;

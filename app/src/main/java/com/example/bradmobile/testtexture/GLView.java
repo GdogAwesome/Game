@@ -67,6 +67,7 @@ public class GLView extends GLSurfaceView implements Runnable {
     private boolean canMoveLeft = true;
     private int playerCommand = 0;
     private int groundLevel = Constants.GROUND_LEVEL;
+    private float groundUnderHero = -2.0f;
     private boolean startJumping = false;
     private boolean jumping = false;
 
@@ -196,7 +197,7 @@ public class GLView extends GLSurfaceView implements Runnable {
                 sleepTime += FRAME_PERIOD;
                 //Log.d("sleep time","" +sleepTime+"");
                 framesSkipped++;
-                Log.d("frames skipped", ""+framesSkipped +"");
+
             }
 
 
@@ -335,8 +336,7 @@ public class GLView extends GLSurfaceView implements Runnable {
 
 
 
-        hero = new Hero(context, (halfScreen - (CHARACTER_WIDTH /2)), 250 );
-        hero.InitHero("source/pos1.png", CHARACTER_WIDTH,CHARACTER_HEIGHT);
+        hero = new Hero(context );
         heroCenter = (CHARACTER_WIDTH / 2) + (int)hero.x;
         hero.setGround(groundLevel);
         hero.reset();
@@ -351,7 +351,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         finish = (int)((Map.getMapLength() * Constants.BLOCK_WIDTH) - (.5 * Constants.SCREEN_WIDTH));
 
         shots = new ShotEntity(context);
-        enemies = new EnemyContainer(context, hero, Map.getBossType());
+        enemies = new EnemyContainer(context, hero, Map.getBossType(), mapNo);
         enemies.addShots(shots);
 
 
@@ -401,6 +401,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         playerCommand = controller.getPlayerCommand();
 
         shoot = controller.getShoot();
+        boolean obFound = false;
         startJumping = controller.getJump();
         hero.setFiring(controller.getShoot());
         shotHeight = controller.getFireState();
@@ -469,36 +470,59 @@ public class GLView extends GLSurfaceView implements Runnable {
 		 *
 		 *
 		 */
-
-
-
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 4; j++) {
 
                 if(hasOList[i][j]) {
-
-
                     if (heroCenter >= (obstacleList[i][j][0] + mapOffset) && heroCenter <= (obstacleList[i][j][2] + mapOffset)) {
 
-                        canMoveRight = !(hRight >= (obstacleList[i][j][0] + mapOffset)  && (hRight > (obstacleList[i][j][0] + mapOffset))  && (hFooting + .05f) < (obstacleList[i][j][1] + obOffset) && hRight < (obstacleList[i][j][2] + mapOffset ));// && hHead >(obstacleList[i][j][3] + obOffset) );
+                        //if(canMoveLeft && canMoveRight) {
+                            if (((obstacleList[i][j][1] + obOffset + .03f) > groundUnderHero) && ((obstacleList[i][j][1] + obOffset) <= (hFooting ))  ) {
+                                groundUnderHero = obstacleList[i][j][1] + obOffset;
 
-                        canMoveLeft = !(hLeft <= (obstacleList[i][j][2] + mapOffset)&& (hLeft < (obstacleList[i][j][2] + mapOffset))  && (hFooting + .05f) < (obstacleList[i][j][1] + obOffset) && hLeft >(obstacleList[i][j][0] + mapOffset ));// && hHead >(obstacleList[i][j][3] + obOffset) );
 
-                        if (canMoveRight && canMoveLeft) {
-                            //Log.e("ViewY", Float.toString(obstacleList[i][j][1]));
-                            hero.setGround(obstacleList[i][j][1] + obOffset );
+                             if(((obstacleList[i][j][1] + obOffset) ) == groundUnderHero) {
+                                 hero.setGround(groundUnderHero);
 
+                                 obFound = true;
+                             }
+
+                               // groundUnderHero = -10.0f;
+                            }
+                        if (!((hero.falling || hero.contJump) || hero.contJump)) {
+                            canMoveRight = !(hRight >= (obstacleList[i][j][0] + mapOffset) && (hRight > (obstacleList[i][j][0] + mapOffset)) && (hFooting) < (obstacleList[i][j][1] + obOffset) && hRight < (obstacleList[i][j][2] + mapOffset));// && hHead >(obstacleList[i][j][3] + obOffset) );
+
+                            canMoveLeft = !(hLeft <= (obstacleList[i][j][2] + mapOffset) && (hLeft < (obstacleList[i][j][2] + mapOffset)) && (hFooting) < (obstacleList[i][j][1] + obOffset) && hLeft > (obstacleList[i][j][0] + mapOffset));// && hHead >(obstacleList[i][j][3] + obOffset) );
                         }
-                        i = 10;
-                        j = 4;
-
 
                     } else {
-
-                        canMoveLeft = true;
-                        canMoveRight = true;
+                        //
+                        //groundUnderHero = -10.0f;
+                       // canMoveLeft = true;
+                       // canMoveRight = true;
                     }
                 }
+                if(obFound){
+                    i = 10;
+                    j = 4;
+
+
+                    groundUnderHero = -20f;
+                    obFound = false;
+
+                   // Log.e("ob", " Found");
+
+                }else{
+                    if((i >= 9) && (j >= 3)){
+                       // groundUnderHero = -20f;
+                           // hero.setGround(groundUnderHero);
+                       // Log.e("ob", "not Found");
+
+
+                    }
+
+                }
+
 
             }
         }

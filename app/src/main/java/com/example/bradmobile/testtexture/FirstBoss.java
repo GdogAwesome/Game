@@ -26,6 +26,8 @@ public class FirstBoss extends BossEntity {
     private int scaledBossHeight = 0;
     private float circleOriginX = 0.5f;
     private float circleOriginY = 0.0f;
+    private int bossHealth = 2000;
+    private int linkHealth = 500;
     private float LeadX ;
     private float LeadY;
     private float angle = 0.0f;
@@ -56,7 +58,7 @@ public class FirstBoss extends BossEntity {
         viewY = _viewY;
 
         if(preAngle < 360.0f){
-            preAngle += .06f;
+            preAngle += .07f;
         }else{
             preAngle = 0.0f;
         }
@@ -213,10 +215,12 @@ public class FirstBoss extends BossEntity {
         enemyList[4] = new EnemyEntity(xPos + 1.5f, yPos -.45f, EnemyContainer.BOSS_ONE_BODY);
         enemyList[4].InitEnemy(1, 1, bodyBounds[0]);
         enemyList[4].loadAnims(new int[]{Anim.ATTACK_1,Anim.STANDING}, new int[]{8,4}, new int[]{0,8}, new int[]{4, 7}, new boolean[]{false, false}, new boolean[]{false,true}, new boolean[]{false, true});
+        enemyList[4].setHealth(bossHealth);
 
         enemyList[0] = new EnemyEntity(enemyList[4].getAbsoluteX(), enemyList[4].getAbsoluteY() + 1.5f, EnemyContainer.BOSS_ONE_ARM);
         enemyList[0].InitEnemy(5,3, bodyBounds[1]);
         enemyList[0].loadAnims(new int[]{Anim.STANDING}, new int[]{12}, new int[]{0}, new int[]{5}, new boolean[]{true}, new boolean[]{false},new boolean[]{true});
+        enemyList[0].setHealth(linkHealth);
 
 
         for(int i = 1; i < 4; i ++){// enemyActive.length ; i++){
@@ -224,6 +228,7 @@ public class FirstBoss extends BossEntity {
                 enemyList[i] = new EnemyEntity(0f, 0f, EnemyContainer.BOSS_ONE_ARM);
                 enemyList[i].InitEnemy(5,3,  bodyBounds[1]);
                 enemyList[i].loadAnims(new int[]{Anim.STANDING}, new int[]{12}, new int[]{0}, new int[]{5}, new boolean[]{true}, new boolean[]{false},new boolean[]{true});
+                enemyList[i].setHealth(linkHealth);
             //}
         }
         for(int i = 0; i< enemyList.length; i++){

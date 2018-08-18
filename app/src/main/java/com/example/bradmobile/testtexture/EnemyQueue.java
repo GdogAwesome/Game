@@ -46,7 +46,25 @@ public class EnemyQueue {
      * @param mapNo
      */
     public void initQueue(int mapNo){
-        int[] enemyTypes = new int[]{0 ,0,0,0,0, 0, 0, 0};
+        int flyingEnemies = 0;
+
+        switch(mapNo){
+            case 1:
+                flyingEnemies = 5;
+                break;
+            case 2:
+                flyingEnemies = 10;
+                break;
+
+            default:
+                flyingEnemies = 5;
+
+
+        }
+        int[] enemyTypes = new int[flyingEnemies];//{0 ,0,0,0,0, 0, 0, 0};
+        for(int i = 0; i < flyingEnemies; i++){
+            enemyTypes[i] = EnemyContainer.FLYING_SHIP;
+        }
         queueActive = new boolean[totalQueues];
         float[][] enemyBounds = new float[enemyTypes.length][4];
         for(int i = 0;  i < enemyTypes.length; i ++){

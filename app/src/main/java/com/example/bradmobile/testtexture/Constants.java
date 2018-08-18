@@ -87,8 +87,9 @@ public class Constants {
 		 MAIN_CHAR_WIDTH = 300;
 		 MAIN_CHAR_HEIGHT = 250;
 		 FRAME_VARIANCE = 2.5f;
-		TEST_RUN_SPEED = ((((float)RUN_SPEED / (float)SCREEN_WIDTH) * 1.5f) * 3.0f) * scale;
+
 		TOTAL_MAP_MOVE = ((1f -(8f / 10f)) * 2.5f);
+		TEST_RUN_SPEED = (TOTAL_MAP_MOVE * .032f);  //((((float)RUN_SPEED / (float)SCREEN_WIDTH) * 1.5f) * 3.0f) * scale;
 
 
 		 FALL_SPEED = 90;

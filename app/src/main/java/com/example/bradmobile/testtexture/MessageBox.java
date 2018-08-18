@@ -233,18 +233,18 @@ public class MessageBox extends Entity {
         return drawTY;
     }
     public void initMBox(Context context){
-        this.initEntity(context, 1980,1980, R.drawable.pos4,20, 20,1, 1,barWidth, barHeight, MessageBox.UPPER_LEFT_CORNER, false);
-        this.initEntity(context, 2000,1980, R.drawable.pos4,20, 20,1, 1,barWidth, barHeight, MessageBox.UPPER_CENTER_BAR, false);
-        this.initEntity(context, 2020,1980, R.drawable.pos4,20, 20,1, 1,barWidth, barHeight, MessageBox.UPPER_RIGHT_CORNER, false);
-        this.initEntity(context, 1980,2000, R.drawable.pos4,20, 20,1, 1,barWidth, barHeight, MessageBox.LEFT_BAR, false);
-        this.initEntity(context, 1980,2020, R.drawable.pos4,20, 20,1, 1,barWidth, barHeight, MessageBox.LOWER_LEFT_CORNER, false);
-        this.initEntity(context, 2000,2020, R.drawable.pos4,20, 20,1, 1,barWidth, barHeight, MessageBox.LOWER_CENTER_BAR, false);
-        this.initEntity(context, 2020,2020, R.drawable.pos4,20, 20,1, 1,barWidth, barHeight, MessageBox.LOWER_RIGHT_CORNER, false);
-        this.initEntity(context, 2020,2000, R.drawable.pos4,20, 20,1, 1,barWidth, barHeight, MessageBox.RIGHT_BAR, false);
-        this.initEntity(context, 2000,2000, R.drawable.pos4,20, 20,1, 1,barWidth, barHeight, MessageBox.CENTER_SQUARE, false);
+        this.initEntity(context, 400,450, R.drawable.font,20, 20,1, 1,barWidth, barHeight, MessageBox.UPPER_LEFT_CORNER, false);
+        this.initEntity(context, 420,450, R.drawable.font,20, 20,1, 1,barWidth, barHeight, MessageBox.UPPER_CENTER_BAR, false);
+        this.initEntity(context, 440,450, R.drawable.font,20, 20,1, 1,barWidth, barHeight, MessageBox.UPPER_RIGHT_CORNER, false);
+        this.initEntity(context, 400,470, R.drawable.font,20, 20,1, 1,barWidth, barHeight, MessageBox.LEFT_BAR, false);
+        this.initEntity(context, 400,490, R.drawable.font,20, 20,1, 1,barWidth, barHeight, MessageBox.LOWER_LEFT_CORNER, false);
+        this.initEntity(context, 420,490, R.drawable.font,20, 20,1, 1,barWidth, barHeight, MessageBox.LOWER_CENTER_BAR, false);
+        this.initEntity(context, 440,490, R.drawable.font,20, 20,1, 1,barWidth, barHeight, MessageBox.LOWER_RIGHT_CORNER, false);
+        this.initEntity(context, 440,470, R.drawable.font,20, 20,1, 1,barWidth, barHeight, MessageBox.RIGHT_BAR, false);
+        this.initEntity(context, 420,470, R.drawable.font,20, 20,1, 1,barWidth, barHeight, MessageBox.CENTER_SQUARE, false);
 
         //TODO create init method for just textures. I don't need the rest here.
-        this.initEntity(context, 2000,2000, R.drawable.font,20, 20,0, 0,barWidth, barHeight, 9, false);
+        //this.initEntity(context, 2000,2000, R.drawable.font,20, 20,0, 0,barWidth, barHeight, 9, false);
     }
     private void setupMatrix(){
         for(int i = UPPER_LEFT_CORNER ; i <= CENTER_SQUARE; i++) {
@@ -359,7 +359,7 @@ public class MessageBox extends Entity {
             if(drawText) {
                 GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
                 // Bind the texture to this unit.
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandles[1]);
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandles[0]);
 
 
                 GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, textManager.getIndicesVBO(currentMessage));

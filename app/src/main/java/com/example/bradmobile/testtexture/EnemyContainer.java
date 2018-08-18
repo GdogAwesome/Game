@@ -35,7 +35,7 @@ public class EnemyContainer extends Entity {
 
     private float screenWidth = 1.2f;
 
-    public EnemyContainer(Context context, HeroEntity hero, int bossType){
+    public EnemyContainer(Context context, HeroEntity hero, int bossType, int mapNo){
 
         super();
 
@@ -49,23 +49,9 @@ public class EnemyContainer extends Entity {
 
         eQueue = new EnemyQueue(enemyList, enemyActive);
         initEnemyTypes(context, bossType);
-        eQueue.initQueue(1);
-
-        /*
-        for(int i = 0; i < MAX_ENEMIES; i++) {
+        eQueue.initQueue(mapNo);
 
 
-            if(i > 2 ){
-                initEnemy(FLYING_SHIP, i, ((i * 1f + 1f)), flyingEnemyHeight);
-
-
-            }else {
-                initEnemy(FLYING_SHIP,i, (i * 2.0f + 1f), flyingEnemyHeight);
-
-            }
-
-        }
-        */
 
     }
 
@@ -82,7 +68,7 @@ public class EnemyContainer extends Entity {
                 if (enemyList[e] != null) {
                     //Log.d("Active Enemy ", Integer.toString(e));
                     if ((enemyList[e].x - mapPosX) > - screenWidth * 2.0f && !enemyList[e].isDead()) {
-                        enemyActive[e] = true;
+                        //enemyActive[e] = true;
                         //enemyList[e].setContinuousFire(false);
                     } else {
                         enemyActive[e] = false;
@@ -241,7 +227,7 @@ public class EnemyContainer extends Entity {
         switch(bossType){
             case BossEntity.FIRST_BOSS:
                 this.initEntity(context,0, 0, R.drawable.boss_one, 114, 111, 5, 3, .25f, .25f, BOSS_ONE_ARM, false  );
-                this.initEntity(context, 0, 340, R.drawable.boss_one, 208, 355, 9, 2, (Constants.CHARACTER_WIDTH * .65f), (Constants.CHARACTER_HEIGHT * .8f), BOSS_ONE_BODY, false );
+                this.initEntity(context, 0, 340, R.drawable.boss_one, 208, 355, 9, 2, (Constants.CHARACTER_WIDTH * .75f), (Constants.CHARACTER_HEIGHT * .9f), BOSS_ONE_BODY, false );
                 break;
             case BossEntity.NO_BOSS:
                 break;

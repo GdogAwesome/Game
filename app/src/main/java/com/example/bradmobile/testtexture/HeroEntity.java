@@ -110,12 +110,8 @@ public class HeroEntity extends Entity {
 	private int height = 0;
 	/**
 	 * initialize character at starting pos x,  Image urly
-	 *
-	 * character width and height
-	 * @param x
-	 * @param y
 	 */
-	public HeroEntity(Context context, int x, int y){
+	public HeroEntity(Context context){
 		super();
 
 		this.x = 0;
@@ -130,16 +126,6 @@ public class HeroEntity extends Entity {
 		setupModelMatrix();
 	}
 
-	
-	/**Initializes the entity, loading all of its images into an array from spritesheet that is passed to it.
-	 * 
-	 * @param source, pass the location of source image
-	 */
-	public void InitHero(String source, int width, int height){
-
-	
-	}
-	
 	public void draw() {
 
 
@@ -356,7 +342,7 @@ public class HeroEntity extends Entity {
 				startFalling = false;	
 				falling = true;
 			}else if(!startFalling){
-				if(fallMomentum <= .06f){
+				if(fallMomentum <= .05f){
 					fallMomentum +=.01f;
 
 				}
@@ -382,9 +368,9 @@ public class HeroEntity extends Entity {
 	public void calcFooting(){
 		if( mModelMatrix[0][13] - ( matrixToFootingOffset)  > ground && !contJump){
 			falling();
-		}/*else if((mModelMatrix[0][13] - ( matrixToFootingOffset)  < ground)){// && ((mModelMatrix[0][13] - ( matrixToFootingOffset) - ground) > -.01f)){
+		}else if((mModelMatrix[0][13] - ( matrixToFootingOffset)  < ground)){// && ((mModelMatrix[0][13] - ( matrixToFootingOffset) - ground) > -.01f)){
 			mModelMatrix[0][13] = ground + ( matrixToFootingOffset) ;
-		}*/
+		}
 
 	}
 

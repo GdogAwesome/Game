@@ -185,7 +185,7 @@ public class LevelSelect extends AppCompatActivity implements View.OnClickListen
         setUpLevels();
         updateCurrentLevels(selection);
 
-        background = BitmapFactory.decodeResource(this.getResources(), R.drawable.futurecity);
+       // background = BitmapFactory.decodeResource(this.getResources(), R.drawable.futurecity);
 
 
     }

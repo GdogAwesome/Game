@@ -51,7 +51,7 @@ public class TextManager  {
             28,28,29,29,14,24,30,18,
             26,14,14,14,25,28,31,0,
             0,38,39,12,36,34,0,0,
-            0,38,0,0,0,0,0,32};
+            0,38,0,0,0,32,0,32};
 
 
 
@@ -173,7 +173,7 @@ public class TextManager  {
             asciiVal = (int)lineChrArray[i];
            charIndex =  convertCharToIndex( asciiVal);
            if(charIndex == -1){
-               charIndex = 63;
+               charIndex = 61;
            }
            scaleOfCharWidth = ((float)l_size[charIndex] / (float)UVCharSize);
 
