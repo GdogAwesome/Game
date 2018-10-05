@@ -4,14 +4,17 @@ uniform sampler2D u_Texture;
 uniform sampler2D u_NormalMap;
 uniform vec3 u_LightPos;
 uniform int u_AnimFrame;
+uniform vec3 u_lightColor;
 
 varying vec2 v_TexCoordinate;
 varying vec3 v_Position;
 
+const float intensity = 0.22;
 
 
 void main()
 {
+         vec3 glow = intensity * u_lightColor;
 
          vec3 normal = texture2D(u_NormalMap, v_TexCoordinate).rgb;
          normal = normalize(normal * 2.0 -1.0);
@@ -22,16 +25,18 @@ void main()
              // diffuse
              vec3 lightDir = normalize(u_LightPos - v_Position);
              float diff = max(dot(lightDir, normal), 0.0);
-             vec3 diffuse = diff * color.xyz;
+             vec3 glowDiff = (diff * 0.5) * glow;
+             vec3 colorDiff = diff * color.xyz;
+             vec3 diffuse = colorDiff ; //diff * color.xyz;
              // specular
              vec3 viewDir = normalize(u_LightPos - v_Position);//this is wrong but gave a satisfactory result so I will fix it later, maybe...
              vec3 reflectDir = reflect(-lightDir, normal);
              vec3 halfwayDir = normalize(lightDir + viewDir);
              float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
 
-             vec3 specular = vec3(0.15) * spec;
+             vec3 specular = glow * spec;//vec3(0.15) * spec;
 
 
-	       gl_FragColor = vec4(ambient + diffuse + specular, color.w);//vec4(texture2D(u_Texture, v_TexCoordinate).rgb, texture2D(u_Texture, v_TexCoordinate));
+	       gl_FragColor = vec4(ambient + diffuse + specular , color.w);//vec4(texture2D(u_Texture, v_TexCoordinate).rgb, texture2D(u_Texture, v_TexCoordinate));
 
 }

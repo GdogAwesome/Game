@@ -32,6 +32,7 @@ public class Shader {
     private static  int mNormalPerVertexHandle;
     private static  int mNormalAnimFrame;
     private static int mNormalHasAnim;
+    private static int mNormalLightColorHandle;
     private String vShader;
     private String fShader;
 
@@ -142,6 +143,7 @@ public class Shader {
         mLightPosHandle = GLES20.glGetUniformLocation(mNormalPerVertexHandle, "u_LightPos");
         mNormalAnimFrame = GLES20.glGetUniformLocation(mNormalPerVertexHandle, "u_AnimFrame");
         mNormalHasAnim = GLES20.glGetAttribLocation(mNormalPerVertexHandle, "a_HasAnim");
+        mNormalLightColorHandle = GLES20.glGetUniformLocation(mNormalPerVertexHandle, "u_lightColor");
 
         mNormalTextureCoordinateHandle = GLES20.glGetAttribLocation(mNormalPerVertexHandle, "a_TexCoordinate");
         mNormalTextureUniformHandle = GLES20.glGetUniformLocation(mNormalPerVertexHandle, "u_Texture");
@@ -282,5 +284,7 @@ public class Shader {
     public static int getmNormalHasAnim() {
         return mNormalHasAnim;
     }
+
+    public static int getmNormalLightColorHandle() { return mNormalLightColorHandle; }
 
 }

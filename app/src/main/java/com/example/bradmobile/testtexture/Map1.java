@@ -75,6 +75,7 @@ public class Map1 {
 	private FloatBuffer BgPositionFloatBuffer;
 	private ShortBuffer drawListBuffer;
 	private ShortBuffer animBuffer;
+	private float[] lightColor = new float[]{1.0f, 1.0f, 1.0f};
 	private int animBufferOffset = 0;
 	private int textureBufferOffset = 0;
 	private int primativesToDraw = 360;
@@ -205,6 +206,7 @@ public class Map1 {
 			/**
 			 * decide what map to load
 			 */
+		setLightColor(mapNo);
 
 			// TODO fix this hardcoded mess before adding new levels!!! meh, maybe not..
 			switch(mapNo){
@@ -581,12 +583,12 @@ public class Map1 {
     private void setupModelMatrix(){
         Matrix.setIdentityM(mModelMatrix, 0 );
         Matrix.scaleM(mModelMatrix, 0 , 1.02f,1.03f, 1.0f); // x= 1.02 y = 1.03
-        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -2.51f );
+        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -2.505f );
 
 
         Matrix.setIdentityM(mBackgroundMatrix, 0 );
 		Matrix.scaleM(mBackgroundMatrix, 0 , 1.02f,1.03f, 1.0f);
-        Matrix.translateM(mBackgroundMatrix, 0 , 0.0f, 0.0f, -2.505f);
+        Matrix.translateM(mBackgroundMatrix, 0 , 0.0f, 0.0f, -2.50f);
 
 
 
@@ -964,6 +966,22 @@ public class Map1 {
 
 		viewX = 0;
 	}
+	private void setLightColor(int mapNo){
+
+		if(mapNo == 1){
+			lightColor[0] = .95f;
+			lightColor[1] = .5f;
+			lightColor[2] = 1.0f;
+		}else if(mapNo == 2){
+			lightColor[0] = 1.0f;
+			lightColor[1] = .87f;
+			lightColor[2] = .38f;
+		}else{
+			lightColor[0] = .95f;
+			lightColor[1] = .5f;
+			lightColor[2] = 1.0f;
+		}
+	}
 	public int getPrimativesToDraw(){
 		return primativesToDraw;
 	}
@@ -1028,6 +1046,9 @@ public class Map1 {
 	}
 	public float[][] getLeftTopObstacle(){
 		return mapBlocks[posX[1]][posY[2]].getObstacleRect(1);
+	}
+	public float[] getAmbientLightColor(){
+		return lightColor;
 	}
 	public float[][] getFarLeftTopObstacle(){ return mapBlocks[posX[0]][posY[2]].getObstacleRect(0);}
 	public float[][] getFarLeftBottomObstacle(){ return mapBlocks[posX[0]][posY[3]].getObstacleRect(0);}

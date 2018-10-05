@@ -27,8 +27,8 @@ public class FlyingEnemy extends EnemyEntity {
 		this.y = y;
 
 		//TODO setup item to report if linked or not, this is just hard coded for now
-		shotType = Item.WEAPON_UPGRADE_FLAME;
-		this.firingLinked = true;
+		shotType = Item.WEAPON_UPGRADE_SPRAY;
+		this.firingLinked = false;
 
 
 
@@ -45,10 +45,10 @@ public class FlyingEnemy extends EnemyEntity {
 
 					if((xView ) > heroX){
 						this.x -= moveSpeed;
-						facingForward = false;
+						facingForward = true;
 					}else if((xView ) < heroX){
 						this.x += moveSpeed;
-						facingForward = true;
+						facingForward = false;
 
 					}
 

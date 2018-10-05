@@ -22,6 +22,8 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.WindowManager;
 
+import com.example.bradmobile.testtexture.Utils.Audio;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.FloatBuffer;
@@ -33,7 +35,7 @@ import java.util.ArrayList;
 
 public class GLView extends GLSurfaceView implements Runnable {
 
-    MediaPlayer mp;
+
     boolean playAd = true;
     //Bitmap heroImage = null;
 
@@ -72,9 +74,6 @@ public class GLView extends GLSurfaceView implements Runnable {
     private boolean jumping = false;
 
     private int shotHeight = 0;
-    private Bitmap scoreBMP;
-
-
     private int screenWidth = Constants.SCREEN_WIDTH;
     private int screenHeight = Constants.SCREEN_HEIGHT;
     private int CHARACTER_WIDTH;
@@ -117,9 +116,11 @@ public class GLView extends GLSurfaceView implements Runnable {
 
 
     private boolean running = true;
-    private final float MAX_FPS = 59.0f;
+    private final float MAX_FPS = 59.9f;
     private final float FRAME_PERIOD = 1000.0f/MAX_FPS;
     private final int MAX_FRAME_SKIPS = 0;
+
+    Audio music;
 
 
     public GLView(Context context) {
@@ -129,6 +130,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         setEGLContextClientVersion(2);
         setFocusable(true);
         requestFocus();
+        music = new Audio();
 
         renderer = new TestR(context);
 
@@ -285,7 +287,7 @@ public class GLView extends GLSurfaceView implements Runnable {
         try {
 
             // For JellyBeans and onward
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
 
                 display.getRealMetrics(metrics);
                 Constants.setScreen(metrics.widthPixels, metrics.heightPixels);
@@ -389,7 +391,7 @@ public class GLView extends GLSurfaceView implements Runnable {
 
         }
 
-        mp.start();
+
 
 
 
@@ -439,7 +441,7 @@ public class GLView extends GLSurfaceView implements Runnable {
 
              */
             hasOList[0] = Map.getFarLeftThasO();
-            hasOList[5] = Map.getFarLeftThasO();
+            hasOList[5] = Map.getFarLeftBhasO();
         hasOList[1] = Map.getLeftThasO();
         hasOList[6] = Map.getLeftBhasO();
         hasOList[2] = Map.getCenterThasO();
@@ -477,29 +479,27 @@ public class GLView extends GLSurfaceView implements Runnable {
                     if (heroCenter >= (obstacleList[i][j][0] + mapOffset) && heroCenter <= (obstacleList[i][j][2] + mapOffset)) {
 
                         //if(canMoveLeft && canMoveRight) {
-                            if (((obstacleList[i][j][1] + obOffset + .03f) > groundUnderHero) && ((obstacleList[i][j][1] + obOffset) <= (hFooting ))  ) {
+                            if (((obstacleList[i][j][1] + obOffset ) >= groundUnderHero) && ((obstacleList[i][j][1] + obOffset) <= (hFooting + .03f))  ) {
                                 groundUnderHero = obstacleList[i][j][1] + obOffset;
 
 
-                             if(((obstacleList[i][j][1] + obOffset) ) == groundUnderHero) {
+                                if (!((hero.falling || hero.contJump) || hero.contJump)) {
+                                    canMoveRight = !(hRight >= (obstacleList[i][j][0] + mapOffset) && (hRight > (obstacleList[i][j][0] + mapOffset)) && (hFooting + .02f) < (obstacleList[i][j][1] + obOffset) && hRight < (obstacleList[i][j][2] + mapOffset));// && hHead >(obstacleList[i][j][3] + obOffset) );
+
+                                    canMoveLeft = !(hLeft <= (obstacleList[i][j][2] + mapOffset) && (hLeft < (obstacleList[i][j][2] + mapOffset)) && (hFooting + .02f) < (obstacleList[i][j][1] + obOffset) && hLeft > (obstacleList[i][j][0] + mapOffset));// && hHead >(obstacleList[i][j][3] + obOffset) );
+                                }
+
+                                if((((obstacleList[i][j][1] + obOffset )  + groundUnderHero) < .02f) || (((obstacleList[i][j][1] + obOffset )  + groundUnderHero) > -.02f)) {
                                  hero.setGround(groundUnderHero);
+                                // Log.e("ground under her", Float.toString(groundUnderHero));
 
                                  obFound = true;
+                             }else{
+
                              }
 
-                               // groundUnderHero = -10.0f;
                             }
-                        if (!((hero.falling || hero.contJump) || hero.contJump)) {
-                            canMoveRight = !(hRight >= (obstacleList[i][j][0] + mapOffset) && (hRight > (obstacleList[i][j][0] + mapOffset)) && (hFooting) < (obstacleList[i][j][1] + obOffset) && hRight < (obstacleList[i][j][2] + mapOffset));// && hHead >(obstacleList[i][j][3] + obOffset) );
 
-                            canMoveLeft = !(hLeft <= (obstacleList[i][j][2] + mapOffset) && (hLeft < (obstacleList[i][j][2] + mapOffset)) && (hFooting) < (obstacleList[i][j][1] + obOffset) && hLeft > (obstacleList[i][j][0] + mapOffset));// && hHead >(obstacleList[i][j][3] + obOffset) );
-                        }
-
-                    } else {
-                        //
-                        //groundUnderHero = -10.0f;
-                       // canMoveLeft = true;
-                       // canMoveRight = true;
                     }
                 }
                 if(obFound){
@@ -514,10 +514,7 @@ public class GLView extends GLSurfaceView implements Runnable {
 
                 }else{
                     if((i >= 9) && (j >= 3)){
-                       // groundUnderHero = -20f;
-                           // hero.setGround(groundUnderHero);
-                       // Log.e("ob", "not Found");
-
+                        groundUnderHero = -20f;
 
                     }
 
@@ -539,7 +536,6 @@ public class GLView extends GLSurfaceView implements Runnable {
                 canMoveLeft = !hero.dying;
                 canMoveRight = !hero.dying;
             }
-
 
 
         }
@@ -597,6 +593,7 @@ public class GLView extends GLSurfaceView implements Runnable {
                 */
 
             }else{
+
                 hero.reset();
                 shots.resetHealth();
 
@@ -613,7 +610,21 @@ public class GLView extends GLSurfaceView implements Runnable {
     }*/
     public void newMap(Context context,int mapNo){
         //mp.setLooping(true);
-        mp = MediaPlayer.create(context, R.raw.new_beginning);
+        switch(mapNo){
+            case 1:
+                music.loadTrack(context, R.raw.new_beginning);
+                break;
+            case 2:
+                music.loadTrack(context, R.raw.new_beginning);
+                break;
+            case 3:
+                music.loadTrack(context, R.raw.neo);
+                break;
+
+            default:
+                music.loadTrack(context, R.raw.new_beginning);
+        }
+
         currentStats.currentMap = mapNo;
 
 
@@ -648,7 +659,7 @@ public class GLView extends GLSurfaceView implements Runnable {
             }});
 
 
-        System.gc();
+        //System.gc();
 
 
     }
@@ -656,7 +667,7 @@ public class GLView extends GLSurfaceView implements Runnable {
 
     public void pause() {
         playing = false;
-        mp.pause();
+        music.pauseMusic();
 
         try {
             gameThread.join();
@@ -675,10 +686,10 @@ public class GLView extends GLSurfaceView implements Runnable {
         //mp.start();
         // mp.reset();
         // mp.setLooping(true);
+        music.startMusic();
 
         //mp = MediaPlayer.create(context, R.raw.scifi);
 
-        mp.start();
 
 
         gameThread = new Thread(this);
@@ -698,19 +709,18 @@ public class GLView extends GLSurfaceView implements Runnable {
 
         }
         newMap(context,mapNo);
+        music.startMusic();
 
         playing = true;
 
         gameThread = new Thread(this);
         gameThread.start();
 
-        mp.start();
     }
     public void nextLevel(){
         sceneChange();
 
         playAd = true;
-        mp.release();
         playing = false;
 
         newMap(context,currentStats.currentMap + 1);

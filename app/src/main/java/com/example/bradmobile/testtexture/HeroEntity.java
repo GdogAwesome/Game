@@ -6,10 +6,15 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
 import com.example.bradmobile.testtexture.AnimationUtils.*;
+import com.example.bradmobile.testtexture.Utils.Audio;
 
 public class HeroEntity extends Entity {
     private Anim animHandler;
     private Anim tAnimHandler;
+    private Audio audio;
+    private int[] audioLibrary = new int[6];
+    private int ShotSFX;
+    private boolean linkedFirstPlay = true;
 	protected float x;
 	protected float y;
 
@@ -121,6 +126,9 @@ public class HeroEntity extends Entity {
 		tAnimHandler = new Anim();
 
 		heroImage =  R.drawable.pos4;
+		audio = new Audio();
+		audioLibrary[0] = audio.loadSFX(context, R.raw.laser);
+		audioLibrary[1] = audio.loadSFX(context, R.raw.flame);
 
 		initHero(context);
 		setupModelMatrix();
@@ -497,7 +505,6 @@ public class HeroEntity extends Entity {
 			shotSpeed = SHOT_SPEED;
 
 		}else{
-            //shotAngle = shotAngle * -1;
 
 			shotSpeed = -1 * (SHOT_SPEED);
 		}
@@ -588,7 +595,15 @@ public class HeroEntity extends Entity {
 		return this.running;
 	}
 	public void setFiring( boolean f){
+
+		if(firingLinked){
+			if(!firing && f == true){
+				linkedFirstPlay = true;
+			}
+		}
 		this.firing = f;
+
+
 	}
 	public boolean isFalling(){
 		return this.falling;
@@ -620,11 +635,14 @@ public class HeroEntity extends Entity {
     public void reset(){
 		setDefaultFireState();
         this.dead = false;
+        this.dying = false;
+        this.justDied = false;
         this.health = 100;
         this.facingForward = true;
         continuousFire = false;
         this.x -= CHARACTER_WIDTH;
         this.y = 50;
+
         restoreBounds();
 		Stop();
     }
@@ -637,6 +655,7 @@ public class HeroEntity extends Entity {
 				firingLinked = false;
 				upgradeTime = item.getUTime();
 				shotType = item.getUType();
+				ShotSFX = audioLibrary[0];
 
 				break;
 			case Item.WEAPON_UPGRADE_FLAME:
@@ -644,6 +663,7 @@ public class HeroEntity extends Entity {
 				firingLinked = true;
 				upgradeTime = item.getUTime();
 				shotType = item.getUType();
+                ShotSFX = audioLibrary[1];
 				break;
 			case Item.HEALTH_UPGRADE:
 				if(health <= 100){
@@ -665,6 +685,15 @@ public class HeroEntity extends Entity {
 			if ((System.currentTimeMillis() - lastShot) > shootTime) {
 
 				canShoot = true;
+				if(!firingLinked) {
+					audio.playSFX(ShotSFX, 0, 0);
+				}else{
+					if(linkedFirstPlay){
+						audio.playSFX(ShotSFX, 0, 1);
+						linkedFirstPlay = false;
+					}
+
+				}
 
 				// shots.ShotFired(fireStats(), false);
 				lastShot = System.currentTimeMillis();
@@ -814,6 +843,7 @@ public class HeroEntity extends Entity {
 		tempWeapon = false;
 		continuousFire = false;
 		shotType = Item.DEFAULT_VALUE;
+        ShotSFX = audioLibrary[0];
 	}
 
 	/**

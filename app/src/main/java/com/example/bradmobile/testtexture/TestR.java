@@ -98,6 +98,7 @@ public class TestR implements GLSurfaceView.Renderer {
 
         // Set the background clear color to gray.
         GLES20.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
+        //Log.e("texture compression", gl.glGetString(gl.GL_EXTENSIONS));
         // Use culling to remove back faces.
 
         for(int i = 0; i< testIndices.length; i++){
@@ -116,8 +117,6 @@ public class TestR implements GLSurfaceView.Renderer {
         GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE,textSize, 0);
 
         Log.e("max texture size", Integer.toString(textSize[0]));
-
-        //GLES20.glEnable(GLES20.GL_ALPHA);
 
         // Position the eye behind the origin.
         final float eyeX = 0.0f;
@@ -273,12 +272,13 @@ public class TestR implements GLSurfaceView.Renderer {
 
         //setup up light position
         Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, .25f, -0.25f, - 0.5f);
+        Matrix.translateM(mLightModelMatrix, 0, .25f, -0.5f, - 1.0f);
 
         Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
         Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
 
         GLES20.glUniform3f(shader.getmLightPosHandle(), mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
+        GLES20.glUniform3f(shader.getmNormalLightColorHandle(), map.getAmbientLightColor()[0], map.getAmbientLightColor()[1], map.getAmbientLightColor()[2]);
 
         //pass in vertex coords
         GLES20.glEnableVertexAttribArray(shader.getmNormalPositionHandle());

@@ -148,6 +148,11 @@ public class EnemyContainer extends Entity {
 
                 Matrix.setIdentityM(mModelMatrix,0);
                 Matrix.translateM(mModelMatrix,0, (enemyList[i].getAbsoluteX()), (enemyList[i].getAbsoluteY()), -2.51f);
+                if(enemyList[i].isFacingForward()){
+                    mModelMatrix[0] = 1;
+                }else{
+                    mModelMatrix[0] = -1;
+                }
                 Matrix.rotateM(mModelMatrix,0,  enemyList[i].getRotation(), 0f,0f, 1f);
 
                 //Log.e("advance", Float.toString(mModelmatrix[12]));
@@ -216,7 +221,7 @@ public class EnemyContainer extends Entity {
     }
 
     private void initEnemyTypes(Context context, int bossType){
-        this.initEntity(context, 800, 0, R.drawable.ship,168, 127, 6, 2, .25f, .25f, FLYING_SHIP,false );
+        this.initEntity(context, 0, 300, R.drawable.ship,220, 200, 6, 2, .25f, .25f, FLYING_SHIP,false );
         this.initEntity(context, 0, 200, R.drawable.ship, 192, 100, 6, 1, .25f, .25f, ELECTRIC_SHIP, false );
 
         eQueue.initEnemies(FLYING_SHIP, this.getObjectBounds(FLYING_SHIP));

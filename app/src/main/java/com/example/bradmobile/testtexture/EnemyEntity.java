@@ -19,7 +19,8 @@ public class EnemyEntity {
 
 	protected int xPosCounter = 0;
 	protected int yPosCounter = 0;
-	int shootTime = 300;
+	protected boolean facingForward =  true;
+	int shootTime = 700;
 	private int itemType = -1;
 	private int health = 100;
 	public int dSound = 0;
@@ -27,7 +28,8 @@ public class EnemyEntity {
 	private float[] relativeBounds = new float[4];
 
     int counter = 0;
-	float shotSpeed = Constants.TEST_SHOT_SPEED;
+	float SHOT_SPEED = Constants.TEST_SHOT_SPEED;
+	private float shotSpeed = SHOT_SPEED;
 	int shotPower = 10;
 	int jumpCounter = 0;
 	int r = 0;
@@ -67,7 +69,6 @@ public class EnemyEntity {
 	public int groundLevel;
 	public int footLevel;
 	public int hitPoints = 100;
-	public boolean facingForward = true;
 	protected int CHARACTER_WIDTH = (int)Constants.CHARACTER_WIDTH;
 	protected int CHARACTER_HEIGHT = (int) Constants.CHARACTER_HEIGHT;
 	private static int FALL_SPEED = 120;
@@ -315,9 +316,9 @@ public class EnemyEntity {
 	public float[] fireStats(){
 		
 		if(facingForward){
-			shotSpeed = Constants.SHOT_SPEED;
+			shotSpeed = -1 * Constants.SHOT_SPEED;
 		}else{
-			shotSpeed = -1 *(Constants.SHOT_SPEED);
+			shotSpeed = (Constants.SHOT_SPEED);
 		}
 		
 		fireStats[0] = xView;
@@ -472,7 +473,7 @@ public class EnemyEntity {
 
 	public int getAnimFrameOffsetBytes(){
 
-		return animHandler.getAnimIndex();//(((animFrameX + (animFrameY * 4))* 12) * 4);
+		return animHandler.getAnimIndex();
 	}
 	public int getEnemyType(){
 		return enemyType;
@@ -515,6 +516,9 @@ public class EnemyEntity {
 	}
 	public boolean isFiringLinked(){
 		return firingLinked;
+	}
+	public boolean isFacingForward(){
+		return facingForward;
 	}
 	public void loadAnims(int[] animTypes, int[] numOfFrames, int[] frameStart, int[] frameTime, boolean[] continuous, boolean[] reciprocating, boolean[] interruptible){
 
