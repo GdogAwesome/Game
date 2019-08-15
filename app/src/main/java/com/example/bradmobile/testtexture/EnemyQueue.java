@@ -2,7 +2,9 @@ package com.example.bradmobile.testtexture;
 
 import android.util.Log;
 
+
 public class EnemyQueue {
+
     private int maxEnemyTypes = 15;
     private float[] QueueDistances;
     private boolean[] queueActive;
@@ -63,7 +65,11 @@ public class EnemyQueue {
         }
         int[] enemyTypes = new int[flyingEnemies];//{0 ,0,0,0,0, 0, 0, 0};
         for(int i = 0; i < flyingEnemies; i++){
-            enemyTypes[i] = EnemyContainer.FLYING_SHIP;
+            if(i % 2 == 0) {
+                enemyTypes[i] = EnemyContainer.BOMBER_SHIP;//.FLYING_SHIP;
+            }else{
+                enemyTypes[i] = EnemyContainer.FLYING_SHIP;
+            }
         }
         queueActive = new boolean[totalQueues];
         float[][] enemyBounds = new float[enemyTypes.length][4];

@@ -25,6 +25,7 @@ public class HeroEntity extends Entity {
     protected int yTorsoCounter = 0;
 	private long lastHit = 0;
 	int shootTime = 175;
+	protected float frameVariance = 1.0f;
 
 	
 	int counter = 0;
@@ -64,7 +65,7 @@ public class HeroEntity extends Entity {
 	private boolean dead = false;
 	private boolean justDied = false;
 	private boolean paused = false;
-	private boolean cueToPause = false;
+    private boolean cueToPause = false;
 	private boolean returnToStart = false;
 	private float returnX = -1f;
 
@@ -116,12 +117,12 @@ public class HeroEntity extends Entity {
 	/**
 	 * initialize character at starting pos x,  Image urly
 	 */
-	public HeroEntity(Context context){
+	public HeroEntity(Context context, int mapNo){
 		super();
 
 		this.x = 0;
 		this.y = 0.0f;
-		mBox = new MessageBox();
+		mBox = new MessageBox(mapNo);
 		animHandler = new Anim();
 		tAnimHandler = new Anim();
 
@@ -250,7 +251,7 @@ public class HeroEntity extends Entity {
 						
 							heightCheck = .775f;// heightDifference;
 						
-							heightDifference = (( -1  * (currentJumpPos * currentJumpPos)) + .8f);
+							heightDifference = frameVariance *(( -1  * (currentJumpPos * currentJumpPos)) + .8f);
 							
 	
 							mModelMatrix[0][13] =  beginningPos + heightDifference;
@@ -319,20 +320,21 @@ public class HeroEntity extends Entity {
 		animHandler.stop();
 		tAnimHandler.stop();
 	}
-	public void move(float mapPosX, boolean mR,boolean mL){
+	public void move(float mapPosX, boolean mR,boolean mL, float frameVariance){
 
         this.canMoveLeft = mL;
         this.canMoveRight = mR;
+        this.frameVariance = frameVariance;
 
 		if(!dying && !dead) {
 
 
 			if (facingForward && getRight() <= Constants.RIGHT_BORDER && canMoveRight) {
-				mModelMatrix[0][12] += RUN_SPEED;
+				mModelMatrix[0][12] += (frameVariance *RUN_SPEED);
 
 			} else if (!facingForward && getLeft() >= Constants.LEFT_BORDER && canMoveLeft) {
 
-				mModelMatrix[0][12] -= RUN_SPEED;
+				mModelMatrix[0][12] -= (frameVariance *RUN_SPEED);
 
 			}
 		}
@@ -393,9 +395,10 @@ public class HeroEntity extends Entity {
 	}
 
 	public void updateMessage(float mapPosX){
-		if(mBox.activeMessage){mBox.updateMessage(this.x - mapPosX, y);}
+		if(mBox.activeMessage){
+			mBox.updateMessage(this.x - mapPosX, y);
+		}
 	}
-
 	public float[] getHitBox(){
 
 		hitBox[0] = mModelMatrix[0][12] - ((CHARACTER_WIDTH) * .2f);
@@ -405,6 +408,7 @@ public class HeroEntity extends Entity {
 
 		return hitBox;
 	}
+
     public void setShotHeight(int height){
 		this.height = height;
 
@@ -528,18 +532,12 @@ public class HeroEntity extends Entity {
 
 		return fireStats;
 	}
-	public void displayMessage(int num){
+	public void displayMessage(int num, int time, boolean mutable){
 
-
-				mBox.showGlobalMessage(num -1, 8,false);
+				mBox.showGlobalMessage(num -1, time,mutable);
 
 
 	}
-
-
-
-
-
 	private void setupModelMatrix(){
 		float toGround = ground + (matrixToFootingOffset);
 		Matrix.setIdentityM(mModelMatrix[0],0);
@@ -877,8 +875,8 @@ public class HeroEntity extends Entity {
 		return mBox.activeMessage;
 	}
 	public void restoreBounds(){
-		Constants.RIGHT_BORDER = .5f;
-		Constants.LEFT_BORDER = -.5f;
+		Constants.RIGHT_BORDER = .2f;
+		Constants.LEFT_BORDER = -.6f;
 
 	}
 	public void returnTo(float returnX){
@@ -902,8 +900,8 @@ public class HeroEntity extends Entity {
 
         }
 
-		animHandler.update();
-		tAnimHandler.update();
+		animHandler.update(frameVariance);
+		tAnimHandler.update(frameVariance);
 	}
 	public float getHeroY(){
 		return mModelMatrix[0][13];

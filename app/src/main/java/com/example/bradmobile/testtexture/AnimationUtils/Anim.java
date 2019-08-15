@@ -42,6 +42,7 @@ public class Anim {
     public final static int ATTACK_4 = 10;
     public final static int ATTACK_5 = 11;
     public final static int ATTACK_6 = 12;
+    public final static int NEW_ANIM = -1;
     
     private CurrentAnim currentAnim;
 
@@ -118,6 +119,7 @@ public class Anim {
                 break;
 
         }
+
         this.frameTime[animType] = frameTime;
         this.continuous[animType] = continuous;
         this.reciprocating[animType] = reciprocating;
@@ -127,6 +129,7 @@ public class Anim {
     }
 
     private int[] loadAnims(int[] anim, int startFrame){
+        currentAnim.setAnimType(NEW_ANIM);
         int[] a = anim;
         int currentFrame = startFrame;
 
@@ -182,8 +185,19 @@ public class Anim {
     public int getAnimIndex(){
         return currentAnim.getAnimIndex();
     }
-    public void update(){
-        currentAnim.update();
+    public void update(float frameVariance){
+        currentAnim.update(frameVariance);
+    }
+    public boolean isCurrentDone(){
+        if(currentAnim.isDone()){
+            currentAnim.animFinished = false;
+            currentAnim.animIndex = 0;
+            return true;
+        }
+        return currentAnim.isDone();
+    }
+    public int getFrame(){
+        return currentAnim.getFrame();
     }
 
     private void resetIndicies(int[] exclude){

@@ -15,7 +15,15 @@ public class Constants {
 	public static float TEST_SHOT_SPEED;
 	public static float TOTAL_MAP_MOVE;
 	public static float TEST_RUN_SPEED;
+	public static float frameVariance;
+	private static final float targetFPS = 59.99f;
+	private static final float framePeriod = 1000.0f/targetFPS;
+	private static float adjustedTimer = 1.0f;
+	private static long lastUpdate = 0;
+	private static long timeDiff = 0;
+
 	public static int tuOffset = 1;
+	public static final float ratio = 16f / 9f;
 
 	public static  int MIDDLE_SPACE = SCREEN_WIDTH - (int)(SCREEN_WIDTH * .27);
 	public static  int GROUND_LEVEL = SCREEN_HEIGHT - ((int)(SCREEN_HEIGHT * .15));
@@ -43,7 +51,7 @@ public class Constants {
     public static float TOTAL_MAP_HEIGHT = 1400;
 	public static  int FALL_SPEED = 90;
 	public static  float SHOT_SPEED = 0;
-	public static float RIGHT_BORDER = .50f;
+	public static float RIGHT_BORDER = .1f;
 	public static float LEFT_BORDER = -.5f;
 	public static int H_BAR_WIDTH ;
 	public static int H_BAR_HEIGHT;
@@ -74,7 +82,7 @@ public class Constants {
 		H_BAR_WIDTH = (int)( SCREEN_WIDTH * .2f);
 		H_BAR_HEIGHT = (int)(H_BAR_WIDTH * .125f);
 		LEFT_BORDER = -.5f;
-		RIGHT_BORDER = .5f;
+		RIGHT_BORDER = .1f;
 
 
 
@@ -101,6 +109,22 @@ public class Constants {
 	}
 	public static boolean getSfxState(){
 		return sfx;
+	}
+	public static float getFrameVariance(long currentTime){
+
+		timeDiff = currentTime - lastUpdate;
+		frameVariance = ((float)(timeDiff) /framePeriod );
+
+		if(frameVariance < 1.0f){
+		    frameVariance = 1.0f;
+        }else if(frameVariance > 2.0f){
+		    frameVariance = 2.0f;
+        }
+
+		//Log.e("fameTime", Float.toString(frameVariance));
+		//Log.e("fameTime", Long.toString(timeDiff));
+		lastUpdate = currentTime;
+		return frameVariance;
 	}
 
 }

@@ -4,20 +4,13 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-
+    android:background="@drawable/window"
     tools:context="com.example.bradmobile.testtexture.StartScreen"
-
 
     >
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize = "50dp"
-        android:paddingTop="25dp"
 
-        android:text="@string/title"
-        android:gravity="center_horizontal" />
+
 <TableLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -28,26 +21,41 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal">
-    <Button
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
+        android:textSize = "50dp"
+        android:paddingTop="25dp"
+
+        android:gravity="center_horizontal" />
+
+    </TableRow>
+    <TableRow
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/new_game"
-        android:id="@+id/btn_new"
-        android:textSize="24.5sp"/>
+        android:gravity="center_horizontal">
+
+        <Button
+            android:id="@+id/btn_new"
+            android:layout_width="175dp"
+            android:layout_height="75dp"
+            android:background="@drawable/start_btn"
+            android:textSize="24.5sp" />
         </TableRow>
 
     <TableRow android:gravity="center_horizontal">
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/cont"
+        android:layout_width="175dp"
+        android:layout_height="75dp"
+        android:background="@drawable/map_btn"
         android:textSize="24.5sp"
         android:id ="@+id/btn_cont"/>
     </TableRow>
     <TableRow android:gravity = "center_horizontal">
-        <Button android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="Exit"
+        <Button android:layout_height="75dp"
+            android:layout_width="175dp"
+            android:background="@drawable/exit_btn"
             android:textSize ="24.5sp"
             android:id ="@+id/btn_exit"/>
     </TableRow>

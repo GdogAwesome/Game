@@ -16,11 +16,12 @@ public class EnemyEntity {
 	protected float x;
 	protected float y;
 	protected Anim animHandler;
+	protected float frameVariance = 1.0f;
 
 	protected int xPosCounter = 0;
 	protected int yPosCounter = 0;
 	protected boolean facingForward =  true;
-	int shootTime = 700;
+	protected long shootTime = 1000;
 	private int itemType = -1;
 	private int health = 100;
 	public int dSound = 0;
@@ -29,7 +30,7 @@ public class EnemyEntity {
 
     int counter = 0;
 	float SHOT_SPEED = Constants.TEST_SHOT_SPEED;
-	private float shotSpeed = SHOT_SPEED;
+	protected float shotSpeed = SHOT_SPEED;
 	int shotPower = 10;
 	int jumpCounter = 0;
 	int r = 0;
@@ -64,6 +65,7 @@ public class EnemyEntity {
 	protected boolean falling = false;
 	float fallMomentum = 0;
 	float momentum =0;
+	protected int impactStrength = 10;
 	float shotTime = 600f;
 	float heightCheck = 0;
 	public int groundLevel;
@@ -90,6 +92,7 @@ public class EnemyEntity {
 	public boolean reverseAnim = false;
 	public int[] soundIds = new int[10];
 	public SoundPool sp;
+	private float realShotSpeed = 1;
 
 
 	protected int enemyType = 0;
@@ -141,15 +144,15 @@ public class EnemyEntity {
 
 	public void tryToShoot(){
 
+
 		if((System.currentTimeMillis() - lastShot)> shootTime){
 			
 			canShoot = true;
+            lastShot = System.currentTimeMillis();
 
-           // shots.ShotFired(fireStats(), false);
-			lastShot = System.currentTimeMillis();
-			
-
-		}	
+		}else{
+			canShoot = false;
+		}
 	}
 	
 
@@ -316,14 +319,13 @@ public class EnemyEntity {
 	public float[] fireStats(){
 		
 		if(facingForward){
-			shotSpeed = -1 * Constants.SHOT_SPEED;
+			realShotSpeed = -1 * shotSpeed;
 		}else{
-			shotSpeed = (Constants.SHOT_SPEED);
+			realShotSpeed = shotSpeed;
 		}
-		
 		fireStats[0] = xView;
 		fireStats[1] = yView ;
-		fireStats[2] = shotSpeed;
+		fireStats[2] = realShotSpeed;
 		fireStats[3] = shotPower;
         fireStats[4] = intShotAngle;
 		fireStats[5] = shotType;
@@ -332,18 +334,21 @@ public class EnemyEntity {
 	
 	public boolean willShoot(){
 
-		
-		return canShoot;
+		if(canShoot){
+			canShoot = false;
+			return true;
+		}else{
+			return false;
+		}
 
-		
-		
 	}
 	public void move(float heroX, float heroY){
-		animHandler.update();
+		//animHandler.update();
 
 	}
-	public void updateView(float x, float y){
-	    animHandler.update();
+	public void updateView(float x, float y, float frameVariance){
+		this.frameVariance = frameVariance;
+	    animHandler.update(frameVariance);
 		
 		xView = this.x - x;
 		yView = this.y + y;
@@ -378,6 +383,12 @@ public class EnemyEntity {
 	public boolean isDead() {return this.dead;}
 	public boolean isDying() {return this.dying;}
 
+	public void setX(float x){
+	    this.x = x;
+    }
+    public void setY(float y){
+	    this.y = y;
+    }
 	public float getY(){
 		return y;
 	}
@@ -413,7 +424,7 @@ public class EnemyEntity {
 		this.y += yDelta;
 		//updateAnimCont();
 		animHandler.stop();
-		animHandler.update();
+		animHandler.update(frameVariance);
 
 	}
 	public void followLooseXY(float xLead, float yLead, float disX, float disY){
@@ -453,7 +464,6 @@ public class EnemyEntity {
 	public void moveDirectWOAnim(float xDelta, float yDelta){
 		this.x += xDelta;
 		this.y += yDelta;
-		//animHandler.stop(false);
 	}
 	public void dropImage(){
 		enemyImage = null;
@@ -467,7 +477,7 @@ public class EnemyEntity {
 		return continuousFire;
 	}
 	public void update(){
-	    animHandler.update();
+	    animHandler.update(frameVariance);
     }
 
 
@@ -503,6 +513,10 @@ public class EnemyEntity {
 	public float getRotation(){
 		return (float)angleDegrees;
 	}
+	public void setAngleR(double r){
+		this.angleRadians = r;
+		angleDegrees = Math.toDegrees(r);
+	}
 	public float[] getBounds(){
 		return bounds;
 	}
@@ -517,6 +531,13 @@ public class EnemyEntity {
 	public boolean isFiringLinked(){
 		return firingLinked;
 	}
+	public int getImpactStrength(){
+	    if(health <= 0){
+	        impactStrength = 0;
+        }
+
+        return impactStrength;
+    }
 	public boolean isFacingForward(){
 		return facingForward;
 	}
@@ -525,6 +546,9 @@ public class EnemyEntity {
 		for(int i = 0; i < animTypes.length; i++){
 			animHandler.setupAnim(animTypes[i], numOfFrames[i], frameStart[i], frameTime[i], continuous[i], reciprocating[i], interruptible[i]);
 		}
+	}
+	public void setDyingAnim(){
+		animHandler.dying();
 	}
 
 }

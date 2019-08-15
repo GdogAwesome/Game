@@ -47,7 +47,7 @@ public class TextureUtils {
                  *
                  * load Texture
                  */
-                options.inPreferredConfig = Bitmap.Config.RGB_565;
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
                 final Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resource[i], options);
 
@@ -106,12 +106,11 @@ public class TextureUtils {
                 }
                 op.inJustDecodeBounds = false;
 
-
                 /**
                  *
                  * load Texture
                  */
-                op.inPreferredConfig = Bitmap.Config.RGB_565;
+                op.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
                 final Bitmap bm = BitmapFactory.decodeResource(context.getResources(), resource[i], op);
 

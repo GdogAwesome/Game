@@ -18,7 +18,7 @@ public class FlyingEnemy extends EnemyEntity {
 		/**
 		 * setup anims
 		 */
-		animHandler.setupAnim(Anim.STANDING, 6, 0, 6, false, true, true);
+		animHandler.setupAnim(Anim.STANDING, 15, 0, 6, false, true, true);
 		animHandler.setupAnim(Anim.DYING, 4, 4, 8, false, false, false);
 
 		animHandler.stop();
@@ -27,7 +27,8 @@ public class FlyingEnemy extends EnemyEntity {
 		this.y = y;
 
 		//TODO setup item to report if linked or not, this is just hard coded for now
-		shotType = Item.WEAPON_UPGRADE_SPRAY;
+		shotSpeed = Constants.SHOT_SPEED * .5f;
+		shotType = Item.DEFAULT_VALUE;
 		this.firingLinked = false;
 
 
@@ -41,8 +42,6 @@ public class FlyingEnemy extends EnemyEntity {
 
 					animHandler.stop();
 					//updateAnim4();
-
-
 					if((xView ) > heroX){
 						this.x -= moveSpeed;
 						facingForward = true;

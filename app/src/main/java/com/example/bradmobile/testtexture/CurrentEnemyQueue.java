@@ -45,7 +45,7 @@ public class CurrentEnemyQueue {
                     eList[k] = privateEList[i];
                     eActive[k] = true;
 
-                    remainder = k % 3;
+                    remainder = k % 6;
                     if (remainder <= 0.0){
                         eList[k].setHasItem(true,Item.WEAPON_UPGRADE_FLAME);
                     }
@@ -77,6 +77,11 @@ public class CurrentEnemyQueue {
                 tempE = new FlyingEnemy(distance + offset, .5f, enemyType);
                 tempE.InitEnemy(4, 2, objectBounds);
                 break;
+            case EnemyContainer.BOMBER_SHIP:
+                tempE = new BomberShip(distance + offset, .5f, enemyType);
+                tempE.InitEnemy( 4, 2, objectBounds);
+                break;
+
             default:
                 tempE = new EnemyEntity(distance + offset, .5f, enemyType);
                 tempE.InitEnemy(4, 2, objectBounds);

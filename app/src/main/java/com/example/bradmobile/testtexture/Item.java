@@ -17,6 +17,10 @@ public class Item {
     public static final int HEALTH_UPGRADE = 2;
     public static final int POINTS_UPGRADE = 3;
     public static final int DEFAULT_VALUE = 4;
+    public static final int BLUE_EXPLOSION = 9;
+    public static final int YELLOW_EXPLOSION = 10;
+    public static final int EXPLOSION = 11;
+    public static final int BOMB = 12;
 
     public boolean droping = true;
     private int upgradeTime = 50;

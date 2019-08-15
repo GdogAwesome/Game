@@ -14,48 +14,46 @@ import android.util.Log;
  * Created by BradMobile on 8/7/2016.
  */
 public class EnemyContainer extends Entity {
-    private FlyingEnemy enemy;
+    private EnemyEntity enemy;
     private EnemyQueue eQueue;
     ShotEntity shots;
     BossEntity boss;
     Bitmap enemyImage;
     boolean bossActive = false;
     private boolean isBossDead = false;
+    private boolean enemiesFinalized = false;
+    private int mapType = 0;
     private float mapPosX = 0f;
     HeroEntity hero;
 
     public static final int MAX_ENEMIES = 50;
+
     private EnemyEntity[] enemyList = new EnemyEntity[MAX_ENEMIES];
     private boolean[] enemyActive = new boolean[MAX_ENEMIES];
     public final static int FLYING_SHIP = 0;
     public final static int ELECTRIC_SHIP = 1;
-    public final static int BOSS_ONE_BODY = 2;
-    public final static int BOSS_ONE_ARM = 3;
+    public final static int BOMBER_SHIP = 2;
+    public final static int BOSS_ONE_BODY = 3;
+    public final static int BOSS_ONE_ARM = 4;
+
+    private float ratio = Constants.ratio;
     float remainder = 0.0f;
 
     private float screenWidth = 1.2f;
 
-    public EnemyContainer(Context context, HeroEntity hero, int bossType, int mapNo){
+    public EnemyContainer(Context context, HeroEntity hero, int bossType, int mapNo , int mapType){
 
         super();
 
+        this.mapType = mapType;
         this.hero = hero;
-
-
-        //enemyImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.ship, options);
-        //enemyImage = Bitmap.createScaledBitmap(enemyImage, 800, 800, false);
-
         float flyingEnemyHeight =  .8f;
-
         eQueue = new EnemyQueue(enemyList, enemyActive);
         initEnemyTypes(context, bossType);
         eQueue.initQueue(mapNo);
-
-
-
     }
 
-    public void updateEnemies(float heroX, float heroY, float mapPosX, float mapPosY){
+    public void updateEnemies(float heroX, float heroY, float mapPosX, float mapPosY, float frameVariance){
                     /*
             Check for active enemies
 
@@ -73,36 +71,24 @@ public class EnemyContainer extends Entity {
                     } else {
                         enemyActive[e] = false;
                         enemyList[e].setOutOfBounds();
-
                     }
                 }
             }
-
-
-        for(int i = 0; i< MAX_ENEMIES; i ++){
-            if(enemyActive[i] ) {
-                enemyList[i].move(heroX, heroY);
-                enemyList[i].updateView(mapPosX, mapPosY);
-                if (enemyList[i].willShoot() ) {
-
-                    shots.ShotFired(enemyList[i].fireStats(), i, false);
-
-                    enemyList[i].canShoot = false;
-
+            for(int i = 0; i< MAX_ENEMIES; i ++){
+                if(enemyActive[i] ) {
+                    enemyList[i].updateView(mapPosX, mapPosY, frameVariance);
+                    enemyList[i].move(heroX, heroY);
+                    if (enemyList[i].willShoot() ) {
+                        shots.ShotFired(enemyList[i].fireStats(), i, false);
+                    }
                 }
             }
-
-        }
         }else{
-            //Log.e("boss", "active");
-            boss.updateBoss(heroX, heroY, mapPosX, mapPosY);
+            boss.updateBoss(heroX, heroY, mapPosX, mapPosY, frameVariance);
             if(!boss.playingIntro){
                 hero.setPaused(false);
             }
         }
-
-
-
     }
     @Override
     public void draw(int mTextureUniformHandle,int mTextureCoordinateHandle, int mPositionHandle,int mMVMatrixHandle, int mMVPMatrixHandle,float[] mProjectionMatrix,  float[] mMVPMatrix, float[] mViewMatrix){
@@ -110,8 +96,6 @@ public class EnemyContainer extends Entity {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         // Bind the texture to this unit.
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandles[0]);
-
-
         int currentEnemyType = polyVBOHandle.length;
         int currentTextureHandle = -1;
         //Log.e("VBO", Integer.toString(frameVBO));
@@ -180,8 +164,6 @@ public class EnemyContainer extends Entity {
 
     public void initBoss(Context context, int b, boolean bossActive, float posX, float posY){
 
-
-
         switch(b){
             case BossEntity.FIRST_BOSS:
                 //initBossEntities(context,BossEntity.FIRST_BOSS);
@@ -192,15 +174,8 @@ public class EnemyContainer extends Entity {
         }
         this.bossActive = bossActive;
 
-
-
-          hero.displayMessage(boss.getBossText());
+          hero.displayMessage(boss.getBossText(), 8, false);
           hero.returnTo(-.8f);
-
-
-        //shots.setBossEntities(boss.getEnemies(), boss.getEnemyActive());
-       // shots.addEnemies(boss.getEnemies(),boss.getEnemyActive());
-
     }
     public BossEntity getBoss(){
         return boss;
@@ -215,35 +190,56 @@ public class EnemyContainer extends Entity {
         }
         return isBossDead;
     }
+    public boolean isBossDying(){
+        if(boss != null){
+            return boss.isDying();
+        }else{
+            return false;
+        }
+    }
 
     public void setBossActive(boolean active){
         this.bossActive = active;
     }
 
     private void initEnemyTypes(Context context, int bossType){
-        this.initEntity(context, 0, 300, R.drawable.ship,220, 200, 6, 2, .25f, .25f, FLYING_SHIP,false );
-        this.initEntity(context, 0, 200, R.drawable.ship, 192, 100, 6, 1, .25f, .25f, ELECTRIC_SHIP, false );
+        int ship = 0;
+        switch(mapType){
+            case Map1.MAP_TYPE_CITY:
+                ship = R.drawable.ship;
+                break;
+            case Map1.MAP_TYPE_JUNGLE:
+                ship = R.drawable.ship_jungle;
+                break;
+            default:
+                ship = R.drawable.ship;
+        }
+        this.initEntity(context, 0, 500, ship,300, 250, 5, 3, .3f, .35f, FLYING_SHIP,false );
+        this.initEntity(context, 0, 1250, ship, 300, 200, 5, 3, .3f, .35f, ELECTRIC_SHIP, false );
+        this.initEntity(context, 0, 1250, ship, 300, 200, 5, 3, .3f, .35f, BOMBER_SHIP, false );
 
         eQueue.initEnemies(FLYING_SHIP, this.getObjectBounds(FLYING_SHIP));
         eQueue.initEnemies(ELECTRIC_SHIP, this.getObjectBounds(ELECTRIC_SHIP));
+        eQueue.initEnemies(BOMBER_SHIP, this.getObjectBounds(BOMBER_SHIP));
         setupBossEntity(bossType);
     }
     private void setupBossEntity(int bossType){
         switch(bossType){
             case BossEntity.FIRST_BOSS:
-                this.initEntity(context,0, 0, R.drawable.boss_one, 114, 111, 5, 3, .25f, .25f, BOSS_ONE_ARM, false  );
-                this.initEntity(context, 0, 340, R.drawable.boss_one, 208, 355, 9, 2, (Constants.CHARACTER_WIDTH * .75f), (Constants.CHARACTER_HEIGHT * .9f), BOSS_ONE_BODY, false );
+                this.initEntity(context,0, 0, R.drawable.boss_one, 256, 144, 8, 2, .25f, .25f, BOSS_ONE_ARM, false  );
+                this.initEntity(context, 0, 330, R.drawable.boss_one, 203, 392, 5, 3, (Constants.CHARACTER_WIDTH * .75f), (Constants.CHARACTER_HEIGHT * .9f), BOSS_ONE_BODY, false );
                 break;
             case BossEntity.NO_BOSS:
                 break;
             default:
                 break;
-
-
         }
-
     }
 
+    public void finalizeEnemies(float viewX, float viewY){
+
+            boss.playDeath(viewX, viewY );
+    }
     /**
      *
      * @param enemyType
@@ -259,11 +255,11 @@ public class EnemyContainer extends Entity {
             case ELECTRIC_SHIP:
                 enemy = new FlyingEnemy( enemyX,enemyY, enemyType);
                 break;
+            case BOMBER_SHIP:
+                enemy = new BomberShip(enemyX, enemyY, enemyType);
+                break;
         }
         enemy.InitEnemy(4,2, this.getObjectBounds(enemyType));
-
-
-
         enemyList[index] = enemy;
         enemyActive[index] = false;
 

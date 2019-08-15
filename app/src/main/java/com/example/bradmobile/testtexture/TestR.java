@@ -23,11 +23,16 @@ import javax.microedition.khronos.opengles.GL10;
 public class TestR implements GLSurfaceView.Renderer {
 
     private int mTextureCoordSize = 2;
+
     private ShotEntity shots;
+    private float frameVariance;
+    private GLView glView;
     private EnemyContainer enemies;
     private Controller controller;
     private Shader shader;
     private Map1 map;
+    private boolean playing = false;
+    private boolean paused = false;
     private boolean hasGameController;
     private int mPositionSize = 3;
     //this matrix is used as the camera
@@ -68,7 +73,7 @@ public class TestR implements GLSurfaceView.Renderer {
     private int[] mapVertexCoordVBO = new int[4];
     private int[] mapTextureHandle = new int[2];
     private FloatBuffer[] mapTextureCoords;
-    private float[][] mMapModelMatrix = new float[2][16];
+    private float[][] mMapModelMatrix = new float[3][16];
 
     //hero objects
 
@@ -88,7 +93,8 @@ public class TestR implements GLSurfaceView.Renderer {
     private Context context;
 
 
-    TestR(Context context){
+    TestR(Context context, GLView glview){
+        this.glView = glview;
         this.context = context;
         shader = new Shader(context);
     }
@@ -100,11 +106,6 @@ public class TestR implements GLSurfaceView.Renderer {
         GLES20.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
         //Log.e("texture compression", gl.glGetString(gl.GL_EXTENSIONS));
         // Use culling to remove back faces.
-
-        for(int i = 0; i< testIndices.length; i++){
-            testIndices[i] = 0;// ((i)  * 4 * 4 * 3);
-        }
-        testIndicesBuffer = BufferUtils.getIntBuffer(testIndices,4);
         // disable depth testing
         //GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -143,7 +144,7 @@ public class TestR implements GLSurfaceView.Renderer {
 
 
         Matrix.setIdentityM(mIdentityMatrix,0);
-        Matrix.translateM(mIdentityMatrix, 0, 0.0f, 0.0f, -2.51f);
+        Matrix.translateM(mIdentityMatrix, 0, 0.0f, 0.0f, -2.5f);
 
 
         surfaceActive = true;
@@ -158,6 +159,9 @@ public class TestR implements GLSurfaceView.Renderer {
 
         // Set the OpenGL viewport to the same size as the surface.
         GLES20.glViewport(0, 0, width, height);
+        String extensions = gl.glGetString(GL10.GL_EXTENSIONS);
+        Log.e("extensions", extensions);
+
 
 
 
@@ -188,18 +192,26 @@ public class TestR implements GLSurfaceView.Renderer {
          * drawCube
 
          */
+        if(playing) {
 
-        // TODO move this below drawMap after setting up map shader
-        shader.useRegularProgram();
+            // TODO move this below drawMap after setting up map shader
+            shader.useRegularProgram();
 
-        drawMap();
 
-        shader.useRegularProgram();
-        enemies.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(),shader.getmMVMatrixHandle(),shader.getmMVPMatrixHandle(),mProjectionMatrix,mMVPMatrix,mViewMatrix);
-        shots.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(),shader.getmMVMatrixHandle(),shader.getmMVPMatrixHandle(),mProjectionMatrix,mMVPMatrix,mViewMatrix);
-        hero.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(),shader.getmMVMatrixHandle(),shader.getmMVPMatrixHandle(),mProjectionMatrix,mMVPMatrix,mViewMatrix);
-        if(!hasGameController) {
-            controller.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(),shader.getmMVMatrixHandle(),shader.getmMVPMatrixHandle(),mProjectionMatrix,mMVPMatrix,mViewMatrix);
+            drawMap();
+
+            shader.useRegularProgram();
+            enemies.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(), shader.getmMVMatrixHandle(), shader.getmMVPMatrixHandle(), mProjectionMatrix, mMVPMatrix, mViewMatrix);
+            hero.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(), shader.getmMVMatrixHandle(), shader.getmMVPMatrixHandle(), mProjectionMatrix, mMVPMatrix, mViewMatrix);
+            shots.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(), shader.getmMVMatrixHandle(), shader.getmMVPMatrixHandle(), mProjectionMatrix, mMVPMatrix, mViewMatrix);
+            if (!hasGameController) {
+                controller.draw(shader.getmTextureUniformHandle(), shader.getmTextureCoordinateHandle(), shader.getmPositionHandle(), shader.getmMVMatrixHandle(), shader.getmMVPMatrixHandle(), mProjectionMatrix, mMVPMatrix, mViewMatrix);
+            }
+            frameVariance = Constants.getFrameVariance(System.currentTimeMillis());
+            if(!paused) {
+                glView.tick(frameVariance);
+            }
+
         }
 
     }
@@ -216,7 +228,7 @@ public class TestR implements GLSurfaceView.Renderer {
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mapTextureHandle[1]);
 
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT );
+        //GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT );
 
 
         // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
@@ -237,19 +249,27 @@ public class TestR implements GLSurfaceView.Renderer {
                 0, mapTextureCoords[1]);
 
 
+        //Draw background 1
         Matrix.multiplyMM(mMVPMatrix ,0,mViewMatrix, 0, mMapModelMatrix[1],0);
         GLES20.glUniformMatrix4fv(shader.getmMVMatrixHandle(), 1, false, mMVPMatrix, 0);
-
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
 
         GLES20.glUniformMatrix4fv(shader.getmMVPMatrixHandle(),1,false,mMVPMatrix,0);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0,6);
 
 
+        //Draw background 2
+        Matrix.multiplyMM(mMVPMatrix ,0,mViewMatrix, 0, mMapModelMatrix[2],0);
+        GLES20.glUniformMatrix4fv(shader.getmMVMatrixHandle(), 1, false, mMVPMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0,12);
+        GLES20.glUniformMatrix4fv(shader.getmMVPMatrixHandle(),1,false,mMVPMatrix,0);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0,6);
+
+
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE );
+        //GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE );
         /**
          * Draw Map
          *
@@ -272,7 +292,7 @@ public class TestR implements GLSurfaceView.Renderer {
 
         //setup up light position
         Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, .25f, -0.5f, - 1.0f);
+        Matrix.translateM(mLightModelMatrix, 0, 0.5f, 0.0f, 2.0f);
 
         Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
         Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
@@ -341,9 +361,7 @@ public class TestR implements GLSurfaceView.Renderer {
 
     public void setmMapModelMatrix (float[][] m){
         mMapModelMatrix = m;
-        for(int i= 0; i<16; i++){
-            Log.e("map Matrix Layout " + i +"", Float.toString(mMapModelMatrix[0][i]));
-        }
+
     }
     public void setMapTextureCoords(FloatBuffer[] t){
         mapTextureCoords = t;
@@ -419,6 +437,12 @@ public class TestR implements GLSurfaceView.Renderer {
         shots.nullImage();
         controller.nullImage();
 
+    }
+    public void setRender(boolean p){
+        this.playing = p;
+    }
+    public void setPaused(boolean p){
+        this.paused = p;
     }
     public void setupObjects(){
 

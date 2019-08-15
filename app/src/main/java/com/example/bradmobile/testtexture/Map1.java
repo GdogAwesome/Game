@@ -23,6 +23,12 @@ import com.example.bradmobile.testtexture.Utils.*;
 
 
 public class Map1 {
+
+	public static final int MAP_TYPE_CITY = 0;
+	public static final int MAP_TYPE_JUNGLE = 1;
+	public static final int MAP_TYPE_CYBER = 2;
+	public int mapType = 0;
+
 	public float MapFinalPosX;
 	public float MapFinalPosY = 0f;
 	public float ViewX;
@@ -65,6 +71,8 @@ public class Map1 {
 	private int layerIndexOffset = 0;
 	private float[] mModelMatrix = new float[16];
 	private float[] mBackgroundMatrix = new float[16];
+	private float[] mBackgroundMatrix2 = new float[16];
+	private boolean BGMatrix1Right = false;
 	private float[] mTextureCoordinateData;
 	private short[] mAnimData;
 	private short[] mIndices;
@@ -80,15 +88,13 @@ public class Map1 {
 	private int textureBufferOffset = 0;
 	private int primativesToDraw = 360;
 	private float[] mPositionData ;
-	private float[] mBgPositionData; // = new float[36];
+	private float[] mBgPositionData;// = new float[36];
 	private float totalMoveSpace = 0f;
 	private float BgMoveSpeed = Constants.TEST_RUN_SPEED * .5f;
 	private float BgTotalMoveSpace = 0f;
 	private double absoluteMoveSpace = 0.0f;
     private boolean mapNeedsRenderUpdate = false;
     private int offsetCounter = 0;
-
-
 
 	/**
 	 *
@@ -219,6 +225,7 @@ public class Map1 {
 					normalTexture = R.drawable.cyber_map_norm;
 					BgTexture = R.drawable.city_background;
 					hasScene = false;
+					mapType = MAP_TYPE_CITY;
 
 					break;
 				case 2:
@@ -229,7 +236,7 @@ public class Map1 {
 					normalTexture = R.drawable.test_map_norm;
 					hasBoss = false;
 					bossType = BossEntity.NO_BOSS;
-
+					mapType = MAP_TYPE_JUNGLE;
 					hasScene = false;
 					break;
 				case 3:
@@ -239,6 +246,7 @@ public class Map1 {
 					texture = R.drawable.cyber_map;
 					normalTexture = R.drawable.cyber_map_norm;
 					BgTexture = R.drawable.city_background;
+					mapType = MAP_TYPE_CITY;
 					hasScene = false;
 					break;
 
@@ -275,18 +283,19 @@ public class Map1 {
 		}
 	}
 
-	public float moveMap(float heroLeft, float heroRight, float heroy, boolean canMoveLeft, boolean canMoveRight, int playerCommand){//}, float viewX){
+	public float moveMap(float heroLeft, float heroRight, float heroy, boolean canMoveLeft, boolean canMoveRight, int playerCommand, float frameVariance){//}, float viewX){
 
 
 		deltaY = 0.0f;
+		//Log.e("frame variance", Float.toString(frameVariance));
 		if(heroy > upperBounds){
 
 			//if(posY[1] != 0) {
 				deltaY = (heroy - upperBounds) * .25f;
-				currentDeltaY += deltaY;
-				Matrix.translateM(mModelMatrix, 0, 0.0f, -deltaY, 0.0f);
-				obstacleOffset -= deltaY;
-				MapFinalPosY -= deltaY;
+				currentDeltaY += (deltaY * frameVariance);
+				Matrix.translateM(mModelMatrix, 0, 0.0f, (frameVariance * -deltaY), 0.0f);
+				obstacleOffset -= (frameVariance * deltaY);
+				MapFinalPosY -= (frameVariance * deltaY);
 			//}
 			//deltaY = 0.0f;
 			if(currentDeltaY >= .333333f){
@@ -319,15 +328,15 @@ public class Map1 {
 				obstacleOffset = originalObOffset;
 				mModelMatrix[13] = 0.0f;// -= mModelMatrix[13];
 				MapFinalPosY -= MapFinalPosY;
-				deltaY -= deltaY;
+				deltaY -= (frameVariance * deltaY);
 
 
 			}else if( obstacleOffset < originalObOffset) {
 				deltaY =  (heroy - lowerBounds) * .25f;
-				currentDeltaY += deltaY;
-				obstacleOffset -= deltaY;
-				MapFinalPosY -= deltaY;
-				Matrix.translateM(mModelMatrix, 0, 0.0f, -deltaY, 0.0f);
+				currentDeltaY += (frameVariance * deltaY);
+				obstacleOffset -= (frameVariance * deltaY);
+				MapFinalPosY -= (frameVariance * deltaY);
+				Matrix.translateM(mModelMatrix, 0, 0.0f, (frameVariance * -deltaY), 0.0f);
 				//Log.e("too", "low");
 			}/*else{
 				obstacleOffset = originalObOffset;
@@ -335,39 +344,47 @@ public class Map1 {
 				mModelMatrix[13] = 0.0f;
 			}*/
 		}
-
-
 			if (absoluteMoveSpace >= .25f && displayFM){
-                hero.displayMessage(1);
+                hero.displayMessage(1, 8, false);
 				displayFM = false;
 			}else if(absoluteMoveSpace >= 10.0f && displaySM){
-				hero.displayMessage(2);
+				hero.displayMessage(2, 8, false);
 				displaySM = false;
 			}
 		if(!lockScreen) {
 			if (canMoveRight && heroRight >= RIGHT_BORDER && playerCommand == 1 ) {
 
+				if (BgTotalMoveSpace <= (-2.2f )) {
 
+					BgTotalMoveSpace -= BgTotalMoveSpace;
+					mBackgroundMatrix[12] -= (frameVariance * BgMoveSpeed);
+
+					if(BGMatrix1Right){
+						BGMatrix1Right = false;
+						mBackgroundMatrix2[12] = mBackgroundMatrix[12] + 2.2f;
+					}else{
+						BGMatrix1Right = true;
+						mBackgroundMatrix[12] = mBackgroundMatrix2[12] + 2.2f;
+					}
+					//mBackgroundMatrix2[12] -= BgMoveSpeed;
+				}else {
+					BgTotalMoveSpace -= (frameVariance * BgMoveSpeed);
+					mBackgroundMatrix[12] -= (frameVariance * BgMoveSpeed);
+					//mBackgroundMatrix2[12] -= BgMoveSpeed;
+                    if(BGMatrix1Right){
+                        mBackgroundMatrix2[12] = mBackgroundMatrix[12] - 2.2f;
+                    }else{
+                        mBackgroundMatrix2[12] = mBackgroundMatrix[12] + 2.2f;
+
+                    }
+				}
 				if(totalMoveSpace >= (-1f *(Constants.TOTAL_MAP_MOVE ))){
 
-					if (BgTotalMoveSpace > (-2.0f * 1.02f)) {
-						BgTotalMoveSpace -= BgMoveSpeed;
-						mBackgroundMatrix[12] -= BgMoveSpeed;
-
-					} else if (BgTotalMoveSpace <= (-2.0f * 1.02f)) {
-						BgTotalMoveSpace -= BgTotalMoveSpace;
-						mBackgroundMatrix[12] -= mBackgroundMatrix[12];
-
-					}
-
-					Matrix.translateM(mModelMatrix, 0, (-1f * (Constants.TEST_RUN_SPEED)), 0.0f, 0.0f);
-					totalMoveSpace -= Constants.TEST_RUN_SPEED;
-					absoluteMoveSpace += Constants.TEST_RUN_SPEED;
+					Matrix.translateM(mModelMatrix, 0, (frameVariance * (-1f * (Constants.TEST_RUN_SPEED))), 0.0f, 0.0f);
+					totalMoveSpace -= (frameVariance * Constants.TEST_RUN_SPEED);
+					absoluteMoveSpace += (frameVariance * Constants.TEST_RUN_SPEED);
 
 				} else {
-
-
-
 					if(posX[4] < mapLength -1 ) {
 						posX[0] += 1;
 						posX[1] += 1;
@@ -376,31 +393,18 @@ public class Map1 {
 						posX[4] += 1;
 						offsetCounter ++;
 						rightMapEdge = false;
-
-
-
 					}else{
 						setEndMap(true);
 						rightMapEdge = true;
 					}
 
 					if(!rightMapEdge) {
-
-						if (BgTotalMoveSpace > (-2.0f * 1.02f)) {
-							BgTotalMoveSpace -= BgMoveSpeed;
-							mBackgroundMatrix[12] -= BgMoveSpeed;
-
-						} else if (BgTotalMoveSpace <= (-2.0f * 1.02f)) {
-							BgTotalMoveSpace -= BgTotalMoveSpace;
-							mBackgroundMatrix[12] -= mBackgroundMatrix[12];
-
-						}
 						Matrix.translateM(mModelMatrix, 0, (-1f * totalMoveSpace), 0.0f, 0.0f);
 						totalMoveSpace -= totalMoveSpace;//Constants.TOTAL_MAP_MOVE;
-						totalMoveSpace -= Constants.TEST_RUN_SPEED;
-						Matrix.translateM(mModelMatrix, 0, (-1f * (Constants.TEST_RUN_SPEED)), 0.0f, 0.0f);
+						totalMoveSpace -= (frameVariance * Constants.TEST_RUN_SPEED);
+						Matrix.translateM(mModelMatrix, 0, (frameVariance * (-1f * (Constants.TEST_RUN_SPEED))), 0.0f, 0.0f);
 
-						absoluteMoveSpace += Constants.TEST_RUN_SPEED;
+						absoluteMoveSpace += (frameVariance * Constants.TEST_RUN_SPEED);
 
 					}
 					textureBufferOffset = (offsetCounter * 4 * 4 * 2 * mapHeight) * 4;
@@ -414,16 +418,32 @@ public class Map1 {
 
 			} else if (canMoveLeft && heroLeft <= LEFT_BORDER &&  playerCommand == 2) {
 
-
 				if ((totalMoveSpace +(Constants.TOTAL_MAP_MOVE ))<= (Constants.TOTAL_MAP_MOVE )) {
-					if ((BgTotalMoveSpace + 1f) < 1.02f) {
-						BgTotalMoveSpace += BgMoveSpeed;
-						mBackgroundMatrix[12] += BgMoveSpeed;
-					} else if ((BgTotalMoveSpace + 1f) >= 1.02f) {
-						BgTotalMoveSpace -= 2.0f;
-						mBackgroundMatrix[12] -= 2.0f;
 
-					}
+                    if (BgTotalMoveSpace > (0.0f )) {
+
+                        BgTotalMoveSpace -= 2.2f;
+                        mBackgroundMatrix[12] += (BgMoveSpeed * frameVariance);
+
+                        if(BGMatrix1Right){
+                            BGMatrix1Right = false;
+                            mBackgroundMatrix[12] = mBackgroundMatrix2[12] - 2.2f;
+                        }else{
+                            BGMatrix1Right = true;
+                            mBackgroundMatrix2[12] = mBackgroundMatrix[12] - 2.2f;
+                        }
+                        //mBackgroundMatrix2[12] -= BgMoveSpeed;
+                    }else {
+                        BgTotalMoveSpace += (BgMoveSpeed * frameVariance);
+                        mBackgroundMatrix[12] += (BgMoveSpeed * frameVariance);
+                        //mBackgroundMatrix2[12] -= BgMoveSpeed;
+                        if(BGMatrix1Right){
+                            mBackgroundMatrix2[12] = mBackgroundMatrix[12] - 2.2f;
+                        }else{
+                            mBackgroundMatrix2[12] = mBackgroundMatrix[12] + 2.2f;
+
+                        }
+                    }
 					prevX = viewX;
 					deltaX = prevX - viewX;
 
@@ -455,6 +475,7 @@ public class Map1 {
 
 					if(!leftMapEdge) {
 
+						/*
 						if ((BgTotalMoveSpace + 1f) < 1.02f) {
 							BgTotalMoveSpace += BgMoveSpeed;
 							mBackgroundMatrix[12] += BgMoveSpeed;
@@ -462,7 +483,7 @@ public class Map1 {
 							BgTotalMoveSpace -= 2.0f;
 							mBackgroundMatrix[12] -= 2.0f;
 
-						}
+						}*/
 
 						Matrix.translateM(mModelMatrix, 0, (-1f * Constants.TOTAL_MAP_MOVE) + totalMoveSpace, 0.0f, 0.0f);
 						totalMoveSpace -= Constants.TOTAL_MAP_MOVE + (-1f * totalMoveSpace);
@@ -574,10 +595,11 @@ public class Map1 {
 		return MapFinalPosY;
 	}
     public float[][] getmModelMatrix(){
-		float[][] temp = new float[2][16];
+		float[][] temp = new float[3][16];
 
 		temp[0] = mModelMatrix;
 		temp[1] = mBackgroundMatrix;
+		temp[2] = mBackgroundMatrix2;
         return temp;
     }
     private void setupModelMatrix(){
@@ -587,12 +609,17 @@ public class Map1 {
 
 
         Matrix.setIdentityM(mBackgroundMatrix, 0 );
-		Matrix.scaleM(mBackgroundMatrix, 0 , 1.02f,1.03f, 1.0f);
+		Matrix.scaleM(mBackgroundMatrix, 0 , 1.0f,1.00f, 1.0f);
         Matrix.translateM(mBackgroundMatrix, 0 , 0.0f, 0.0f, -2.50f);
 
+		Matrix.setIdentityM(mBackgroundMatrix2, 0 );
+		Matrix.scaleM(mBackgroundMatrix2, 0 , 1.0f,1.0f, 1.0f);
+		Matrix.translateM(mBackgroundMatrix2, 0 , 2.2f, 0.0f, -2.50f);
 
 
-    }
+
+
+	}
 
     public void setupTextureCoords(){
 
@@ -709,12 +736,7 @@ public class Map1 {
 				1.0f, 0.0f,
 				0.0f, 1.0f,
 				1.0f, 1.0f,
-				0.0f, 0.0f,
-				0.0f, 1.0f,
-				1.0f, 0.0f,
-				1.0f, 0.0f,
-				0.0f, 1.0f,
-				1.0f, 1.0f
+
 		};
 	}
 	public void setupPolyCoords() {
@@ -783,19 +805,12 @@ public class Map1 {
 
 
 		mBgPositionData = new float[] {
-				-1.0f , 1.0f, 1.0f,
-				-1.0f, -1.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
-				-1.0f, -1.0f, 1.0f,
-				1.0f, -1.0f, 1.0f,
-
-				1.0f, 1.0f, 1.0f,
-				1.0f, -1.0f, 1.0f,
-				3.0f, 1.0f, 1.0f,
-				3.0f, 1.0f, 1.0f,
-				1.0f, -1.0f, 1.0f,
-				3.0f, -1.0f, 1.0f
+				-1.1f , 1.0f, 1.0f,
+				-1.1f, -1.0f, 1.0f,
+				1.1f, 1.0f, 1.0f,
+				1.1f, 1.0f, 1.0f,
+				-1.1f, -1.0f, 1.0f,
+				1.1f, -1.0f, 1.0f
 
 		};
 
@@ -930,6 +945,7 @@ public class Map1 {
 			ir.close();
 			reader.close();
 
+
 		} catch (IOException e1) {
 
 			e1.printStackTrace();
@@ -969,9 +985,9 @@ public class Map1 {
 	private void setLightColor(int mapNo){
 
 		if(mapNo == 1){
-			lightColor[0] = .95f;
-			lightColor[1] = .5f;
-			lightColor[2] = 1.0f;
+			lightColor[0] = .85f; // .95f;
+			lightColor[1] = .4f; //.5f;
+			lightColor[2] = .7f; //1.0f;
 		}else if(mapNo == 2){
 			lightColor[0] = 1.0f;
 			lightColor[1] = .87f;
@@ -1057,6 +1073,9 @@ public class Map1 {
 	}
 	public float[][] getRightSkyObstacle(){
 		return mapBlocks[posX[2]][posY[1]].getObstacleRect(2);
+	}
+	public boolean isBGMatrix1Right(){
+		return BGMatrix1Right;
 	}
 
 	

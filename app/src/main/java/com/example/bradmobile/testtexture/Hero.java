@@ -17,11 +17,10 @@ public class Hero extends HeroEntity {
 	/**Creates a hero entity to hold main characters
 	 *
 	 * pass the game this belongs to
-	 * @param x pos of character cast as an int
-	 * @param y pos of character cast as an int
+
 	 */
-	public Hero (Context context){
-		super(context);
+	public Hero (Context context, int mapNo){
+		super(context, mapNo);
 
 		
 

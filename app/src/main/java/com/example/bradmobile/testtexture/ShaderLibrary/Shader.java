@@ -6,13 +6,18 @@ import android.opengl.GLES20;
 import android.util.Log;
 
 import com.example.bradmobile.testtexture.R;
+import com.example.bradmobile.testtexture.Utils.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.IntBuffer;
 
 public class Shader {
+
+    private static int[] hdrFBO = new int[]{0};
+    private static IntBuffer hdrFBO_ib;
 
     // setup handles for regular draw
     private static int mMVPMatrixHandle;
@@ -125,7 +130,13 @@ public class Shader {
         return shader;
     }
     private void setupNormalsShader(){
+
         vShader = getVertexShader(R.raw.v_shader_map);
+
+        //setup test bloom
+        hdrFBO_ib = BufferUtils.getIntBuffer(hdrFBO, 4);
+        GLES20.glGenFramebuffers(1, hdrFBO_ib);
+
 
 
         fShader = getFragmentShader(R.raw.f_shader_map);

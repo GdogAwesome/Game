@@ -81,13 +81,11 @@ public class MessageBox extends Entity {
     float messageH = 0f;
     float messageW = 0f;
 
-     MessageBox(){
+     MessageBox(int mapNo){
 
          setupMatrix();
+         setupMessagesForMap(mapNo);
          textSize = (28 * scale);
-         messages = new String[]{"HELLO! /n Welcome To The Game! /n The Controls are simple, try some things.",
-                 "Still Playing? /n This is kind of boring don't you think?",
-         "TEST I am first boss lololololol"};
          textManager = new TextManager();
          textManager.LoadText(messages);
         // int paintC ;
@@ -392,8 +390,29 @@ public class MessageBox extends Entity {
 
         }
 
+    }
+    private void setupMessagesForMap(int mapNo){
+        switch(mapNo){
+            case 1:
+                messages = new String[]{"HELLO! /n Welcome To The Game! /n The Controls are simple, try some things.",
+                        "Still Playing? /n This is kind of boring don't you think?",
+                        "Why are you here!? /n I don't want you to mess up what we came here to do.",
+                        "I don't think you understand what you are doing here!"};
+                break;
+            case 2:
+                messages = new String[]{"HELLO! /n Welcome To The Game! /n The Controls are simple, try some things.",
+                        "Still Playing? /n This is kind of boring don't you think?",
+                        "Why are you here!? /n I don't want you to mess up what we came here to do.",
+                        "I don't think you understand what you are doing here."};
+                break;
+            default:
+                messages = new String[]{"HELLO! /n Welcome To The Game! /n The Controls are simple, try some things.",
+                        "Still Playing? /n This is kind of boring don't you think?",
+                        "Why are you here!? /n I don't want you to mess up what we came here to do.",
+                        "I don't think you understand what you are doing here."};
+                break;
 
-
+        }
     }
     @Override
     public void loadVBOs(){

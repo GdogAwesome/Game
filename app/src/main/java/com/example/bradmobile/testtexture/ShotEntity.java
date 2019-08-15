@@ -26,6 +26,7 @@ public class ShotEntity extends Entity{
 	private float healthPercent = 1;
     private int heroHealth = 100;
     private float mapDeltaY = 0.0f;
+    private float frameVariance = 1.0f;
 
     private int hBarFrame = 200;
 	private int totalScore = 0;
@@ -74,7 +75,6 @@ public class ShotEntity extends Entity{
 	private int hitTalley = 0;
     private int lastHit = 0;
 
-	Canvas canvas;
 	private float[][][] obstacleList;
 	private boolean[][] hasOList;// = new boolean[8][4];
 
@@ -96,10 +96,8 @@ public class ShotEntity extends Entity{
 	private boolean continuousFire = false;
 	private int shotsFired = 0;
 	private int lastShotIndex = 0;
+	private Effects effects;
 
-
-	
-	Shot shot;
 	HeroEntity hero;
 	public ShotEntity(Context context){
 
@@ -109,8 +107,8 @@ public class ShotEntity extends Entity{
 		whereToDraw = new RectF();
 		frameToDraw = new Rect();
 		for(int i = 0; i < maxShots; i ++ ){
-			shot = new Shot();
-			shotArray[i] = shot;
+
+			shotArray[i] = new Shot();
 			bulletState[i] = false;
 		}
         for(int i = 0; i < items.length; i++){
@@ -140,13 +138,13 @@ public class ShotEntity extends Entity{
 	public void ShotFired(float[] shotStats,int _srcOfShot, boolean friendly){
 
 		//activeShots.add(shot);
-		if(shotStats[5] == Item.DEFAULT_VALUE) {
+		if((shotStats[5] == Item.DEFAULT_VALUE) ||(shotStats[5] == Item.BOMB)) {
 
 			for (int i = 0; i < maxShots; i++) {
 
 				if (!bulletState[i]) {
 					//sp.play(soundIds[0], 1, 1, 1, 0, 1.0f);
-					shotArray[i].fireShot(shotStats[0], shotStats[1], absoluteX, absoluteY, ShotSize, (int)shotStats[4], (int)shotStats[3], shotStats[2], friendly,Item.DEFAULT_VALUE);
+					shotArray[i].fireShot(shotStats[0], shotStats[1], absoluteX, absoluteY, ShotSize, (int)shotStats[4], (int)shotStats[3], shotStats[2], friendly, (int)(shotStats[5]));
 					bulletState[i] = true;
 					friendlyState[i] = friendly;
 					i = maxShots;
@@ -192,6 +190,7 @@ public class ShotEntity extends Entity{
 		this.hasOList = ho;
 	}
 	public void addEntities(HeroEntity hero){
+		effects = new Effects(context, hero);
 		this.hero = hero;
 		
 	}
@@ -199,23 +198,20 @@ public class ShotEntity extends Entity{
 		this.enemyList = enemies;
 		this.enemyActive = activeEnemies;
 	}
-	public void updateShots(float mapOffsetX,float mapObOffset, float absX, float absY){
+	public void updateShots(float mapOffsetX,float mapObOffset, float absX, float absY, float frameVariance){
 			this.absoluteX = absX;
 			this.xView = mapOffsetX;
 			this.absoluteY = absY;
+			this.frameVariance = frameVariance;
 			hero.updateTimer();
 			hitBox = hero.getHitBox();
-
 
 
 			for(int i =0; i < maxShots; i++){
 
 				if(bulletState[i]){
 					moveShots(i);
-
-					
 					if(shotArray[i].dead()){
-						
 						bulletState[i] = false;
 					}else if(shotArray[i].drawShot()[0] > 3.0f || shotArray[i].drawShot()[0]< -3.0f){
 						bulletState[i] = false;
@@ -226,8 +222,10 @@ public class ShotEntity extends Entity{
 							//bulletState[i] = false;
 							if(!shotArray[i].dying()){
 								if(!hero.isInvincible()) {
-									updateHealthBar(shotArray[i].getShotStrength());
-									shotArray[i].impact(true);
+									if(shotArray[i].getShotObject() != Item.BOMB) {
+										updateHealthBar(shotArray[i].getShotStrength());
+										shotArray[i].impact(true);
+									}
 								}
 							}
 						}
@@ -256,6 +254,7 @@ public class ShotEntity extends Entity{
 										}
 
 										if(enemyList[k].justDied && enemyList[k].dying){
+											effects.cueEffect(Item.BLUE_EXPLOSION, enemyList[k].getX(), enemyList[k].getY(),true);
 											for(int j = 0; j < items.length; j++){
 
 												if(!itemActive[j]){
@@ -311,6 +310,9 @@ public class ShotEntity extends Entity{
 										if ((shotArray[i].drawShot()[1] ) < (obstacleList[o][j][1] + mapObOffset) && shotArray[i].drawShot()[1] > (obstacleList[o][j][3]) + mapObOffset) {
 
 											shotArray[i].impact(true);
+											if(shotArray[i].getShotObject() == Item.BOMB){
+												effects.cueEffect(Item.YELLOW_EXPLOSION,shotArray[i].getX(),shotArray[i].getY(),false);
+											}
 											o = 10;
 											j = 4;
 										}
@@ -321,12 +323,17 @@ public class ShotEntity extends Entity{
 								}
 						}
 					}
+
 					
 				}
 
 				shotArray[i].updateView(absoluteX, absoluteY);
 			}
 			}
+
+			updateHealthBar(effects.updateEffects( absoluteX, absoluteY, frameVariance));
+			//effects.checkHeroCollision(hero);
+
 
 		updateEnemyInteraction();
 
@@ -457,6 +464,7 @@ public class ShotEntity extends Entity{
         //scoreString = Integer.toString(totalScore);
 		drawHealth( mTextureUniformHandle, mTextureCoordinateHandle, mPositionHandle, mMVMatrixHandle, mMVPMatrixHandle, mProjectionMatrix, mMVPMatrix, mViewMatrix);
 
+		effects.draw(mTextureUniformHandle,mTextureCoordinateHandle, mPositionHandle, mMVMatrixHandle, mMVPMatrixHandle, mProjectionMatrix, mMVPMatrix, mViewMatrix);
     }
 	private void updateItems(){
 		for(int i = 0; i < 10; i++){
@@ -466,7 +474,6 @@ public class ShotEntity extends Entity{
 					if(hero.getRight() >= items[i].getDrawStats()[0] +(this.getObjectBounds(items[i].getUType())[0]) && hero.getLeft() <= (items[i].getDrawStats()[2] + (this.getObjectBounds(items[i].getUType())[2]))
 							&& hero.getFooting() <= (items[i].getDrawStats()[1] + (this.getObjectBounds(items[i].getUType())[1])) && hero.getHitBox()[1] >= (items[i].getDrawStats()[3] + (this.getObjectBounds(items[i].getUType())[3])))
 					{
-
 						hero.setUpgrade(items[i]);
 						if(items[i].getUType() == Item.HEALTH_UPGRADE){
 							updateHealthBar(0);
@@ -494,9 +501,7 @@ public class ShotEntity extends Entity{
 	private void updateEnemyInteraction(){
 
 		for(int i = 0; i < enemyList.length; i++){
-
 			if(enemyActive[i]){
-
 				if((enemyList[i].getRelativeBounds()[2] > hitBox[0] &&
 						enemyList[i].getRelativeBounds()[2] < hitBox[2]) ||
 						(enemyList[i].getRelativeBounds()[0] > hitBox[0]
@@ -505,12 +510,12 @@ public class ShotEntity extends Entity{
 					if((enemyList[i].getRelativeBounds()[3] < hitBox[1] && enemyList[i].getRelativeBounds()[3] > hitBox[3])
 							|| (enemyList[i].getRelativeBounds()[1] < hitBox[1] && enemyList[i].getRelativeBounds()[1] > hitBox[3])) {
 						if(!enemyList[i].dying ) {
-							updateHealthBar(5);
+							if(enemyList[i].getImpactStrength() > 0){
+								updateHealthBar(enemyList[i].getImpactStrength());
+							}
 						}
 					}
-
 				}
-
 			}
 		}
 	}
@@ -521,9 +526,11 @@ public class ShotEntity extends Entity{
 		this.initEntity(context, 150, 0, R.drawable.test_shot2, 100, 50,1, 1, ShotSize, ShotSize, Item.WEAPON_UPGRADE_SPRAY, false);
 		this.initEntity(context, 0, 100, R.drawable.test_shot2, 125, 50, 1, 1, ShotSize, ShotSize, Item.HEALTH_UPGRADE, false);
 		this.initEntity(context, 0, 100, R.drawable.test_shot2, 200, 25, 1, 1,(shotWidth * 3.5f), (ShotSize * .5f), Item.HEALTH_BAR,true);
-		this.initEntity(context, 200, 100, R.drawable.test_shot2, 225, 50, 1, 1, (shotWidth * 4f), ShotSize , Item.HEALTH_HUD, false);
+		this.initEntity(context, 200, 75, R.drawable.test_shot2, 400, 75, 1, 1, (shotWidth * 5f), ShotSize , Item.HEALTH_HUD, false);
 		this.initEntity(context, 250, 0, R.drawable.test_shot2, 100, 50, 1, 1,ShotSize,ShotSize, Item.WEAPON_UPGRADE_FLAME, false );
 		this.initEntity(context, 0, 150, R.drawable.test_shot2, 300, 150, 2, 6,(ShotSize * 1.25f),(ShotSize * .9f) , Item.FLAME_SHOT, false );
+		this.initEntity(context, 0, 0, R.drawable.test_shot2, 50, 50, 3, 1, shotWidth, ShotSize, Item.BOMB, false );
+
 	}
 
 
@@ -606,12 +613,11 @@ public class ShotEntity extends Entity{
 				}
 				if (hero.getContinuousFire() && hero.isFiringLinked()) {
 					if (!shotArray[i].isLeader()) {
-						shotArray[i].advanceLink(shotArray[shotArray[i].getIndexOfLeader()].getX(), shotArray[shotArray[i].getIndexOfLeader()].getY(), shotArray[shotArray[i].getIndexOfLeader()].getRotation());
+						shotArray[i].advanceLink(shotArray[shotArray[i].getIndexOfLeader()].getX(), shotArray[shotArray[i].getIndexOfLeader()].getY(), shotArray[shotArray[i].getIndexOfLeader()].getRotation(), frameVariance);
 					} else {
 						shotArray[i].updatePosition(hero.getFireStatsX() +absoluteX , hero.getFireStatsY() - absoluteY);
 						shotArray[i].updateAngleDegrees(hero.getTorsoAngle());
 					}
-
 				} else {
 					bulletState[i] = false;
 				}
@@ -619,29 +625,25 @@ public class ShotEntity extends Entity{
 				if(enemyActive[shotArray[i].getSrcOfShot()]) {
 					if (!enemyList[shotArray[i].getSrcOfShot()].getFiring() && enemyList[shotArray[i].getSrcOfShot()].getContinuousFire()) {
 						enemyList[shotArray[i].getSrcOfShot()].setContinuousFire(false);
-
 					}
 					if (enemyList[shotArray[i].getSrcOfShot()].getContinuousFire() && enemyList[shotArray[i].getSrcOfShot()].isFiringLinked()) {
 
 
 						if (!shotArray[i].isLeader()) {
-							shotArray[i].advanceLink(shotArray[shotArray[i].getIndexOfLeader()].getX(), shotArray[shotArray[i].getIndexOfLeader()].getY(), shotArray[shotArray[i].getIndexOfLeader()].getRotation());
+							shotArray[i].advanceLink(shotArray[shotArray[i].getIndexOfLeader()].getX(), shotArray[shotArray[i].getIndexOfLeader()].getY(), shotArray[shotArray[i].getIndexOfLeader()].getRotation(), frameVariance);
 						} else {
 							shotArray[i].updatePosition(enemyList[shotArray[i].getSrcOfShot()].fireStats()[0] + absoluteX, enemyList[shotArray[i].getSrcOfShot()].getAbsoluteY() - absoluteY);
 							shotArray[i].updateAngleDegrees(enemyList[shotArray[i].getSrcOfShot()].getShotAngle());
-
 						}
-
 					} else {
 						bulletState[i] = false;
 					}
 				}else{
 					bulletState[i] = false;
 				}
-
 			}
 		}else {
-			shotArray[i].advanceShot();
+			shotArray[i].advanceShot(frameVariance);
 		}
 	}
 	public void addBoss(BossEntity b){
@@ -720,5 +722,21 @@ public class ShotEntity extends Entity{
 
 	}
 	
+
+	@Override
+	public void nullImage(){
+		super.nullImage();
+		effects.nullImage();
+	}
+	@Override
+    public void loadVBOs(){
+	    super.loadVBOs();
+	    effects.loadVBOs();
+    }
+    @Override
+    public void setTextureHandle(){
+	    super.setTextureHandle();
+	    effects.setTextureHandle();
+    }
 
 }

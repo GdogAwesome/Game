@@ -1,14 +1,7 @@
 package com.example.bradmobile.testtexture;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
-import android.media.MediaPlayer;
+
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Handler;
@@ -19,21 +12,34 @@ import android.view.Display;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 import android.view.WindowManager;
 
 import com.example.bradmobile.testtexture.Utils.Audio;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
+
+/*
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
+*/
+
 
 /**
  * Created by BradMobile on 11/25/2016.
  */
 
-public class GLView extends GLSurfaceView implements Runnable {
+public class GLView extends GLSurfaceView  {
 
 
     boolean playAd = true;
@@ -41,7 +47,7 @@ public class GLView extends GLSurfaceView implements Runnable {
 
     Thread gameThread;
 
-    private boolean playing = false;
+    public boolean playing = false;
 
 
     private boolean shoot = false;
@@ -55,6 +61,7 @@ public class GLView extends GLSurfaceView implements Runnable {
     private int finish = 99;
     private boolean hasGameController = false;
     private boolean fromButtonA = false;
+    private float frameVariance = 1.0f;
 
 
     public Map1 Map;
@@ -67,6 +74,7 @@ public class GLView extends GLSurfaceView implements Runnable {
     private int middleSpace = Constants.MIDDLE_SPACE;
     private boolean canMoveRight = true;
     private boolean canMoveLeft = true;
+    private boolean bossJustDied = true;
     private int playerCommand = 0;
     private int groundLevel = Constants.GROUND_LEVEL;
     private float groundUnderHero = -2.0f;
@@ -102,7 +110,7 @@ public class GLView extends GLSurfaceView implements Runnable {
     private ArrayList gameControllerIds ;
     private int currentControllerHandle = 0;
 
-    //InterstitialAd mInterstitialAd;
+   // InterstitialAd mInterstitialAd;
 
 
     public Context context;
@@ -117,7 +125,7 @@ public class GLView extends GLSurfaceView implements Runnable {
 
     private boolean running = true;
     private final float MAX_FPS = 59.9f;
-    private final float FRAME_PERIOD = 1000.0f/MAX_FPS;
+    //private final float FRAME_PERIOD = 1000.0f/MAX_FPS;
     private final int MAX_FRAME_SKIPS = 0;
 
     Audio music;
@@ -130,15 +138,15 @@ public class GLView extends GLSurfaceView implements Runnable {
         setEGLContextClientVersion(2);
         setFocusable(true);
         requestFocus();
-        music = new Audio();
 
-        renderer = new TestR(context);
+
+        renderer = new TestR(context , this);
 
         setRenderer(renderer);
 
 
-        this.setRenderMode(RENDERMODE_WHEN_DIRTY);
-        //this.setRenderMode(RENDERMODE_CONTINUOUSLY);
+       // this.setRenderMode(RENDERMODE_WHEN_DIRTY);
+        this.setRenderMode(RENDERMODE_CONTINUOUSLY);
         setConstants(context);
 
 
@@ -149,6 +157,7 @@ public class GLView extends GLSurfaceView implements Runnable {
 
 
 }
+/*
     public void run() {
 
 
@@ -174,7 +183,7 @@ public class GLView extends GLSurfaceView implements Runnable {
 
 
 
-            render();
+            //render();
             frames ++;
 
             timeDiff = System.currentTimeMillis() - beginTime;
@@ -207,12 +216,15 @@ public class GLView extends GLSurfaceView implements Runnable {
         }
 
     }
-    private void render(){
+    */
+   /* private void render(){
         requestRender();
     }
-    public void tick() {
+    */
+    public void tick(float frameVariance) {
 
 
+        this.frameVariance = frameVariance;
         if(Map.isBossActivated() ){
 
 
@@ -233,28 +245,32 @@ public class GLView extends GLSurfaceView implements Runnable {
 
             calcLogic();
             Map.updateAnim();
-
-
             //playerCommand = 1;
             hero.move(playerCommand, Map.canMoveLeft, Map.canMoveRight);
-
-
-            enemies.updateEnemies(hero.getCenter(), hero.getFooting() + (hero.getObjectBounds(1)[1] * 3f),  Map.getAbsoluteMoveX(), Map.getAbsoluteMoveY());
-
-
-
+            if(!enemies.isBossDying()) {
+                enemies.updateEnemies(hero.getCenter(), hero.getFooting() + (hero.getObjectBounds(1)[1] * 3f), Map.getAbsoluteMoveX(), Map.getAbsoluteMoveY(), frameVariance);
+            }
             if(enemies.isBossDead()){
                 shots.setBossActive(false);
                 Map.setHasBoss(false);
                 Map.setBossActive(false);
-                //Map.setBossActivated(false);
+                Map.setBossActivated(false);
 
                 //Map.setBossActivated(false);
                 Map.setEndMap(true);
 
 
 
+            }else if(enemies.isBossDying()){
+                if(bossJustDied) {
+                    hero.displayMessage(3, 8, false);
+                    bossJustDied = false;
+                }
+                //hero.setPaused(true);
+                enemies.finalizeEnemies(Map.getAbsoluteMoveX(), Map.getAbsoluteMoveY());
+
             }
+
         }else if(Map.endLevel){
             Log.e("next", "level");
             nextLevel();
@@ -335,16 +351,13 @@ public class GLView extends GLSurfaceView implements Runnable {
     }
     private void initEntities(Context context, int mapNo) {
 
-
-
-
-        hero = new Hero(context );
+        music = new Audio();
+        hero = new Hero(context, mapNo);
         heroCenter = (CHARACTER_WIDTH / 2) + (int)hero.x;
         hero.setGround(groundLevel);
         hero.reset();
 
         //mapPosX = 0;
-
 
         Map = new Map1( mapPosX, 0);
         Map.initMap(context, mapNo);
@@ -353,49 +366,51 @@ public class GLView extends GLSurfaceView implements Runnable {
         finish = (int)((Map.getMapLength() * Constants.BLOCK_WIDTH) - (.5 * Constants.SCREEN_WIDTH));
 
         shots = new ShotEntity(context);
-        enemies = new EnemyContainer(context, hero, Map.getBossType(), mapNo);
+        enemies = new EnemyContainer(context, hero, Map.getBossType(), mapNo, Map.mapType);
         enemies.addShots(shots);
 
 
-        enemies.updateEnemies(hero.x,hero.y, Map.getAbsoluteMoveX(),Map.getAbsoluteMoveY());
+        enemies.updateEnemies(hero.x,hero.y, Map.getAbsoluteMoveX(),Map.getAbsoluteMoveY(), frameVariance);
         shots.addEntities(hero);
         shots.updateObstacles(obstacleList, hasOList);
 
         controller = new Controller();
         controller.initController(context);
         renderer.setHasGameController(hasGameController);
-        setupMapRender();
-
 
         gameControllerIds = getGameControllerIds();
         if(gameControllerIds.size() != 0) {
             currentControllerHandle = (int) gameControllerIds.get(0);
         }
-        renderer.setHasGameController(hasGameController);
-
-        renderer.setShots(shots);
-        renderer.setEnemies(enemies);
-        renderer.setHero(hero);
-        renderer.setController(controller);
-        renderer.setMap(Map);
 
 
+        // if gl renderer is active I need to queue this event
         if(renderer.surfaceActive()){
 
             queueEvent(new Runnable() {
                 @Override public void run() {
+                    renderer.setHasGameController(hasGameController);
+
+                    renderer.setShots(shots);
+                    renderer.setEnemies(enemies);
+                    renderer.setHero(hero);
+                    renderer.setController(controller);
+                    renderer.setMap(Map);
+                    setupMapRender();
                     //renderer.sceneChange();
                     Log.e("setup Objects","now");
                     renderer.setupObjects();
                 }});
 
+        }else{
+            renderer.setHasGameController(hasGameController);
+            renderer.setShots(shots);
+            renderer.setEnemies(enemies);
+            renderer.setHero(hero);
+            renderer.setController(controller);
+            renderer.setMap(Map);
+            setupMapRender();
         }
-
-
-
-
-
-
     }
 
     public void calcLogic() {
@@ -411,7 +426,6 @@ public class GLView extends GLSurfaceView implements Runnable {
         if (shoot) {
             hero.tryToShoot();
         }
-        //heroCenter = hero.getCenter();
         hLeft = hero.getLeft();//8
         hRight = hero.getRight();//10
         heroCenter = hero.getCenter();
@@ -422,13 +436,9 @@ public class GLView extends GLSurfaceView implements Runnable {
         obOffset = Map.getObstacleOffset();
         mapOffset = Map.getMapOffset();
         checkHState();
-        //Log.e("viewX", Float.toString(mapPosX));
+         Map.moveMap(hero.getLeft(), hero.getRight(), hero.getHeroY(),canMoveLeft, canMoveRight, playerCommand, frameVariance);
 
-
-
-         Map.moveMap(hero.getLeft(), hero.getRight(), hero.getHeroY(),canMoveLeft, canMoveRight, playerCommand);
-
-        shots.updateShots(mapOffset,obOffset, mapPosX, mapPosY);
+        shots.updateShots(mapOffset,obOffset, mapPosX, mapPosY, frameVariance);
 
         if (hero.canShoot) {
 
@@ -474,11 +484,8 @@ public class GLView extends GLSurfaceView implements Runnable {
 		 */
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 4; j++) {
-
                 if(hasOList[i][j]) {
                     if (heroCenter >= (obstacleList[i][j][0] + mapOffset) && heroCenter <= (obstacleList[i][j][2] + mapOffset)) {
-
-                        //if(canMoveLeft && canMoveRight) {
                             if (((obstacleList[i][j][1] + obOffset ) >= groundUnderHero) && ((obstacleList[i][j][1] + obOffset) <= (hFooting + .03f))  ) {
                                 groundUnderHero = obstacleList[i][j][1] + obOffset;
 
@@ -491,8 +498,6 @@ public class GLView extends GLSurfaceView implements Runnable {
 
                                 if((((obstacleList[i][j][1] + obOffset )  + groundUnderHero) < .02f) || (((obstacleList[i][j][1] + obOffset )  + groundUnderHero) > -.02f)) {
                                  hero.setGround(groundUnderHero);
-                                // Log.e("ground under her", Float.toString(groundUnderHero));
-
                                  obFound = true;
                              }else{
 
@@ -505,13 +510,8 @@ public class GLView extends GLSurfaceView implements Runnable {
                 if(obFound){
                     i = 10;
                     j = 4;
-
-
                     groundUnderHero = -20f;
                     obFound = false;
-
-                   // Log.e("ob", " Found");
-
                 }else{
                     if((i >= 9) && (j >= 3)){
                         groundUnderHero = -20f;
@@ -523,43 +523,24 @@ public class GLView extends GLSurfaceView implements Runnable {
 
             }
         }
-        // if (hero.falling || hero.startFalling) {
         hero.calcFooting();
-        // }
         hero.update(0f, Map.getDeltaY());
-
         hero.updateMessage(mapPosX);
-
         if (hero.isRunning()) {
-            hero.move(mapPosX, canMoveRight,canMoveLeft);
+            hero.move(mapPosX, canMoveRight,canMoveLeft, frameVariance);
             if(hero.dying) {
                 canMoveLeft = !hero.dying;
                 canMoveRight = !hero.dying;
             }
-
-
         }
-
-
         if (startJumping) {
             if(!hero.dying) {
                 jumping = true;
             }
-
         }
         if (jumping) {
             hero.jump();
         }
-
-        /*
-        if(Map.getMapNeedsRenderUpdate()){
-            renderer.setMapTextureCoords(Map.getDrawCoords());
-            Map.setMapNeedsRenderUpdate(false);
-        }
-        */
-
-        //renderer.setmMapModelMatrix(Map.getmModelMatrix());
-
         jumping = hero.contJump();
     }
 
@@ -610,6 +591,9 @@ public class GLView extends GLSurfaceView implements Runnable {
     }*/
     public void newMap(Context context,int mapNo){
         //mp.setLooping(true);
+
+        currentStats.currentMap = mapNo;
+        initEntities(context,mapNo);
         switch(mapNo){
             case 1:
                 music.loadTrack(context, R.raw.new_beginning);
@@ -625,11 +609,8 @@ public class GLView extends GLSurfaceView implements Runnable {
                 music.loadTrack(context, R.raw.new_beginning);
         }
 
-        currentStats.currentMap = mapNo;
+        music.startMusic();
 
-
-
-        initEntities(context,mapNo);
     }
 
     public void leavingGame(){
@@ -639,66 +620,54 @@ public class GLView extends GLSurfaceView implements Runnable {
         }
     }
     private void setupMapRender(){
-        renderer.setMapTextureCoords(Map.getDrawCoords());
-        renderer.setMapTexture(Map.getTexture());
-        renderer.setMapVertexCoord(Map.getPositionFloatBuffer());
-        renderer.setmMapModelMatrix(Map.getmModelMatrix());
-        renderer.setMapDrawIndices(Map.getDrawListBuffer());
-        renderer.setMapAnimBuffer(Map.getAnimBuffer());
+                renderer.setMapTextureCoords(Map.getDrawCoords());
+                renderer.setMapTexture(Map.getTexture());
+                renderer.setMapVertexCoord(Map.getPositionFloatBuffer());
+                renderer.setmMapModelMatrix(Map.getmModelMatrix());
+                renderer.setMapDrawIndices(Map.getDrawListBuffer());
+                renderer.setMapAnimBuffer(Map.getAnimBuffer());
     }
 
 
 
     public void sceneChange(){
 
+        playing = false;
+        music.releaseMP();
         Log.e("scene", "change");
 
         queueEvent(new Runnable() {
             @Override public void run() {
+                renderer.setRender(false);
+
                 renderer.sceneChange();
+
             }});
-
-
-        //System.gc();
-
-
     }
 
 
     public void pause() {
         playing = false;
-        music.pauseMusic();
-
-        try {
-            gameThread.join();
-
-        } catch (InterruptedException e) {
-            Log.getStackTraceString(e);
-
-        }
-
+        //music.pauseMusic();
+        queueEvent(new Runnable() {
+            @Override public void run() {
+                renderer.setPaused(true);
+            }});
     }
 
 
 
 
     public void resume() {
-        //mp.start();
-        // mp.reset();
-        // mp.setLooping(true);
+
         music.startMusic();
+        queueEvent(new Runnable() {
+            @Override public void run() {
+                renderer.setPaused(false);
+                renderer.setRender(true);
 
-        //mp = MediaPlayer.create(context, R.raw.scifi);
-
-
-
-        gameThread = new Thread(this);
-        gameThread.start();
+            }});
         playing = true;
-
-
-
-
     }
     public void startNew(Context context, int mapNo, boolean returned){
 
@@ -711,24 +680,23 @@ public class GLView extends GLSurfaceView implements Runnable {
         newMap(context,mapNo);
         music.startMusic();
 
-        playing = true;
-
-        gameThread = new Thread(this);
-        gameThread.start();
-
+        queueEvent(new Runnable() {
+            @Override public void run() {
+                renderer.setRender(true);
+            }});
     }
     public void nextLevel(){
         sceneChange();
-
         playAd = true;
         playing = false;
-
         newMap(context,currentStats.currentMap + 1);
+        queueEvent(new Runnable() {
+            @Override public void run() {
+                renderer.setRender(true);
+
+            }});
 
         playing = true;
-
-
-        // mp.start();
     }
 
     /**
@@ -741,7 +709,6 @@ public class GLView extends GLSurfaceView implements Runnable {
         for (int deviceId : deviceIds) {
             InputDevice dev = InputDevice.getDevice(deviceId);
             int sources = dev.getSources();
-
             // Verify that the device has gamepad buttons, control sticks, or both.
             if (((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)
                     || ((sources & InputDevice.SOURCE_JOYSTICK)

@@ -6,8 +6,11 @@ public class Shot {
 	
 	private float xPos;
 	private float yPos;
+	private float x;
+	private float y;
 	private float xView;
 	private float yView;
+	private float frameVariance = 1.0f;
 	private float mapPosX = 0;
 	private float mapPosY = 0;
 	private float angle = 0;
@@ -63,20 +66,19 @@ public class Shot {
 		xView = xPos - mapPosX;
 		yView = yPos + mapPosY;		//Log.e("map posY", Float.toString(mapPosY));
 	}
-	public void advanceShot(){
+	public void advanceShot(float frameVariance){
 
-		
+		this.frameVariance = frameVariance;
 		if(!Impact && !Dying){
-			xPos += xAdv;
-			yPos -= yAdv;
+			xPos += (frameVariance *xAdv);
+			yPos -= (frameVariance *yAdv);
 
-
-		
 		}else if(Impact){
 			Dying = true;
 			Impact = false;
 		}else if(Dying){
-			
+
+		    //TODO fix this timer to work with frameVariance
 			timerCount += 2;
 
 			switch(timerCount){
@@ -101,6 +103,7 @@ public class Shot {
 		xPos = x + drawX;
 		yPos = y - drawY;
 
+
 		xView = xPos - drawX;
 		yView = yPos + drawY;
 
@@ -124,58 +127,59 @@ public class Shot {
 		this.shotSpeed = shotSpeed;
 
 
-		if(angle == 0){
-			if(shotSpeed < 0 ) {
-				xAdv = (shotSpeed * .80f);
-				yAdv = -1f *(shotSpeed * .20f);
-			}else{
-				xAdv = (shotSpeed * .80f);
-				yAdv = (shotSpeed * .20f);
+		if(shotType != Item.BOMB) {
+			if (angle == 0) {
+				if (shotSpeed < 0) {
+					xAdv = (shotSpeed * .80f);
+					yAdv = -1f * (shotSpeed * .20f);
+				} else {
+					xAdv = (shotSpeed * .80f);
+					yAdv = (shotSpeed * .20f);
+				}
+			} else if (angle == 1) {
+				xAdv = shotSpeed;
+				yAdv = 0;
+			} else if (angle == 4) {
+				if (shotSpeed < 0) {
+					xAdv = (shotSpeed * .5f);
+					yAdv = (shotSpeed * .5f);
+				} else {
+					xAdv = (shotSpeed * .5f);
+					yAdv = -1f * (shotSpeed * .5f);
+				}
+			} else if (angle == 3) {
+
+				if (shotSpeed < 0) {
+					xAdv = (shotSpeed * .66f);
+					yAdv = (shotSpeed * .34f);
+				} else {
+					xAdv = (shotSpeed * .66f);
+					yAdv = -1f * (shotSpeed * .34f);
+				}
+
+			} else if (angle == 2) {
+
+				if (shotSpeed < 0) {
+					xAdv = (shotSpeed * .80f);
+					yAdv = (shotSpeed * .20f);
+				} else {
+					xAdv = (shotSpeed * .80f);
+					yAdv = -1f * (shotSpeed * .20f);
+				}
+
+			} else if (angle == 5) {
+				if (shotSpeed < 0) {
+					xAdv = (shotSpeed * .38f);
+					yAdv = (shotSpeed * .62f);
+				} else {
+					xAdv = (shotSpeed * .38f);
+					yAdv = -1f * (shotSpeed * .62f);
+				}
 			}
-
-
-		}else if(angle == 1){
-			xAdv= shotSpeed;
-			yAdv = 0;
-		}else if(angle == 4){
-			if(shotSpeed < 0 ) {
-				xAdv = (shotSpeed * .5f);
-				yAdv = (shotSpeed * .5f);
-			}else{
-				xAdv = (shotSpeed * .5f);
-				yAdv = -1f *(shotSpeed * .5f);
-			}
-		}else if(angle == 3){
-
-			if(shotSpeed < 0 ) {
-				xAdv = (shotSpeed * .66f);
-				yAdv = (shotSpeed * .34f);
-			}else{
-				xAdv = (shotSpeed * .66f);
-				yAdv = -1f *(shotSpeed * .34f);
-			}
-
-		}else if(angle == 2){
-
-			if(shotSpeed < 0 ) {
-				xAdv = (shotSpeed * .80f);
-				yAdv = (shotSpeed * .20f);
-			}else{
-				xAdv = (shotSpeed * .80f);
-				yAdv = -1f *(shotSpeed * .20f);
-			}
-
-		}else if(angle == 5){
-			if(shotSpeed < 0 ) {
-				xAdv = (shotSpeed * .38f);
-				yAdv = (shotSpeed * .62f);
-			}else{
-				xAdv = (shotSpeed * .38f);
-				yAdv = -1f *(shotSpeed * .62f);
-			}
-
+		}else{
+			xAdv = 0f;
+			yAdv = -.5f * shotSpeed;
 		}
-
 	}
 
 	/**
@@ -244,9 +248,10 @@ public class Shot {
 	 * @param leftLinkY
 	 * @param leftLinkAngle
 	 */
-	public void advanceLink(float leftLinkX, float leftLinkY, double leftLinkAngle) {
+	public void advanceLink(float leftLinkX, float leftLinkY, double leftLinkAngle,float frameVariance) {
 		xDif = this.xPos - leftLinkX;
 		yDif = this.yPos - leftLinkY;
+		this.frameVariance = frameVariance;
 
 		updateRelation(leftLinkX, leftLinkY, leftLinkAngle);
 		updateRotation(xDif, yDif);
@@ -297,6 +302,10 @@ public class Shot {
 			case Item.WEAPON_UPGRADE_SPRAY:
 				shotObject = Item.DEFAULT_VALUE;
 				break;
+			case Item.BOMB:
+				shotObject = Item.BOMB;
+				shotStrength = 0;
+				break;
 
 		}
 	}
@@ -320,16 +329,10 @@ public class Shot {
 		xDelta = ((targetXDif - this.xPos) * .75f);
 		this.xPos += xDelta;
 		this.yPos += yDelta;
-
-
-
 	}
 	private void updateRotation(float xDif,float yDif){
-
 		angleRadians = Math.atan2(yDif,xDif );
 		angleDegrees = Math.toDegrees(angleRadians);
-
-
 	}
 	public float getRotation(){
 
@@ -374,8 +377,6 @@ public class Shot {
 				}
 			}
 			animCounterX = 0;
-
-
 		}
 	}
 	public float getX(){

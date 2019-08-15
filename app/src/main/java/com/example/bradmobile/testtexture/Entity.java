@@ -84,7 +84,7 @@ public class Entity {
         this.objectCount = objectCount;
         objectList[totalObjects] = objectCount;
 
-        for(int i = 0; i <= totalTextures; i++){
+        for(int i = 0; i < totalTextures; i++){
             if(texture == textures[i] && textureLoaded == false){
                 textureLoaded = true;
                 currentTexture = i;
@@ -102,6 +102,7 @@ public class Entity {
             totalTextures++;
 
         }
+        Log.e("total Textures", Integer.toString(totalTextures));
 
 
 
@@ -439,6 +440,20 @@ public class Entity {
 
 
         return tempBuffer;
+    }
+    public boolean checkCollision(float[] object1, float[] object2){
+
+        if((object1[0] < object2[2] && object1[0] > object2[0]) || (object1[2] > object2[0] && object1[2] < object2[2]) ){
+            Log.e("x" , "collision");
+            if((object2[1] > object1[3] && object2[1] < object1[1]) || (object2[3] > object1[1] && object2[3] < object1[3]) ){
+
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
     }
     public void nullImage(){
 

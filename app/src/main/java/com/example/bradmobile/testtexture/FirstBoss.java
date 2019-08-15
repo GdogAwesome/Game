@@ -23,11 +23,26 @@ public class FirstBoss extends BossEntity {
     private boolean movingLeft = true;
     private boolean cueAttack = true;
 
+
+
+    private float centerX;
+    private float centerY;
+
     private int scaledBossHeight = 0;
     private float circleOriginX = 0.5f;
     private float circleOriginY = 0.0f;
-    private int bossHealth = 2000;
+    private int bossHealth = 500;
     private int linkHealth = 500;
+    private int amountOfLinks = 5;
+    private double[] tanList = new double[amountOfLinks];
+    private double[] sinList = new double[amountOfLinks];
+    private double[] cosList = new double[amountOfLinks];
+    private float currentAngle = 0f;
+    private boolean circleSpinning = true;
+    private boolean shootingOut = false;
+    private float startAngle = 0.0f;
+    private float linkSpacing = 0f;
+    private float distanceFromCenter = .75f;
     private float LeadX ;
     private float LeadY;
     private float angle = 0.0f;
@@ -52,7 +67,9 @@ public class FirstBoss extends BossEntity {
     }
 
     @Override
-    public void updateBoss(float HX, float HY, float _viewX, float _viewY){
+    public void updateBoss(float HX, float HY, float _viewX, float _viewY, float frameVariance){
+
+        this.frameVariance = frameVariance;
 
         viewX = _viewX;
         viewY = _viewY;
@@ -69,10 +86,10 @@ public class FirstBoss extends BossEntity {
         cosOfCircle = Math.cos(angle);
 
 
-        enemyList[0].updateView(viewX,viewY);
-        enemyList[4].updateView(viewX,viewY);
+        enemyList[1].updateView(viewX,viewY, frameVariance);
+        enemyList[0].updateView(viewX,viewY, frameVariance);
 
-        if(!enemyList[4].isDying()) {
+        if(!enemyList[0].isDying()) {
 
 
             //swing counter
@@ -84,13 +101,13 @@ public class FirstBoss extends BossEntity {
 
             }
             //move left and right based on position
-            if (enemyList[4].getAbsoluteX() <= .25f) {
+            if (enemyList[0].getAbsoluteX() <= .25f) {
                 lastMoveChange = counter;
                 movingLeft = false;
                 if(playingIntro){
                     playingIntro = false;
                 }
-            }else if(enemyList[4].getAbsoluteX() >= 1.40f){
+            }else if(enemyList[0].getAbsoluteX() >= 1.40f){
                 movingLeft = true;
             }
 
@@ -101,58 +118,55 @@ public class FirstBoss extends BossEntity {
                     if(cueAttack){
                         LeadX = hero.getCenter() + viewX;
                         LeadY = 1.2f;
-                        enemyList[4].animHandler.Attack1();
+                        enemyList[0].animHandler.Attack1();
                         cueAttack = false;
                     }
                     LeadY -= swingSpeed * 4;
 
-                    enemyList[0].followLooseXY(LeadX,LeadY,.1f, .1f);
+                    enemyList[1].followLooseXY(LeadX,LeadY,.1f, .1f);
                     //enemyList[0].moveDirect(linkX(LeadX, enemyList[0].getWidth(), enemyList[0].getX()), -(swingSpeed * 6));
-                    if ((enemyList[0].getY() + enemyList[0].getHeight()) <= -.8f) {
+                    if ((enemyList[1].getY() + enemyList[0].getHeight()) <= -.8f) {
                         swingingDown = false;
 
                     }
 
                 } else if (!swingingDown) {
                     LeadY += swingSpeed * 2;
-                    LeadX =  enemyList[4].getAbsoluteX()+((float)cosOfCircle * 0.6f) + _viewX;
+                    LeadX =  enemyList[0].getAbsoluteX()+((float)cosOfCircle * 0.6f) + _viewX;
 
-                    enemyList[0].followLooseXY(LeadX,LeadY,.1f, .5f);
+                    enemyList[1].followLooseXY(LeadX,LeadY,.1f, .5f);
                     //enemyList[0].moveDirect(linkX(LeadX, enemyList[0].getWidth(), enemyList[0].getX()), swingSpeed * 2);
                     if(!cueAttack){
                         cueAttack = true;
 
                     }
-
-
-
-                    if ((enemyList[0].getY()) >= (enemyList[4].getAbsoluteY()+((float)sinOfCircle * 0.6f) + _viewY)) {
+                    if ((enemyList[1].getY()) >= (enemyList[0].getAbsoluteY()+((float)sinOfCircle * 0.6f) + _viewY)) {
                         swingingDown = true;
                         swinging = false;
-                        enemyList[4].animHandler.stop();
+                        enemyList[0].animHandler.stop();
                     }
                 }
             } else {
-                LeadX =  enemyList[4].getAbsoluteX()+((float)cosOfCircle * 0.6f) + _viewX;
-                LeadY = enemyList[4].getAbsoluteY()+((float)sinOfCircle * 0.6f) + _viewY;
+                LeadX =  enemyList[0].getAbsoluteX()+((float)cosOfCircle * 0.6f) + _viewX;
+                LeadY = enemyList[0].getAbsoluteY()+((float)sinOfCircle * 0.6f) + _viewY;
 
-                enemyList[0].followLooseXY(LeadX,LeadY,.2f, .2f);
+                enemyList[1].followLooseXY(LeadX,LeadY,.2f, .2f);
 
             }
 
 
                 if (movingLeft) {
-                    enemyList[4].moveDirectWOAnim(-moveDistance, 0);
+                    enemyList[0].moveDirectWOAnim(-moveDistance, 0);
                 } else {
                     //enemyList[4].moveDirectWOAnim(moveDistance, 0);
                 }
 
 
 
-            for (int i = 1; i < 4; i++) {//enemyActive.length; i++){
+            for (int i = 2; i < amountOfLinks + 1; i++) {//enemyActive.length; i++){
 
                 if (enemyActive[i]) {
-                    enemyList[i].updateView(viewX, viewY);
+                    enemyList[i].updateView(viewX, viewY, frameVariance);
                     enemyList[i].followDirectXY(enemyList[i-1].getX(), enemyList[i-1].getY(), .22f, .22f);
 
                 }
@@ -166,18 +180,82 @@ public class FirstBoss extends BossEntity {
                     //if((enemyList[i].getX() + ))
                 }
             }
-        }else if(enemyList[4].isDying()){
+        }else if(enemyList[0].isDying()){
 
             //TODO implement dying animation here
-            isActive = false;
-            isDead = true;
+            //isActive = false;
+            //isDead = true;
+            isDying = true;
             Log.e("boss ", "is dead");
 
 
         }
 
     }
+    @Override
+    public void playDeath( float viewX, float viewY){
+        //setup location of objects
+        if(startDeathAnim) {
+            enemyList[0].setDyingAnim();
+            centerX = enemyList[0].getX();
+            centerY = enemyList[0].getY();
+            startAngle = 0f;
+            linkSpacing = 360 / amountOfLinks;
+            for(int i = 0; i < amountOfLinks; i++){
+                currentAngle = startAngle + (i * linkSpacing);
+                tanList[i] = Math.toRadians(currentAngle);
+                sinList[i] = (float)(Math.sin(tanList[i]));
+                cosList[i] = (float)(Math.cos(tanList[i]));
+                //enemyList[i + 1].setX((centerX + (distanceFromCenter *(float)Math.sin(tanList[i]))));
+               // enemyList[i + 1].setY((centerY + (distanceFromCenter *(float)Math.cos(tanList[i]))));
+                enemyList[i+1].followLooseXY((centerX +(distanceFromCenter *(float)Math.sin(tanList[i]))), (centerY +(distanceFromCenter * (float)Math.cos(tanList[i]))), .1f, .1f);
+                //enemyList[i + 1].setAngleR(tanList[i]);
+            }
+            currentAngle = 0f;
+            startDeathAnim = false;
+        }else{
+            if(startAngle < 360){
+                startAngle += 2.0f;
+            }else{
+                startAngle = 0.0f;
+                circleSpinning = false;
+            }
+            for(int i = 0; i < amountOfLinks + 1; i++){
+                if(i < amountOfLinks) {
+                    if(circleSpinning) {
+                        currentAngle = startAngle + (i * linkSpacing);
+                        tanList[i] = Math.toRadians(currentAngle);
+                        sinList[i] = (float) (Math.sin(tanList[i]));
+                        cosList[i] = (float) (Math.cos(tanList[i]));
+                    }else{
+                        if(!circleSpinning){
+                            if((distanceFromCenter > 0.0f) && !shootingOut) {
+                                distanceFromCenter -= .002f;
+                            }else {
+                                if (!shootingOut) {
+                                    shootingOut = true;
+                                    for(int j = 1; j < amountOfLinks -1; j++){
+                                        enemyList[j].setHealth(0);
+                                    }
+                                }
+                                if (distanceFromCenter < 4.0f) {
+                                    distanceFromCenter += .009f;
+                                }else{
+                                    isDead = true;
+                                }
 
+                            }
+                        }
+                    }
+                    enemyList[i + 1].followLooseXY((centerX + (distanceFromCenter * (float) Math.sin(tanList[i]))), (centerY + (distanceFromCenter * (float) Math.cos(tanList[i]))), 1.0f, 1.0f);
+                }
+                enemyList[i].updateView(viewX,viewY, frameVariance);
+            }
+
+        }
+
+
+    }
 
     /**
      *
@@ -212,27 +290,27 @@ public class FirstBoss extends BossEntity {
         this.enemyActive = ea;
 
 
-        enemyList[4] = new EnemyEntity(xPos + 1.5f, yPos -.45f, EnemyContainer.BOSS_ONE_BODY);
-        enemyList[4].InitEnemy(1, 1, bodyBounds[0]);
-        enemyList[4].loadAnims(new int[]{Anim.ATTACK_1,Anim.STANDING}, new int[]{8,4}, new int[]{0,8}, new int[]{4, 7}, new boolean[]{false, false}, new boolean[]{false,true}, new boolean[]{false, true});
-        enemyList[4].setHealth(bossHealth);
+        enemyList[0] = new EnemyEntity(xPos + 1.5f, yPos -.45f, EnemyContainer.BOSS_ONE_BODY);
+        enemyList[0].InitEnemy(1, 1, bodyBounds[0]);
+        enemyList[0].loadAnims(new int[]{Anim.ATTACK_1,Anim.STANDING, Anim.DYING}, new int[]{8,4,3}, new int[]{0,8, 11}, new int[]{4, 7,7}, new boolean[]{false, false, false}, new boolean[]{false,true, false}, new boolean[]{false, true, false});
+        enemyList[0].setHealth(bossHealth);
 
-        enemyList[0] = new EnemyEntity(enemyList[4].getAbsoluteX(), enemyList[4].getAbsoluteY() + 1.5f, EnemyContainer.BOSS_ONE_ARM);
-        enemyList[0].InitEnemy(5,3, bodyBounds[1]);
-        enemyList[0].loadAnims(new int[]{Anim.STANDING}, new int[]{12}, new int[]{0}, new int[]{5}, new boolean[]{true}, new boolean[]{false},new boolean[]{true});
-        enemyList[0].setHealth(linkHealth);
+        enemyList[1] = new EnemyEntity(enemyList[0].getAbsoluteX(), enemyList[0].getAbsoluteY() + 1.5f, EnemyContainer.BOSS_ONE_ARM);
+        enemyList[1].InitEnemy(5,3, bodyBounds[1]);
+        enemyList[1].loadAnims(new int[]{Anim.STANDING}, new int[]{16}, new int[]{0}, new int[]{5}, new boolean[]{true}, new boolean[]{false},new boolean[]{true});
+        enemyList[1].setHealth(linkHealth);
 
 
-        for(int i = 1; i < 4; i ++){// enemyActive.length ; i++){
+        for(int i = 2; i < (amountOfLinks + 1); i ++){// enemyActive.length ; i++){
             //if(enemyActive[i]){
                 enemyList[i] = new EnemyEntity(0f, 0f, EnemyContainer.BOSS_ONE_ARM);
                 enemyList[i].InitEnemy(5,3,  bodyBounds[1]);
-                enemyList[i].loadAnims(new int[]{Anim.STANDING}, new int[]{12}, new int[]{0}, new int[]{5}, new boolean[]{true}, new boolean[]{false},new boolean[]{true});
+                enemyList[i].loadAnims(new int[]{Anim.STANDING}, new int[]{16}, new int[]{0}, new int[]{5}, new boolean[]{true}, new boolean[]{false},new boolean[]{true});
                 enemyList[i].setHealth(linkHealth);
             //}
         }
         for(int i = 0; i< enemyList.length; i++){
-            if(i < 5) {
+            if(i < (amountOfLinks + 1)) {
                 enemyActive[i] = true;
             }else if(i >= 5){
                 enemyActive[i] = false;
@@ -260,5 +338,10 @@ public class FirstBoss extends BossEntity {
     public void hit(int sectionHit, int hitStrength){
         enemyList[sectionHit].hit(hitStrength);
 
+    }
+
+    @Override
+    public boolean isStartDeathAnim(){
+        return startDeathAnim;
     }
 }

@@ -43,6 +43,6 @@ public class StartScreen extends AppCompatActivity implements View.OnClickListen
     @Override
     public void onPause(){
         super.onPause();
-        onTrimMemory(TRIM_MEMORY_UI_HIDDEN);
+       onTrimMemory(TRIM_MEMORY_UI_HIDDEN);
     }
 }

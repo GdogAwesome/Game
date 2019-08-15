@@ -5,15 +5,16 @@ package com.example.bradmobile.testtexture.AnimationUtils;
  */
 
 public class CurrentAnim {
-    private int timer = 0;
+    private float timer = 0.0f;
     private int frameTime = 0;
     private int animLength = 0;
     private boolean reciprocating = false;
     private boolean continuous = false;
     private boolean interruptible = true;
-    private boolean animFinished = true;
+    public boolean animFinished = false;
+    private float frameVariance = 1.0f;
     private int[] anim;
-    private int animIndex = 0;
+    public int animIndex = 0;
     private int animType = -1;
     private boolean reverseAnim = false;
 
@@ -88,7 +89,7 @@ public class CurrentAnim {
 
         if(timer >= frameTime){
             if(!reverseAnim){
-                if(animIndex < animLength -1){
+                if(animIndex < animLength -1 ){
                     animIndex ++;
                 }else{
                     reverseAnim = true;
@@ -100,10 +101,10 @@ public class CurrentAnim {
                     reverseAnim = false;
                 }
             }
-            timer = 0;
+            timer = 0.0f;
 
         }else{
-            timer ++;
+            timer += frameVariance;
         }
 
     }
@@ -116,9 +117,9 @@ public class CurrentAnim {
                 animIndex = 0;
             }
 
-            timer = 0;
+            timer -= frameTime;
         }else{
-            timer++;
+            timer += frameVariance;
         }
 
     }
@@ -131,9 +132,9 @@ public class CurrentAnim {
                 animFinished = true;
             }
 
-            timer = 0;
+            timer -= frameTime;
         }else{
-            timer++;
+            timer += frameVariance;
         }
 
     }
@@ -143,7 +144,11 @@ public class CurrentAnim {
         //
         return (anim[animIndex] * 12 * 4);
     }
-    public void update(){
+    public int getFrame(){
+        return animIndex;
+    }
+    public void update(float frameVariance){
+        this.frameVariance = frameVariance;
         if(this.reciprocating){
 
             runReciprocating();
@@ -156,6 +161,13 @@ public class CurrentAnim {
         }
 
 
+
+    }
+    public boolean isDone(){
+        return animFinished;
+    }
+    public void setAnimType(int animType){
+        this.animType = animType;
 
     }
 }
